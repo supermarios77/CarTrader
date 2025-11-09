@@ -1,6 +1,5 @@
 import pino, {
   type DestinationStream,
-  type Logger,
   type LoggerOptions,
   stdTimeFunctions,
 } from 'pino';
@@ -46,16 +45,18 @@ const buildBaseOptions = (overrides?: LoggerOptions): LoggerOptions => {
 
 const rootLogger = pino(buildBaseOptions());
 
-export const getLogger = (): Logger => rootLogger;
+export type AppLogger = typeof rootLogger;
+
+export const getLogger = (): AppLogger => rootLogger;
 
 export const createLogger = (
   overrides?: LoggerOptions,
   destination?: DestinationStream,
-): Logger => pino(buildBaseOptions(overrides), destination);
+): AppLogger => pino(buildBaseOptions(overrides), destination);
 
 export const createChildLogger = (
-  bindings: Parameters<Logger['child']>[0],
-  options?: Parameters<Logger['child']>[1],
-): Logger => rootLogger.child(bindings, options);
+  bindings: Parameters<AppLogger['child']>[0],
+  options?: Parameters<AppLogger['child']>[1],
+): AppLogger => rootLogger.child(bindings, options);
 
-export type { Logger } from 'pino';
+export type { LoggerOptions };
