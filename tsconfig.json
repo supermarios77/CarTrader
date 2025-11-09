@@ -3,5 +3,9 @@
   "compilerOptions": {
     "composite": true
   },
-  "include": []
+  "files": [],
+  "references": [
+    { "path": "./packages/config" },
+    { "path": "./packages/logger" }
+  ]
 }

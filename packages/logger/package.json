@@ -1,0 +1,21 @@
+{
+  "name": "@cartrader/logger",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "test": "echo 'No tests yet'",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@cartrader/config": "workspace:*",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.2.2"
+  }
+}

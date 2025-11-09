@@ -12,6 +12,9 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "types": ["node"],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@cartrader/*": ["packages/*/src"]
+    }
   }
 }
