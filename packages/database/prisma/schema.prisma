@@ -1,0 +1,83 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+model User {
+  id               BigInt     @id @default(autoincrement())
+  email            String     @unique
+  phoneE164        String?    @unique
+  passwordHash     String?
+  salt             String?
+  status           UserStatus @default(ACTIVE)
+  displayName      String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  lastLoginAt      DateTime?
+  oauthAccounts    OAuthAccount[]
+  otpChallenges    OtpChallenge[]
+  auditLogs        UserAuditLog[]
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model OAuthAccount {
+  id            BigInt   @id @default(autoincrement())
+  provider      String
+  providerId    String
+  accessToken   String?
+  refreshToken  String?
+  expiresAt     DateTime?
+  metadata      Json?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        BigInt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([provider, providerId])
+}
+
+model OtpChallenge {
+  id             BigInt      @id @default(autoincrement())
+  contact        String
+  code           String
+  purpose        OtpPurpose
+  expiresAt      DateTime
+  consumedAt     DateTime?
+  user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId         BigInt?
+  attempts       Int         @default(0)
+  maxAttempts    Int         @default(5)
+  createdAt      DateTime    @default(now())
+
+  @@index([contact, purpose])
+}
+
+enum OtpPurpose {
+  SIGN_IN
+  SIGN_UP
+  PASSWORD_RESET
+  MFA
+}
+
+model UserAuditLog {
+  id          BigInt   @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      BigInt
+  action      String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
