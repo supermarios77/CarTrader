@@ -1,10 +1,13 @@
 import pino, {
   type DestinationStream,
+  type Logger,
   type LoggerOptions,
   stdTimeFunctions,
 } from 'pino';
 
 import { loadBaseConfig, type BaseEnv } from '@cartrader/config';
+
+export type AppLogger = Logger<string>;
 
 const baseConfig: BaseEnv = loadBaseConfig();
 
@@ -43,16 +46,14 @@ const buildBaseOptions = (overrides?: LoggerOptions): LoggerOptions => {
   } satisfies LoggerOptions;
 };
 
-const rootLogger = pino(buildBaseOptions());
-
-export type AppLogger = typeof rootLogger;
+const rootLogger = pino(buildBaseOptions()) as unknown as AppLogger;
 
 export const getLogger = (): AppLogger => rootLogger;
 
 export const createLogger = (
   overrides?: LoggerOptions,
   destination?: DestinationStream,
-): AppLogger => pino(buildBaseOptions(overrides), destination);
+): AppLogger => pino(buildBaseOptions(overrides), destination) as unknown as AppLogger;
 
 export const createChildLogger = (
   bindings: Parameters<AppLogger['child']>[0],

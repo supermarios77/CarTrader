@@ -4,5 +4,15 @@
     "noEmit": false,
     "emitDeclarationOnly": false
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/logger"
+    }
+  ]
 }

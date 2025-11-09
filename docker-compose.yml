@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    image: cartrader/api-gateway:dev
+    environment:
+      NODE_ENV: development
+      API_GATEWAY_PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    image: cartrader/auth-service:dev
+    environment:
+      NODE_ENV: development
+      AUTH_SERVICE_PORT: 3010
+    ports:
+      - "3010:3010"

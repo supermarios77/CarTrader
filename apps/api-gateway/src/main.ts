@@ -1,4 +1,4 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { LoggerService, ValidationPipe, VersioningType, RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { getLogger } from '@cartrader/logger';
@@ -13,10 +13,10 @@ async function bootstrap(): Promise<void> {
 
   const config = loadApiGatewayConfig();
   const logger = getLogger();
-  app.useLogger(logger);
+  app.useLogger(logger as unknown as LoggerService);
 
   app.setGlobalPrefix(config.API_GATEWAY_GLOBAL_PREFIX, {
-    exclude: [{ path: 'healthz', method: 'GET' }],
+    exclude: [{ path: 'healthz', method: RequestMethod.GET }],
   });
 
   app.enableVersioning({ type: VersioningType.URI });

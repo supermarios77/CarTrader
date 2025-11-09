@@ -2,9 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "declarationDir": "dist",
+    "rootDir": "src",
     "declaration": true,
     "declarationMap": true,
-    "noEmit": true,
     "composite": true
   },
   "include": [
@@ -16,8 +17,6 @@
     "**/*.test.ts"
   ],
   "references": [
-    {
-      "path": "../config"
-    }
+    { "path": "../config" }
   ]
 }

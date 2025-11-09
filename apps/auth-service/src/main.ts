@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { LoggerService, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { getLogger } from '@cartrader/logger';
@@ -13,7 +13,7 @@ async function bootstrap(): Promise<void> {
 
   const config = loadAuthServiceConfig();
   const logger = getLogger();
-  app.useLogger(logger);
+  app.useLogger(logger as unknown as LoggerService);
 
   app.useGlobalPipes(
     new ValidationPipe({
