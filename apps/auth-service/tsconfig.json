@@ -21,6 +21,9 @@
     },
     {
       "path": "../../packages/logger"
+    },
+    {
+      "path": "../../packages/database"
     }
   ]
 }
