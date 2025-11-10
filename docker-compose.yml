@@ -29,6 +29,7 @@ services:
       API_GATEWAY_GLOBAL_PREFIX: api
       API_GATEWAY_CORS_ORIGINS: http://localhost:3000
       LISTINGS_SERVICE_BASE_URL: http://listings-service:3020/api
+      MEDIA_SERVICE_BASE_URL: http://media-service:3030/api
     ports:
       - "3000:3000"
     depends_on:
