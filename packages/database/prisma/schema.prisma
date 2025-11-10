@@ -23,6 +23,7 @@ model User {
   otpChallenges    OtpChallenge[]
   auditLogs        UserAuditLog[]
   listings         Listing[]
+  mediaAssets      MediaAsset[]
 }
 
 model Listing {
@@ -75,6 +76,8 @@ model ListingMedia {
   sortOrder   Int        @default(0)
   metadata    Json?
   createdAt   DateTime   @default(now())
+  asset       MediaAsset? @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  assetId     BigInt?
 
   @@index([listingId, sortOrder])
 }
@@ -136,6 +139,37 @@ enum MediaType {
   IMAGE
   VIDEO
   DOCUMENT
+}
+
+model MediaAsset {
+  id             BigInt             @id @default(autoincrement())
+  storageKey     String             @unique
+  bucket         String
+  contentType    String?
+  byteSize       BigInt?
+  checksumSha256 String?
+  status         MediaAssetStatus   @default(PENDING)
+  visibility     MediaAssetVisibility @default(PRIVATE)
+  uploadedAt     DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  owner          User?              @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId        BigInt?
+  listingUsages  ListingMedia[]
+
+  @@index([ownerId, status, createdAt])
+}
+
+enum MediaAssetStatus {
+  PENDING
+  READY
+  FAILED
+  DELETED
+}
+
+enum MediaAssetVisibility {
+  PRIVATE
+  PUBLIC
 }
 
 model OAuthAccount {

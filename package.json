@@ -16,6 +16,7 @@
   },
   "packageManager": "pnpm@9.11.0",
   "devDependencies": {
+    "@prisma/client": "^6.19.0",
     "@types/node": "^20.16.5",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
@@ -25,10 +26,13 @@
     "prisma": "^6.19.0",
     "turbo": "^2.1.3",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.46.0",
-    "@prisma/client": "^6.19.0"
+    "typescript-eslint": "^8.46.0"
   },
   "prisma": {
     "schema": "packages/database/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.927.0",
+    "@aws-sdk/s3-request-presigner": "^3.927.0"
   }
 }
