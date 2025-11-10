@@ -38,6 +38,7 @@
     "@opensearch-project/opensearch": "^3.5.1",
     "bullmq": "^5.63.0",
     "ioredis": "^5.8.2",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.10",
+    "uuid": "^10.0.0"
   }
 }

@@ -133,6 +133,23 @@ services:
       opensearch:
         condition: service_healthy
 
+  payments-service:
+    build:
+      context: .
+      dockerfile: apps/payments-service/Dockerfile
+    image: cartrader/payments-service:dev
+    environment:
+      NODE_ENV: development
+      PAYMENTS_SERVICE_PORT: 3060
+      PAYMENTS_SERVICE_GLOBAL_PREFIX: api
+      PAYMENTS_SERVICE_CORS_ORIGINS: http://localhost:3000
+      PAYMENTS_PROVIDER: mock
+      PAYMENTS_WEBHOOK_SECRET: mock-webhook-secret
+    ports:
+      - "3060:3060"
+      opensearch:
+        condition: service_healthy
+
   search-service:
     build:
       context: .
