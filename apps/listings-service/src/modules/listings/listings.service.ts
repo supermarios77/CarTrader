@@ -7,6 +7,7 @@ import { createChildLogger } from '@cartrader/logger';
 import { CreateListingDto, ListingMediaInputDto } from './dto/create-listing.dto';
 import { ListListingsQueryDto } from './dto/list-listings.dto';
 import { CreateListingInput, ListingRecord, ListingsRepository } from './listings.repository';
+import { SearchSyncService } from './search-sync.service';
 
 export interface PublicListingMedia {
   id: string;
@@ -206,7 +207,10 @@ const toPublicListing = (record: ListingRecord): PublicListing => ({
 export class ListingsService {
   private readonly logger = createChildLogger({ context: ListingsService.name });
 
-  constructor(private readonly listingsRepository: ListingsRepository) {}
+  constructor(
+    private readonly listingsRepository: ListingsRepository,
+    private readonly searchSyncService: SearchSyncService,
+  ) {}
 
   async createListing(dto: CreateListingDto): Promise<PublicListing> {
     const sellerId = toBigInt(dto.sellerId, 'sellerId');
@@ -245,7 +249,39 @@ export class ListingsService {
 
     this.logger.info({ listingId: record.id.toString(), sellerId: record.sellerId.toString() }, 'Listing created');
 
+    if (record.status === ListingStatus.PUBLISHED) {
+      await this.searchSyncService.syncListing(record);
+    }
+
     return toPublicListing(record);
+  }
+
+  async updateListingStatus(id: string, status: ListingStatus): Promise<PublicListing> {
+    const listingId = toBigInt(id, 'listingId');
+    const record = await this.listingsRepository.findById(listingId);
+
+    if (!record) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    if (record.status === status) {
+      await this.searchSyncService.syncListing(record);
+      return toPublicListing(record);
+    }
+
+    const updated = await this.listingsRepository.updateListingStatus(listingId, status);
+
+    await this.searchSyncService.syncListing(updated);
+
+    this.logger.info(
+      {
+        listingId: updated.id.toString(),
+        status: updated.status,
+      },
+      'Listing status updated',
+    );
+
+    return toPublicListing(updated);
   }
 
   async getListingById(id: string): Promise<PublicListing> {
@@ -294,3 +330,4 @@ const normalizeMediaInput = (item: ListingMediaInputDto, index: number) => ({
   sortOrder: item.sortOrder ?? index,
   metadata: item.metadata ?? undefined,
 });
+

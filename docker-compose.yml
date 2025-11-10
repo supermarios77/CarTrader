@@ -66,6 +66,7 @@ services:
       LISTINGS_SERVICE_GLOBAL_PREFIX: api
       LISTINGS_SERVICE_CORS_ORIGINS: http://localhost:3000
       DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
+      SEARCH_SERVICE_BASE_URL: http://search-service:3050/api/v1
     ports:
       - "3020:3020"
     depends_on:

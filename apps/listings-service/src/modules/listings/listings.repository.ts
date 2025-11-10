@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import { ListingStatus } from '@prisma/client';
+
 import { DatabaseService } from '../database/database.service';
 
 export interface ListingMediaRecord {
@@ -138,6 +140,30 @@ export class ListingsRepository {
     return this.prisma.listing.create(createArgs);
   }
 
+  async updateListingStatus(id: bigint, status: ListingStatus): Promise<ListingRecord> {
+    const data: Record<string, unknown> = {
+      status,
+    };
+
+    if (status === ListingStatus.PUBLISHED) {
+      data.publishedAt = new Date();
+    } else if (status === ListingStatus.DRAFT) {
+      data.publishedAt = null;
+    }
+
+    const updateArgs: PrismaArgs = {
+      where: { id },
+      data,
+      include: {
+        media: {
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    };
+
+    return this.prisma.listing.update(updateArgs);
+  }
+
   async findById(id: bigint): Promise<ListingRecord | null> {
     return this.prisma.listing.findUnique({
       where: { id },
@@ -147,6 +173,26 @@ export class ListingsRepository {
         },
       },
     });
+  }
+
+  async findPublishedBatch(afterId?: bigint, take = 100): Promise<ListingRecord[]> {
+    const args: PrismaArgs = {
+      take,
+      where: { status: ListingStatus.PUBLISHED },
+      orderBy: { id: 'asc' },
+      include: {
+        media: {
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    };
+
+    if (afterId) {
+      args.cursor = { id: afterId };
+      args.skip = 1;
+    }
+
+    return this.prisma.listing.findMany(args);
   }
 
   async findMany(options: FindListingsOptions): Promise<ListingRecord[]> {
