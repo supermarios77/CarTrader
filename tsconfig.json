@@ -19,6 +19,9 @@
     },
     {
       "path": "./packages/database"
+    },
+    {
+      "path": "./apps/listings-service"
     }
   ]
 }

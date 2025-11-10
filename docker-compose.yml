@@ -50,5 +50,22 @@ services:
       postgres:
         condition: service_healthy
 
+  listings-service:
+    build:
+      context: .
+      dockerfile: apps/listings-service/Dockerfile
+    image: cartrader/listings-service:dev
+    environment:
+      NODE_ENV: development
+      LISTINGS_SERVICE_PORT: 3020
+      LISTINGS_SERVICE_GLOBAL_PREFIX: api
+      LISTINGS_SERVICE_CORS_ORIGINS: http://localhost:3000
+      DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
+    ports:
+      - "3020:3020"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres-data:

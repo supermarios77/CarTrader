@@ -22,12 +22,120 @@ model User {
   oauthAccounts    OAuthAccount[]
   otpChallenges    OtpChallenge[]
   auditLogs        UserAuditLog[]
+  listings         Listing[]
+}
+
+model Listing {
+  id              BigInt          @id @default(autoincrement())
+  seller          User            @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  sellerId        BigInt
+  title           String
+  description     String
+  priceCents      BigInt
+  currencyCode    String          @default("PKR")
+  status          ListingStatus   @default(DRAFT)
+  type            ListingType
+  year            Int?
+  make            String?
+  model           String?
+  variant         String?
+  mileageKm       Int?
+  engineCapacity  Int?
+  fuelType        FuelType?
+  transmission    TransmissionType?
+  bodyType        BodyType?
+  exteriorColor   String?
+  interiorColor   String?
+  vin             String?
+  registrationCity String?
+  ownership       String?
+  features        Json?
+  locationCity    String?
+  locationState   String?
+  locationLatitude  Decimal?      @db.Decimal(12, 8)
+  locationLongitude Decimal?      @db.Decimal(12, 8)
+  publishedAt     DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  media           ListingMedia[]
+
+  @@index([sellerId, status, createdAt])
+  @@index([status, type, createdAt])
+  @@index([locationCity, locationState])
+}
+
+model ListingMedia {
+  id          BigInt     @id @default(autoincrement())
+  listing     Listing    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId   BigInt
+  type        MediaType  @default(IMAGE)
+  url         String
+  storageKey  String
+  sortOrder   Int        @default(0)
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+
+  @@index([listingId, sortOrder])
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
   SUSPENDED
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  SOLD
+}
+
+enum ListingType {
+  CAR
+  BIKE
+  TRUCK
+  SUV
+  VAN
+  BUS
+  OTHER
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  CNG
+  HYBRID
+  ELECTRIC
+  LPG
+  OTHER
+}
+
+enum TransmissionType {
+  MANUAL
+  AUTOMATIC
+  SEMI_AUTOMATIC
+  CVT
+}
+
+enum BodyType {
+  SEDAN
+  HATCHBACK
+  SUV
+  CROSSOVER
+  COUPE
+  CONVERTIBLE
+  WAGON
+  VAN
+  PICKUP
+  OTHER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
 }
 
 model OAuthAccount {
