@@ -75,6 +75,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/axios':
         specifier: ^3.1.2
         version: 3.1.3(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.13.2)(rxjs@7.8.2)
@@ -121,6 +124,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/common':
         specifier: ^10.4.7
         version: 10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -173,6 +179,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/axios':
         specifier: ^4.0.1
         version: 4.0.1(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.13.2)(rxjs@7.8.2)
@@ -231,6 +240,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/common':
         specifier: ^10.4.7
         version: 10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -280,6 +292,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/bullmq':
         specifier: ^11.0.4
         version: 11.0.4(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.20(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.20)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.63.0)
@@ -338,6 +353,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/axios':
         specifier: ^3.1.2
         version: 3.1.3(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.13.2)(rxjs@7.8.2)
@@ -387,6 +405,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/common':
         specifier: ^10.4.7
         version: 10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -430,6 +451,9 @@ importers:
       '@cartrader/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@cartrader/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@nestjs/common':
         specifier: ^10.4.7
         version: 10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -491,6 +515,24 @@ importers:
       pino-pretty:
         specifier: ^11.2.2
         version: 11.3.0
+
+  packages/observability:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^10.4.7
+        version: 10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: ^10.4.7
+        version: 10.4.20(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@willsoto/nestjs-prometheus':
+        specifier: ^6.0.0
+        version: 6.0.2(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(prom-client@15.1.3)
+      prom-client:
+        specifier: ^15.1.0
+        version: 15.1.3
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
 
 packages:
 
@@ -1012,6 +1054,10 @@ packages:
     resolution: {integrity: sha512-6bf+HcuERzAtHZxrm6phjref54ABse39BpkDie/YO3AUFMCBrb3SK5okKSdT5n3+nDRuEEQLhQCl0RQV3s1qpA==}
     engines: {node: '>=14', yarn: ^1.22.10}
 
+  '@opentelemetry/api@1.9.0':
+    resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
+    engines: {node: '>=8.0.0'}
+
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
@@ -1357,6 +1403,12 @@ packages:
     resolution: {integrity: sha512-uk574k8IU0rOF/AjniX8qbLSGURJVUCeM5e4MIMKBFFi8weeiLrG1fyQejyLXQpRZbU/1BuQasleV/RfHC3hHg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@willsoto/nestjs-prometheus@6.0.2':
+    resolution: {integrity: sha512-ePyLZYdIrOOdlOWovzzMisIgviXqhPVzFpSMKNNhn6xajhRHeBsjAzSdpxZTc6pnjR9hw1lNAHyKnKl7lAPaVg==}
+    peerDependencies:
+      '@nestjs/common': ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
+      prom-client: ^15.0.0
+
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
     engines: {node: '>=6.5'}
@@ -1409,6 +1461,9 @@ packages:
 
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
+
+  bintrees@1.0.2:
+    resolution: {integrity: sha512-VOMgTMwjAaUG580SXn3LacVgjurrbMme7ZZNYGSSV7mmtY6QQRh0Eg3pwIcntQ77DErK1L0NxkbetjcoXzVwKw==}
 
   body-parser@1.20.3:
     resolution: {integrity: sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g==}
@@ -2241,6 +2296,10 @@ packages:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
 
+  prom-client@15.1.3:
+    resolution: {integrity: sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==}
+    engines: {node: ^16 || ^18 || >=20}
+
   proxy-addr@2.0.7:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
@@ -2411,6 +2470,9 @@ packages:
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
+
+  tdigest@0.1.2:
+    resolution: {integrity: sha512-+G0LLgjjo9BZX2MfdvPfH+MKLCrxlXSYec5DaPYP1fe6Iyhf0/fSmJ0bFiZ1F8BT6cGXl2LpltQptzjXKWEkKA==}
 
   thread-stream@3.1.0:
     resolution: {integrity: sha512-OqyPZ9u96VohAyMfJykzmivOrY2wfMSf3C5TtFJVgN+Hm6aj+voFhlK+kZEIv2FBh1X6Xp3DlnCOfEQ3B2J86A==}
@@ -3390,6 +3452,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@opentelemetry/api@1.9.0': {}
+
   '@pinojs/redact@0.4.0': {}
 
   '@prisma/client@6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)':
@@ -3898,6 +3962,11 @@ snapshots:
       '@typescript-eslint/types': 8.46.3
       eslint-visitor-keys: 4.2.1
 
+  '@willsoto/nestjs-prometheus@6.0.2(@nestjs/common@10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(prom-client@15.1.3)':
+    dependencies:
+      '@nestjs/common': 10.4.20(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      prom-client: 15.1.3
+
   abort-controller@3.0.0:
     dependencies:
       event-target-shim: 5.0.1
@@ -3947,6 +4016,8 @@ snapshots:
   balanced-match@1.0.2: {}
 
   base64-js@1.5.1: {}
+
+  bintrees@1.0.2: {}
 
   body-parser@1.20.3:
     dependencies:
@@ -4838,6 +4909,11 @@ snapshots:
 
   process@0.11.10: {}
 
+  prom-client@15.1.3:
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      tdigest: 0.1.2
+
   proxy-addr@2.0.7:
     dependencies:
       forwarded: 0.2.0
@@ -5016,6 +5092,10 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  tdigest@0.1.2:
+    dependencies:
+      bintrees: 1.0.2
 
   thread-stream@3.1.0:
     dependencies:

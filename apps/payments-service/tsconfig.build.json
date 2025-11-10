@@ -5,8 +5,17 @@
     "noEmit": false
   },
   "references": [
-    { "path": "../../packages/config" },
-    { "path": "../../packages/logger" },
-    { "path": "../../packages/database" }
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/logger"
+    },
+    {
+      "path": "../../packages/database"
+    },
+    {
+      "path": "../../packages/observability"
+    }
   ]
 }

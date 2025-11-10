@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { MetricsModule } from '@cartrader/observability';
 import { HealthModule } from './health/health.module';
 import { ListingsModule } from './modules/listings/listings.module';
 import { MediaModule } from './modules/media/media.module';
@@ -8,6 +9,6 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { SearchModule } from './modules/search/search.module';
 
 @Module({
-  imports: [HealthModule, ListingsModule, MediaModule, NotificationsModule, SearchModule, OrdersModule],
+  imports: [MetricsModule, HealthModule, ListingsModule, MediaModule, NotificationsModule, SearchModule, OrdersModule],
 })
 export class AppModule {}

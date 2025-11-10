@@ -7,11 +7,26 @@
     "declarationMap": true,
     "composite": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules", "**/*.spec.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/*.spec.ts"
+  ],
   "references": [
-    { "path": "../../packages/config" },
-    { "path": "../../packages/logger" },
-    { "path": "../../packages/database" }
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/logger"
+    },
+    {
+      "path": "../../packages/database"
+    },
+    {
+      "path": "../../packages/observability"
+    }
   ]
 }

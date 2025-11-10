@@ -37,6 +37,9 @@
     },
     {
       "path": "./apps/orders-service"
+    },
+    {
+      "path": "./packages/observability"
     }
   ]
 }
