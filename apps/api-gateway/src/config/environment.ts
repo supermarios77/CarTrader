@@ -7,6 +7,7 @@ const apiGatewayEnvSchema = baseEnvSchema.extend({
   API_GATEWAY_CORS_ORIGINS: z.string().default('*'),
   LISTINGS_SERVICE_BASE_URL: z.string().url(),
   MEDIA_SERVICE_BASE_URL: z.string().url(),
+  NOTIFICATIONS_SERVICE_BASE_URL: z.string().url(),
 });
 
 export type ApiGatewayEnv = z.infer<typeof apiGatewayEnvSchema>;

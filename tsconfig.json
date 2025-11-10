@@ -25,6 +25,9 @@
     },
     {
       "path": "./apps/media-service"
+    },
+    {
+      "path": "./apps/notifications-service"
     }
   ]
 }

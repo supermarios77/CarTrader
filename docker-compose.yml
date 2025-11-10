@@ -30,6 +30,7 @@ services:
       API_GATEWAY_CORS_ORIGINS: http://localhost:3000
       LISTINGS_SERVICE_BASE_URL: http://listings-service:3020/api
       MEDIA_SERVICE_BASE_URL: http://media-service:3030/api
+      NOTIFICATIONS_SERVICE_BASE_URL: http://notifications-service:3040/api
     ports:
       - "3000:3000"
     depends_on:
@@ -98,6 +99,34 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  notifications-service:
+    build:
+      context: .
+      dockerfile: apps/notifications-service/Dockerfile
+    image: cartrader/notifications-service:dev
+    environment:
+      NODE_ENV: development
+      NOTIFICATIONS_SERVICE_PORT: 3040
+      NOTIFICATIONS_SERVICE_GLOBAL_PREFIX: api
+      NOTIFICATIONS_SERVICE_CORS_ORIGINS: http://localhost:3000
+      DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
+      REDIS_URL: redis://redis:6379/0
+      NOTIFICATIONS_QUEUE_NAME: notifications
+      EMAIL_FROM_ADDRESS: no-reply@cartrader.local
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: cartrader
+      SMTP_PASSWORD: cartrader
+    ports:
+      - "3040:3040"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   minio:
     image: minio/minio:RELEASE.2024-09-22T00-33-43Z
@@ -128,6 +157,24 @@ services:
       mc mb --ignore-existing local/cartrader-media &&
       mc anonymous set download local/cartrader-media
       "
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: cartrader-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: cartrader-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   postgres-data:

@@ -223,3 +223,47 @@ model UserAuditLog {
 
   @@index([userId, createdAt])
 }
+
+model NotificationTemplate {
+  id          BigInt              @id @default(autoincrement())
+  key         String              @unique
+  channel     NotificationChannel
+  subject     String?
+  body        String
+  description String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  notifications Notification[]
+}
+
+model Notification {
+  id            BigInt               @id @default(autoincrement())
+  template      NotificationTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  templateId    BigInt?
+  channel       NotificationChannel
+  recipient     String
+  subject       String?
+  body          String?
+  payload       Json?
+  status        NotificationStatus   @default(PENDING)
+  error         String?
+  attemptCount  Int                  @default(0)
+  maxAttempts   Int                  @default(3)
+  scheduledFor  DateTime?            @default(now())
+  sentAt        DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  QUEUED
+  DELIVERED
+  FAILED
+}
