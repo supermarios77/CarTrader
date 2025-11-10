@@ -28,6 +28,9 @@
     },
     {
       "path": "./apps/notifications-service"
+    },
+    {
+      "path": "./apps/search-service"
     }
   ]
 }

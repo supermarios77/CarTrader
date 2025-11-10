@@ -8,6 +8,7 @@ const apiGatewayEnvSchema = baseEnvSchema.extend({
   LISTINGS_SERVICE_BASE_URL: z.string().url(),
   MEDIA_SERVICE_BASE_URL: z.string().url(),
   NOTIFICATIONS_SERVICE_BASE_URL: z.string().url(),
+  SEARCH_SERVICE_BASE_URL: z.string().url(),
 });
 
 export type ApiGatewayEnv = z.infer<typeof apiGatewayEnvSchema>;
