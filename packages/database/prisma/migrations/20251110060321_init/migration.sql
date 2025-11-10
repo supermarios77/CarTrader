@@ -7,7 +7,7 @@ CREATE TYPE "OtpPurpose" AS ENUM ('SIGN_IN', 'SIGN_UP', 'PASSWORD_RESET', 'MFA')
 -- CreateTable
 CREATE TABLE "User" (
     "id" BIGSERIAL NOT NULL,
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "phoneE164" TEXT,
     "passwordHash" TEXT,
     "salt" TEXT,

@@ -10,7 +10,7 @@ generator client {
 
 model User {
   id               BigInt     @id @default(autoincrement())
-  email            String     @unique
+  email            String?    @unique
   phoneE164        String?    @unique
   passwordHash     String?
   salt             String?

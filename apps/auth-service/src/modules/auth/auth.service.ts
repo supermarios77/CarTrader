@@ -9,6 +9,7 @@ import { TokensService, GeneratedTokens } from '../tokens/tokens.service';
 
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 export interface VerifyOtpResult {
   user: PublicUser;
@@ -113,7 +114,29 @@ export class AuthService {
     };
   }
 
+  async refreshTokens(dto: RefreshTokenDto): Promise<GeneratedTokens> {
+    const payload = this.tokensService.verifyRefreshToken<{ sub?: string }>(dto.refreshToken);
+    if (!payload.sub) {
+      throw new BadRequestException('Invalid refresh token payload.');
+    }
+
+    let userId: bigint;
+    try {
+      userId = BigInt(payload.sub);
+    } catch {
+      throw new BadRequestException('Invalid refresh token subject.');
+    }
+
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new BadRequestException('Account associated with this token no longer exists.');
+    }
+
+    return this.tokensService.generateTokens({ sub: user.id.toString() });
+  }
+
   private resolveContact(email?: string, phone?: string): { contact: string; contactType: ContactType } {
+
     const normalizedEmail = email?.trim().toLowerCase();
     const normalizedPhone = phone?.trim();
 
