@@ -1,23 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { randomBytes } from 'crypto';
 
 import { createChildLogger } from '@cartrader/logger';
 
 import { UsersService, PublicUser } from '../users/users.service';
 import type { UserRecord } from '../users/users.service';
 import { OtpPurpose, OtpService } from '../otp/otp.service';
+import { TokensService, GeneratedTokens } from '../tokens/tokens.service';
 
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export interface VerifyOtpResult {
   user: PublicUser;
-  tokens: AuthTokens;
+  tokens: GeneratedTokens;
 }
 
 type ContactType = 'EMAIL' | 'PHONE';
@@ -26,7 +21,11 @@ type ContactType = 'EMAIL' | 'PHONE';
 export class AuthService {
   private readonly logger = createChildLogger({ context: AuthService.name });
 
-  constructor(private readonly usersService: UsersService, private readonly otpService: OtpService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly otpService: OtpService,
+    private readonly tokensService: TokensService,
+  ) {}
 
   async requestOtp(dto: RequestOtpDto): Promise<{ expiresAt: string }> {
     const { contact, contactType } = this.resolveContact(dto.email, dto.phone);
@@ -106,7 +105,7 @@ export class AuthService {
       'OTP verification succeeded',
     );
 
-    const tokens = this.generateTokens(user.id);
+    const tokens = this.tokensService.generateTokens({ sub: user.id.toString() });
 
     return {
       user: this.usersService.toPublicUser(user),
@@ -133,11 +132,4 @@ export class AuthService {
     return { contact: normalizedPhone as string, contactType: 'PHONE' };
   }
 
-  private generateTokens(userId: bigint): AuthTokens {
-    const subject = userId.toString();
-    return {
-      accessToken: `${subject}.${randomBytes(32).toString('hex')}`,
-      refreshToken: `${subject}.${randomBytes(48).toString('hex')}`,
-    };
-  }
 }
