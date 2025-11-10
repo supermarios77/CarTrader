@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { ListingStatus } from '@prisma/client';
+import { ListingModerationAction, ListingStatus } from '@prisma/client';
 
 import { createChildLogger } from '@cartrader/logger';
 
@@ -62,10 +62,30 @@ export interface PaginatedListings {
   nextCursor: string | null;
 }
 
+export interface ListingModerationLogEntry {
+  id: string;
+  action: ListingModerationAction;
+  reason: string | null;
+  actorId: string | null;
+  createdAt: string;
+}
+
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
 const toBigInt = (value: string, field: string): bigint => {
+  try {
+    return BigInt(value);
+  } catch {
+    throw new BadRequestException(`${field} is not a valid identifier`);
+  }
+};
+
+const toOptionalBigInt = (value: string | undefined, field: string): bigint | null => {
+  if (!value) {
+    return null;
+  }
+
   try {
     return BigInt(value);
   } catch {
@@ -256,6 +276,119 @@ export class ListingsService {
     return toPublicListing(record);
   }
 
+  async submitListingForReview(
+    id: string,
+    actorId?: string,
+    reason?: string,
+  ): Promise<PublicListing> {
+    const { listingId, record } = await this.getListingRecord(id);
+    const currentStatus = record.status as ListingStatus;
+
+    if (currentStatus === ListingStatus.PENDING_REVIEW) {
+      return toPublicListing(record);
+    }
+
+    if (
+      currentStatus !== ListingStatus.DRAFT &&
+      currentStatus !== ListingStatus.REJECTED &&
+      currentStatus !== ListingStatus.SUSPENDED
+    ) {
+      throw new BadRequestException('Listing cannot be submitted for review in its current state.');
+    }
+
+    const updated = await this.listingsRepository.updateListingStatus(
+      listingId,
+      ListingStatus.PENDING_REVIEW,
+    );
+
+    await this.recordModerationAction(updated.id, ListingModerationAction.SUBMITTED, reason, actorId);
+    await this.searchSyncService.syncListing(updated);
+
+    return toPublicListing(updated);
+  }
+
+  async approveListing(id: string, moderatorId?: string, reason?: string): Promise<PublicListing> {
+    const { listingId, record } = await this.getListingRecord(id);
+    const currentStatus = record.status as ListingStatus;
+
+    if (currentStatus !== ListingStatus.PENDING_REVIEW && currentStatus !== ListingStatus.REJECTED) {
+      throw new BadRequestException('Listing must be pending review or rejected to approve.');
+    }
+
+    const updated = await this.listingsRepository.updateListingStatus(
+      listingId,
+      ListingStatus.PUBLISHED,
+    );
+
+    await this.recordModerationAction(updated.id, ListingModerationAction.APPROVED, reason, moderatorId);
+    await this.searchSyncService.syncListing(updated);
+
+    return toPublicListing(updated);
+  }
+
+  async rejectListing(id: string, moderatorId?: string, reason?: string): Promise<PublicListing> {
+    const { listingId, record } = await this.getListingRecord(id);
+    const currentStatus = record.status as ListingStatus;
+
+    if (currentStatus !== ListingStatus.PENDING_REVIEW) {
+      throw new BadRequestException('Only listings pending review can be rejected.');
+    }
+
+    const updated = await this.listingsRepository.updateListingStatus(
+      listingId,
+      ListingStatus.REJECTED,
+    );
+
+    await this.recordModerationAction(updated.id, ListingModerationAction.REJECTED, reason, moderatorId);
+    await this.searchSyncService.syncListing(updated);
+
+    return toPublicListing(updated);
+  }
+
+  async suspendListing(id: string, moderatorId?: string, reason?: string): Promise<PublicListing> {
+    const { listingId, record } = await this.getListingRecord(id);
+    const currentStatus = record.status as ListingStatus;
+
+    if (currentStatus !== ListingStatus.PUBLISHED) {
+      throw new BadRequestException('Only published listings can be suspended.');
+    }
+
+    const updated = await this.listingsRepository.updateListingStatus(
+      listingId,
+      ListingStatus.SUSPENDED,
+    );
+
+    await this.recordModerationAction(updated.id, ListingModerationAction.SUSPENDED, reason, moderatorId);
+    await this.searchSyncService.syncListing(updated);
+
+    return toPublicListing(updated);
+  }
+
+  async reinstateListing(id: string, moderatorId?: string, reason?: string): Promise<PublicListing> {
+    const { listingId, record } = await this.getListingRecord(id);
+    const currentStatus = record.status as ListingStatus;
+
+    if (currentStatus !== ListingStatus.SUSPENDED && currentStatus !== ListingStatus.REJECTED) {
+      throw new BadRequestException('Only suspended or rejected listings can be reinstated.');
+    }
+
+    const updated = await this.listingsRepository.updateListingStatus(
+      listingId,
+      ListingStatus.PUBLISHED,
+    );
+
+    await this.recordModerationAction(updated.id, ListingModerationAction.REINSTATED, reason, moderatorId);
+    await this.searchSyncService.syncListing(updated);
+
+    return toPublicListing(updated);
+  }
+
+  async getModerationHistory(id: string, limit = 20): Promise<ListingModerationLogEntry[]> {
+    const listingId = toBigInt(id, 'listingId');
+    const logs = await this.listingsRepository.findModerationLogs(listingId, limit);
+    return logs.map(this.toModerationLog);
+  }
+
   async updateListingStatus(id: string, status: ListingStatus): Promise<PublicListing> {
     const listingId = toBigInt(id, 'listingId');
     const record = await this.listingsRepository.findById(listingId);
@@ -321,6 +454,47 @@ export class ListingsService {
       nextCursor,
     };
   }
+
+  private async getListingRecord(id: string): Promise<{ listingId: bigint; record: ListingRecord }> {
+    const listingId = toBigInt(id, 'listingId');
+    const record = await this.listingsRepository.findById(listingId);
+
+    if (!record) {
+      throw new NotFoundException('Listing not found');
+    }
+
+    return { listingId, record };
+  }
+
+  private async recordModerationAction(
+    listingId: bigint,
+    action: ListingModerationAction,
+    reason?: string,
+    actorId?: string,
+  ): Promise<void> {
+    const actorBigInt = toOptionalBigInt(actorId, 'actorId');
+
+    await this.listingsRepository.createModerationLog({
+      listingId,
+      action,
+      reason: reason ?? null,
+      actorId: actorBigInt,
+    });
+  }
+
+  private readonly toModerationLog = (log: {
+    id: bigint;
+    action: ListingModerationAction;
+    reason: string | null;
+    actorId: bigint | null;
+    createdAt: Date;
+  }): ListingModerationLogEntry => ({
+    id: log.id.toString(),
+    action: log.action,
+    reason: log.reason,
+    actorId: log.actorId ? log.actorId.toString() : null,
+    createdAt: log.createdAt.toISOString(),
+  });
 }
 
 const normalizeMediaInput = (item: ListingMediaInputDto, index: number) => ({

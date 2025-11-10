@@ -7,6 +7,9 @@ import { createChildLogger } from '@cartrader/logger';
 import { loadApiGatewayConfig } from '../../config/environment';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { ListListingsQueryDto } from './dto/list-listings.dto';
+import { ListModerationLogsQueryDto } from './dto/list-moderation-logs.dto';
+import { ModerateListingDto } from './dto/moderate-listing.dto';
+import { SubmitListingDto } from './dto/submit-listing.dto';
 
 export interface PublicListingMedia {
   id: string;
@@ -61,6 +64,13 @@ export interface PaginatedListings {
   nextCursor: string | null;
 }
 
+export interface ListingModerationLogEntry {
+  id: string;
+  action: string;
+  reason: string | null;
+  actorId: string | null;
+  createdAt: string;
+}
 type AxiosErrorShape = {
   isAxiosError?: boolean;
   response?: {
@@ -118,6 +128,64 @@ export class ListingsService {
         }),
       );
 
+      return response.data;
+    } catch (error) {
+      throw this.toHttpException(error);
+    }
+  }
+
+  async submitListing(id: string, dto: SubmitListingDto): Promise<PublicListing> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<PublicListing>(`${this.baseUrl}/v1/listings/${id}/submit`, dto),
+      );
+
+      return response.data;
+    } catch (error) {
+      throw this.toHttpException(error);
+    }
+  }
+
+  async approveListing(id: string, dto: ModerateListingDto): Promise<PublicListing> {
+    return this.moderateListing(`${this.baseUrl}/v1/admin/listings/${id}/approve`, dto);
+  }
+
+  async rejectListing(id: string, dto: ModerateListingDto): Promise<PublicListing> {
+    return this.moderateListing(`${this.baseUrl}/v1/admin/listings/${id}/reject`, dto);
+  }
+
+  async suspendListing(id: string, dto: ModerateListingDto): Promise<PublicListing> {
+    return this.moderateListing(`${this.baseUrl}/v1/admin/listings/${id}/suspend`, dto);
+  }
+
+  async reinstateListing(id: string, dto: ModerateListingDto): Promise<PublicListing> {
+    return this.moderateListing(`${this.baseUrl}/v1/admin/listings/${id}/reinstate`, dto);
+  }
+
+  async getModerationLogs(
+    id: string,
+    query: ListModerationLogsQueryDto,
+  ): Promise<ListingModerationLogEntry[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<ListingModerationLogEntry[]>(
+          `${this.baseUrl}/v1/admin/listings/${id}/moderation/logs`,
+          { params: query },
+        ),
+      );
+
+      return response.data;
+    } catch (error) {
+      throw this.toHttpException(error);
+    }
+  }
+
+  private async moderateListing(
+    url: string,
+    dto: ModerateListingDto,
+  ): Promise<PublicListing> {
+    try {
+      const response = await firstValueFrom(this.http.post<PublicListing>(url, dto));
       return response.data;
     } catch (error) {
       throw this.toHttpException(error);

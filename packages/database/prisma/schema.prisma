@@ -25,6 +25,7 @@ model User {
   listings         Listing[]
   mediaAssets      MediaAsset[]
   orders          Order[]
+  listingModerationActions ListingModerationLog[]
 }
 
 model Listing {
@@ -62,6 +63,7 @@ model Listing {
   updatedAt       DateTime        @updatedAt
   media           ListingMedia[]
   orders         Order[]
+  moderationLogs ListingModerationLog[]
 
   @@index([sellerId, status, createdAt])
   @@index([status, type, createdAt])
@@ -84,6 +86,28 @@ model ListingMedia {
   @@index([listingId, sortOrder])
 }
 
+model ListingModerationLog {
+  id        BigInt                   @id @default(autoincrement())
+  listing   Listing                  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId BigInt
+  action    ListingModerationAction
+  reason    String?
+  metadata  Json?
+  actor     User?                    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorId   BigInt?
+  createdAt DateTime                 @default(now())
+
+  @@index([listingId, createdAt])
+}
+
+enum ListingModerationAction {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  SUSPENDED
+  REINSTATED
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE
@@ -92,7 +116,10 @@ enum UserStatus {
 
 enum ListingStatus {
   DRAFT
+  PENDING_REVIEW
   PUBLISHED
+  REJECTED
+  SUSPENDED
   ARCHIVED
   SOLD
 }

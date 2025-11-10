@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { ListingStatus } from '@prisma/client';
+import { ListingModerationAction, ListingStatus } from '@prisma/client';
 
 import { DatabaseService } from '../database/database.service';
 
@@ -50,6 +50,16 @@ export interface ListingRecord {
   media: ListingMediaRecord[];
 }
 
+export interface ListingModerationLogRecord {
+  id: bigint;
+  listingId: bigint;
+  action: ListingModerationAction;
+  reason: string | null;
+  metadata: Record<string, unknown> | null;
+  actorId: bigint | null;
+  createdAt: Date;
+}
+
 type PrismaArgs = Record<string, unknown>;
 
 type PrismaListingDelegate = {
@@ -59,8 +69,14 @@ type PrismaListingDelegate = {
   update(args: PrismaArgs): Promise<ListingRecord>;
 };
 
+type PrismaListingModerationDelegate = {
+  create(args: PrismaArgs): Promise<ListingModerationLogRecord>;
+  findMany(args: PrismaArgs): Promise<ListingModerationLogRecord[]>;
+};
+
 type PrismaClientLike = {
   listing: PrismaListingDelegate;
+  listingModerationLog: PrismaListingModerationDelegate;
 };
 
 export interface CreateListingInput {
@@ -147,7 +163,12 @@ export class ListingsRepository {
 
     if (status === ListingStatus.PUBLISHED) {
       data.publishedAt = new Date();
-    } else if (status === ListingStatus.DRAFT) {
+    } else if (
+      status === ListingStatus.DRAFT ||
+      status === ListingStatus.PENDING_REVIEW ||
+      status === ListingStatus.REJECTED ||
+      status === ListingStatus.SUSPENDED
+    ) {
       data.publishedAt = null;
     }
 
@@ -193,6 +214,34 @@ export class ListingsRepository {
     }
 
     return this.prisma.listing.findMany(args);
+  }
+
+  async createModerationLog(params: {
+    listingId: bigint;
+    action: ListingModerationAction;
+    reason?: string | null;
+    metadata?: Record<string, unknown> | null;
+    actorId?: bigint | null;
+  }): Promise<ListingModerationLogRecord> {
+    const { listingId, action, reason = null, metadata = null, actorId = null } = params;
+
+    return this.prisma.listingModerationLog.create({
+      data: {
+        listingId,
+        action,
+        reason,
+        metadata,
+        actorId,
+      },
+    });
+  }
+
+  async findModerationLogs(listingId: bigint, take = 20): Promise<ListingModerationLogRecord[]> {
+    return this.prisma.listingModerationLog.findMany({
+      where: { listingId },
+      take,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findMany(options: FindListingsOptions): Promise<ListingRecord[]> {
