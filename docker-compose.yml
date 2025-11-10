@@ -26,7 +26,9 @@ services:
     environment:
       NODE_ENV: development
       API_GATEWAY_PORT: 3000
-      DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
+      API_GATEWAY_GLOBAL_PREFIX: api
+      API_GATEWAY_CORS_ORIGINS: http://localhost:3000
+      LISTINGS_SERVICE_BASE_URL: http://listings-service:3020/api
     ports:
       - "3000:3000"
     depends_on:
