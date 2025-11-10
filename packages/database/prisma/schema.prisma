@@ -24,6 +24,7 @@ model User {
   auditLogs        UserAuditLog[]
   listings         Listing[]
   mediaAssets      MediaAsset[]
+  orders          Order[]
 }
 
 model Listing {
@@ -60,6 +61,7 @@ model Listing {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   media           ListingMedia[]
+  orders         Order[]
 
   @@index([sellerId, status, createdAt])
   @@index([status, type, createdAt])
@@ -266,4 +268,34 @@ enum NotificationStatus {
   QUEUED
   DELIVERED
   FAILED
+}
+
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PROCESSING
+  PAID
+  CANCELLED
+  REFUND_PENDING
+  REFUNDED
+}
+
+model Order {
+  id             BigInt    @id @default(autoincrement())
+  listing        Listing   @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  listingId      BigInt
+  buyer          User?     @relation(fields: [buyerId], references: [id], onDelete: SetNull)
+  buyerId        BigInt?
+  paymentIntentId String   @unique
+  amountCents    BigInt
+  currencyCode   String
+  status         OrderStatus @default(PENDING_PAYMENT)
+  paymentStatus  String
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([status, updatedAt])
 }
