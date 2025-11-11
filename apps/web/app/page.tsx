@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { HeroSearch, type SearchTabConfig } from "@/components/home/hero-search"
+import { HeroShowcase } from "@/components/home/hero-showcase"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -253,54 +254,56 @@ const editorial = [
 export default function Home() {
   return (
     <div className="flex flex-col gap-20 pb-20">
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-50">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.18),_transparent_55%)]" />
-        <div className="container relative grid gap-12 py-20 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="space-y-8">
-            <div className="flex items-center gap-3 text-sm text-slate-300">
+      <section className="relative overflow-hidden bg-slate-950 text-slate-50">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#0f1729] to-slate-950" />
+          <div className="absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(125%_90%_at_50%_-20%,rgba(94,234,212,0.18),transparent_65%)]" />
+          <div className="absolute left-[18%] top-1/4 size-[520px] rounded-full bg-sky-400/10 blur-3xl" />
+        </div>
+        <div className="container relative grid gap-16 pb-28 pt-24 lg:grid-cols-[1.1fr_minmax(0,0.9fr)] lg:items-center">
+          <div className="space-y-10">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200/80">
               <Badge
                 variant="outline"
-                className="border-emerald-400/40 bg-emerald-400/10 text-emerald-200"
+                className="border-emerald-400/40 bg-emerald-400/15 text-emerald-100"
               >
                 Marketplace preview
               </Badge>
-              <span>Launch-ready backend • Modern shadcn UI</span>
+              <span>Backend is production-ready — the UI is catching up fast.</span>
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-              Discover verified cars, ready when you are.
-            </h1>
-            <p className="max-w-xl text-lg text-slate-200/80">
-              {siteConfig.description} With inspections, notifications, payments, and runbooks already wired, we’re wrapping the same confidence around a modern React experience.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Card className="border-white/10 bg-white/5 text-slate-100 backdrop-blur">
-                <CardContent className="space-y-1 p-4">
-                  <p className="text-2xl font-semibold">8.4k+</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-300/80">
-                    Active listings supported
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border-white/10 bg-white/5 text-slate-100 backdrop-blur">
-                <CardContent className="space-y-1 p-4">
-                  <p className="text-2xl font-semibold">3k+</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-300/80">
-                    Verified sellers onboard
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border-white/10 bg-white/5 text-slate-100 backdrop-blur">
-                <CardContent className="space-y-1 p-4">
-                  <p className="text-2xl font-semibold">24/7</p>
-                  <p className="text-xs uppercase tracking-wide text-slate-300/80">
-                    Ops-ready observability
-                  </p>
-                </CardContent>
-              </Card>
+            <div className="space-y-6">
+              <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-[3.75rem]">
+                A calmer, smarter way to shop verified vehicles across Pakistan.
+              </h1>
+              <p className="max-w-2xl text-lg text-slate-200/80">
+                {siteConfig.description} We have inspections, moderation, payments, and observability already wired — now we’re translating that maturity into a modern buying experience inspired by PakWheels but tuned for today.
+              </p>
             </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { label: "Listings powered", value: "8.4k+", description: "Synced across search, media, orders." },
+                { label: "Verified sellers", value: "3k+", description: "Automated KYC & fraud checks live." },
+                { label: "Telemetry uptime", value: "99.9%", description: "Grafana, Loki, Tempo already shipping." },
+              ].map((stat) => (
+                <Card
+                  key={stat.label}
+                  className="border-white/10 bg-white/[0.07] text-slate-100 shadow-lg backdrop-blur"
+                >
+                  <CardContent className="space-y-2 p-5">
+                    <p className="text-xs uppercase tracking-wide text-slate-200/70">
+                      {stat.label}
+                    </p>
+                    <p className="text-3xl font-semibold">{stat.value}</p>
+                    <p className="text-xs text-slate-200/65">{stat.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <HeroSearch tabs={searchTabs} />
           </div>
-          <HeroSearch tabs={searchTabs} />
+          <HeroShowcase />
         </div>
+        <div className="relative h-20 w-full bg-gradient-to-b from-transparent to-background" />
       </section>
 
       <section className="container grid gap-6 md:grid-cols-3">
