@@ -14,133 +14,13 @@ import {
   SquareKanban,
 } from "lucide-react"
 
-import { HeroSearch, type SearchTabConfig } from "@/components/home/hero-search"
-import { HeroShowcase } from "@/components/home/hero-showcase"
+import { HeroSearch } from "@/components/home/hero-search"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { siteConfig } from "@/config/site"
-
-const searchTabs: SearchTabConfig[] = [
-  {
-    id: "used-cars",
-    label: "Used cars",
-    description: "Browse inspected and verified listings from across Pakistan.",
-    ctaLabel: "Search used cars",
-    fields: [
-      {
-        id: "keywords",
-        type: "input",
-        label: "Keywords",
-        placeholder: "e.g. Civic, Corolla, Alto",
-      },
-      {
-        id: "city",
-        type: "select",
-        label: "City",
-        placeholder: "Any city",
-        options: ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Peshawar"],
-      },
-      {
-        id: "make",
-        type: "select",
-        label: "Make",
-        placeholder: "All makes",
-        options: [
-          "Toyota",
-          "Honda",
-          "Suzuki",
-          "Hyundai",
-          "Kia",
-          "Changan",
-        ],
-      },
-      {
-        id: "budget",
-        type: "slider",
-        label: "Budget (PKR lacs)",
-        min: 5,
-        max: 300,
-        step: 5,
-        unit: "PKR ",
-      },
-    ],
-  },
-  {
-    id: "new-cars",
-    label: "New cars",
-    description:
-      "Compare pricing, specs, and delivery timelines for the latest models.",
-    ctaLabel: "Explore new cars",
-    fields: [
-      {
-        id: "brand",
-        type: "select",
-        label: "Brand",
-        placeholder: "Select brand",
-        options: ["Toyota", "Honda", "Hyundai", "Kia", "MG", "Peugeot"],
-      },
-      {
-        id: "bodyType",
-        type: "select",
-        label: "Body type",
-        placeholder: "Any body type",
-        options: ["Sedan", "Hatchback", "SUV", "Crossover", "MPV"],
-      },
-      {
-        id: "delivery",
-        type: "select",
-        label: "Delivery timeline",
-        placeholder: "Under 30 days",
-        options: ["Immediate", "Within 30 days", "45+ days"],
-      },
-      {
-        id: "location",
-        type: "select",
-        label: "Dealer city",
-        placeholder: "All Pakistan",
-        options: ["Karachi", "Lahore", "Islamabad", "Multan", "Faisalabad"],
-      },
-    ],
-  },
-  {
-    id: "bikes",
-    label: "Bikes",
-    description: "Find reliable scooties and bikes ready for everyday rides.",
-    ctaLabel: "Search bikes",
-    fields: [
-      {
-        id: "bikeKeywords",
-        type: "input",
-        label: "Keywords",
-        placeholder: "e.g. CG 125, GR 150",
-      },
-      {
-        id: "bikeCity",
-        type: "select",
-        label: "City",
-        placeholder: "Any city",
-        options: ["Karachi", "Lahore", "Islamabad", "Gujranwala", "Quetta"],
-      },
-      {
-        id: "engine",
-        type: "select",
-        label: "Engine capacity",
-        placeholder: "All engines",
-        options: ["70cc", "100cc", "125cc", "150cc", "200cc+"],
-      },
-      {
-        id: "condition",
-        type: "select",
-        label: "Condition",
-        placeholder: "Both",
-        options: ["New", "Used", "Showroom", "Certified"],
-      },
-    ],
-  },
-]
 
 const quickActions = [
   {
@@ -255,7 +135,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-20 pb-20">
       <section className="bg-gradient-to-b from-background via-background to-muted/40">
-        <div className="container grid gap-12 pb-16 pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-center">
+        <div className="container space-y-10 pb-16 pt-16">
           <div className="flex flex-col gap-8">
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <Badge variant="outline" className="border-primary/40 text-primary">
@@ -285,9 +165,8 @@ export default function Home() {
               <Stat label="Verified sellers" value="3,021" />
               <Stat label="Average response" value="9 min" />
             </div>
-            <HeroSearch tabs={searchTabs} />
           </div>
-          <HeroShowcase />
+          <HeroSearch />
         </div>
       </section>
 
