@@ -254,56 +254,41 @@ const editorial = [
 export default function Home() {
   return (
     <div className="flex flex-col gap-20 pb-20">
-      <section className="relative overflow-hidden bg-slate-950 text-slate-50">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-[#0f1729] to-slate-950" />
-          <div className="absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(125%_90%_at_50%_-20%,rgba(94,234,212,0.18),transparent_65%)]" />
-          <div className="absolute left-[18%] top-1/4 size-[520px] rounded-full bg-sky-400/10 blur-3xl" />
-        </div>
-        <div className="container relative grid gap-16 pb-28 pt-24 lg:grid-cols-[1.1fr_minmax(0,0.9fr)] lg:items-center">
-          <div className="space-y-10">
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200/80">
-              <Badge
-                variant="outline"
-                className="border-emerald-400/40 bg-emerald-400/15 text-emerald-100"
-              >
+      <section className="bg-gradient-to-b from-background via-background to-muted/40">
+        <div className="container grid gap-12 pb-16 pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-center">
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <Badge variant="outline" className="border-primary/40 text-primary">
                 Marketplace preview
               </Badge>
               <span>Backend is production-ready — the UI is catching up fast.</span>
             </div>
-            <div className="space-y-6">
-              <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-[3.75rem]">
-                A calmer, smarter way to shop verified vehicles across Pakistan.
+            <div className="space-y-4">
+              <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+                Buy and sell with confidence across Pakistan.
               </h1>
-              <p className="max-w-2xl text-lg text-slate-200/80">
-                {siteConfig.description} We have inspections, moderation, payments, and observability already wired — now we’re translating that maturity into a modern buying experience inspired by PakWheels but tuned for today.
+              <p className="max-w-2xl text-lg text-muted-foreground">
+                {siteConfig.description} We already handle inspections, moderation, payments, and observability.
+                This frontend is about surfacing that maturity in a clean, modern flow.
               </p>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                { label: "Listings powered", value: "8.4k+", description: "Synced across search, media, orders." },
-                { label: "Verified sellers", value: "3k+", description: "Automated KYC & fraud checks live." },
-                { label: "Telemetry uptime", value: "99.9%", description: "Grafana, Loki, Tempo already shipping." },
-              ].map((stat) => (
-                <Card
-                  key={stat.label}
-                  className="border-white/10 bg-white/[0.07] text-slate-100 shadow-lg backdrop-blur"
-                >
-                  <CardContent className="space-y-2 p-5">
-                    <p className="text-xs uppercase tracking-wide text-slate-200/70">
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl font-semibold">{stat.value}</p>
-                    <p className="text-xs text-slate-200/65">{stat.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex flex-wrap items-center gap-3">
+              <Button size="lg" asChild>
+                <Link href="/listings">Browse listings</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/sell">List your vehicle</Link>
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
+              <Stat label="Active listings" value="8,432" />
+              <Stat label="Verified sellers" value="3,021" />
+              <Stat label="Average response" value="9 min" />
             </div>
             <HeroSearch tabs={searchTabs} />
           </div>
           <HeroShowcase />
         </div>
-        <div className="relative h-20 w-full bg-gradient-to-b from-transparent to-background" />
       </section>
 
       <section className="container grid gap-6 md:grid-cols-3">
@@ -546,6 +531,15 @@ export default function Home() {
           </CardContent>
         </Card>
       </section>
+    </div>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-base font-semibold text-foreground">{value}</p>
+      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>
   )
 }
