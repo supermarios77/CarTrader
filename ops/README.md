@@ -4,7 +4,8 @@ This directory contains runbooks, infrastructure manifests, and tooling to opera
 
 ## Quick Links
 
-- [Observability stack](./observability/README.md) – local Grafana/Loki/Tempo/OTel Collector configuration.
+- [Observability configs](./observability/README.md) – local Grafana/Loki/Tempo/OTel Collector definitions.
+- [Observability runbook](../docs/operations/observability.md) – how to use the telemetry stack day-to-day.
 - [Deployment runbook](../docs/operations/deployment.md) – CI/CD, release flow, environment promotion.
 - [Incident response](../docs/operations/incident-response.md) – escalation matrix, rollback steps.
 - [Backup & restore](../docs/operations/backups.md) – database, object storage, search index retention plans.
