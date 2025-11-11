@@ -201,19 +201,23 @@ export class MediaService {
     return `${this.assetBaseUrl.replace(/\/$/, '')}/${encodeURIComponent(record.storageKey)}`;
   }
 
-  private getRequiredString(key: keyof MediaServiceEnv & string): string {
+  private getRequiredString(key: Extract<keyof MediaServiceEnv, string>): string {
     const value = this.configService.get<string>(key, { infer: true });
     if (!value) {
-      throw new Error(`Missing required configuration value: ${key}`);
+      throw new BadRequestException(`Missing configuration for ${key}`);
     }
 
     return value;
   }
 
-  private getRequiredNumber(key: keyof MediaServiceEnv & string): number {
-    const value = this.configService.get<number>(key, { infer: true });
-    if (value === undefined || value === null) {
-      throw new Error(`Missing required configuration value: ${key}`);
+  private getRequiredNumber(key: Extract<keyof MediaServiceEnv, string>): number {
+    const value = this.configService.get(key, { infer: true });
+    if (value === undefined) {
+      throw new BadRequestException(`Missing configuration for ${key}`);
+    }
+
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      throw new BadRequestException(`Configuration ${key} must be a number`);
     }
 
     return value;

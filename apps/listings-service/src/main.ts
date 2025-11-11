@@ -16,7 +16,11 @@ async function bootstrap(): Promise<void> {
   app.useLogger(logger as unknown as LoggerService);
 
   app.setGlobalPrefix(config.LISTINGS_SERVICE_GLOBAL_PREFIX, {
-    exclude: [ { path: 'healthz', method: RequestMethod.GET }, { path: 'metrics', method: RequestMethod.GET } ],
+    exclude: [
+      { path: 'healthz', method: RequestMethod.GET },
+      { path: 'healthz/ready', method: RequestMethod.GET },
+      { path: 'metrics', method: RequestMethod.GET },
+    ],
   });
 
   app.enableVersioning({ type: VersioningType.URI });

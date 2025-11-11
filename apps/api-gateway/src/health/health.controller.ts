@@ -2,7 +2,8 @@ import { Controller, Get } from '@nestjs/common';
 
 import { HealthService } from './health.service';
 
-type HealthResponse = ReturnType<HealthService['getStatus']>;
+type HealthResponse = ReturnType<HealthService['getLiveness']>;
+type ReadinessResponse = Awaited<ReturnType<HealthService['getReadiness']>>;
 
 @Controller({ path: 'healthz' })
 export class HealthController {
@@ -10,6 +11,11 @@ export class HealthController {
 
   @Get()
   getStatus(): HealthResponse {
-    return this.healthService.getStatus();
+    return this.healthService.getLiveness();
+  }
+
+  @Get('ready')
+  getReadiness(): Promise<ReadinessResponse> {
+    return this.healthService.getReadiness();
   }
 }
