@@ -10,6 +10,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ts
 COPY packages ./packages
 COPY apps ./apps
 RUN pnpm install --frozen-lockfile
+ARG PRISMA_GENERATE_DB_URL="postgresql://placeholder:placeholder@localhost:5432/cartrader?schema=public"
+ENV DATABASE_URL=$PRISMA_GENERATE_DB_URL
+RUN PRISMA_GENERATE_SKIP_AUTOINSTALL=1 pnpm exec prisma generate --schema packages/database/prisma/schema.prisma
 RUN pnpm turbo run build --filter=@cartrader/orders-service...
 RUN pnpm deploy --filter=@cartrader/orders-service --prod /out
 
