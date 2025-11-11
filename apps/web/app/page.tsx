@@ -1,12 +1,12 @@
 import Link from "next/link"
 import { Gauge, ShieldCheck, Sparkles, Smartphone } from "lucide-react"
 
+import { HeroSearch } from "@/components/home/hero-search"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { siteConfig } from "@/config/site"
 
 const highlights = [
   {
@@ -38,72 +38,112 @@ const stats = [
 export default function Home() {
   return (
     <div className="flex flex-col gap-16 pb-20">
-      <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-b from-background via-background to-background/60">
-        <div className="container grid items-center gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
-          <div className="flex flex-col gap-6">
-            <Badge variant="outline" className="w-fit border-primary/40">
-              Launching soon in Pakistan
-            </Badge>
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-              Buy and sell vehicles with trust built into every step.
-            </h1>
-            <p className="text-lg text-muted-foreground sm:text-xl">
-              {siteConfig.description}
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button size="lg" asChild>
-                <Link href="/listings">Browse marketplace</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/sell">List your vehicle</Link>
+      <HeroSearch />
+
+      <section className="container">
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Badge variant="outline" className="uppercase tracking-wide">
+                  Featured this week
+                </Badge>
+                <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">
+                  Spotlight listings vetted by our moderation team
+                </h2>
+              </div>
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                View all
               </Button>
             </div>
-            <div className="grid gap-6 rounded-xl border border-border/60 bg-card p-6 sm:grid-cols-3">
-              {stats.map((stat) => (
-                <div key={stat.label} className="space-y-1">
-                  <p className="text-2xl font-semibold">{stat.value}</p>
-                  <p className="text-xs uppercase text-muted-foreground">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Card className="relative hidden h-full min-h-[360px] overflow-hidden border-0 bg-muted/40 p-4 shadow-none sm:block">
-            <CardContent className="flex h-full flex-col justify-between gap-6 p-0">
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Spotlight listing
-                </p>
-                <div className="flex flex-col gap-2 rounded-lg border border-border/60 bg-background p-4">
-                  <Skeleton className="aspect-[16/10] rounded-md" />
-                  <div>
-                    <p className="text-base font-semibold">2022 Toyota Yaris</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card className="border border-primary/30 bg-primary/5">
+                <CardContent className="space-y-3 p-5">
+                  <Skeleton className="aspect-[16/10] rounded-lg" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold">
+                      2022 Toyota Yaris ATIV X CVT
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       PKR 4,150,000 · 18,200 km · Karachi
                     </p>
                   </div>
-                </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-1 text-primary">
+                      Inspected
+                    </span>
+                    <span>Verified Seller</span>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border border-border/60">
+                <CardContent className="space-y-3 p-5">
+                  <Skeleton className="aspect-[16/10] rounded-lg" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold">
+                      2021 KIA Sportage AWD Signature
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      PKR 7,850,000 · 24,500 km · Lahore
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-1 text-primary">
+                      Featured
+                    </span>
+                    <span>Inspection booked</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          <Card className="border-0 bg-muted/30">
+            <CardContent className="flex h-full flex-col justify-between gap-6 p-5">
+              <div className="space-y-3">
+                <Badge variant="outline" className="uppercase tracking-wide">
+                  Marketplace pulse
+                </Badge>
+                <h3 className="text-xl font-semibold">
+                  Live activity across CarTrader
+                </h3>
+                <ul className="space-y-3 text-sm text-muted-foreground">
+                  <li className="flex items-start justify-between gap-4">
+                    <span>Hyundai Tucson reserved in Islamabad</span>
+                    <span>2 min ago</span>
+                  </li>
+                  <li className="flex items-start justify-between gap-4">
+                    <span>Suzuki Alto VXL listed by verified seller</span>
+                    <span>8 min ago</span>
+                  </li>
+                  <li className="flex items-start justify-between gap-4">
+                    <span>
+                      Buyer secured inspection slot for Honda City Aspire
+                    </span>
+                    <span>12 min ago</span>
+                  </li>
+                </ul>
               </div>
               <Separator />
               <div className="space-y-4">
                 <p className="text-sm font-medium text-muted-foreground">
-                  Recent activity
+                  Insider metrics
                 </p>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-start justify-between gap-4">
-                    <span>Hyundai Tucson reserved</span>
-                    <span className="text-muted-foreground">2 min ago</span>
-                  </li>
-                  <li className="flex items-start justify-between gap-4">
-                    <span>New listing · Suzuki Alto VXL</span>
-                    <span className="text-muted-foreground">8 min ago</span>
-                  </li>
-                  <li className="flex items-start justify-between gap-4">
-                    <span>Buyer secured inspection slot</span>
-                    <span className="text-muted-foreground">12 min ago</span>
-                  </li>
-                </ul>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {stats.map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="rounded-lg border border-border/60 bg-background p-4"
+                    >
+                      <p className="text-xl font-semibold">{stat.value}</p>
+                      <p className="text-xs uppercase text-muted-foreground">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <Button variant="secondary" className="w-full">
+                  Explore analytics
+                </Button>
               </div>
             </CardContent>
           </Card>
