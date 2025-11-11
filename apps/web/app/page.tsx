@@ -136,22 +136,20 @@ export default function Home() {
     <div className="flex flex-col gap-20 pb-20">
       <section className="bg-gradient-to-b from-background via-background to-muted/40">
         <div className="container space-y-10 pb-16 pt-16">
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <Badge variant="outline" className="border-primary/40 text-primary">
                 Marketplace preview
               </Badge>
               <span>Backend is production-ready — the UI is catching up fast.</span>
             </div>
-            <div className="space-y-4">
-              <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-                Buy and sell with confidence across Pakistan.
-              </h1>
-              <p className="max-w-2xl text-lg text-muted-foreground">
-                {siteConfig.description} We already handle inspections, moderation, payments, and observability.
-                This frontend is about surfacing that maturity in a clean, modern flow.
-              </p>
-            </div>
+            <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+              Buy and sell with confidence across Pakistan.
+            </h1>
+            <p className="max-w-2xl text-lg text-muted-foreground">
+              {siteConfig.description} We already handle inspections, moderation, payments, and observability.
+              This frontend is about surfacing that maturity in a clean, modern flow.
+            </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button size="lg" asChild>
                 <Link href="/listings">Browse listings</Link>

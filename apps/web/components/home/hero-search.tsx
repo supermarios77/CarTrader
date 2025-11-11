@@ -3,7 +3,6 @@
 import { Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -13,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const vehicleTypes = ["Any type", "Used cars", "New cars", "Bikes", "Commercial"]
-const cities = ["All cities", "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Peshawar"]
+const vehicleTypes = ["Used cars", "New cars", "Bikes", "Commercial"]
+const cities = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Peshawar"]
+const priceBrackets = ["Up to 5 lacs", "5–10 lacs", "10–20 lacs", "20–40 lacs", "40+ lacs"]
 
 export function HeroSearch() {
   return (
@@ -52,12 +52,19 @@ export function HeroSearch() {
       </div>
 
       <div className="space-y-2">
-        <Label className="text-xs font-medium uppercase text-muted-foreground">Max budget (PKR)</Label>
-        <Input
-          type="number"
-          placeholder="e.g. 5,000,000"
-          className="h-11 rounded-xl"
-        />
+        <Label className="text-xs font-medium uppercase text-muted-foreground">Budget</Label>
+        <Select defaultValue={priceBrackets[0]}>
+          <SelectTrigger className="h-11 rounded-xl">
+            <SelectValue placeholder="Select budget" />
+          </SelectTrigger>
+          <SelectContent>
+            {priceBrackets.map((price) => (
+              <SelectItem key={price} value={price}>
+                {price}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Button type="submit" className="h-11 rounded-xl">
@@ -67,3 +74,4 @@ export function HeroSearch() {
     </form>
   )
 }
+
