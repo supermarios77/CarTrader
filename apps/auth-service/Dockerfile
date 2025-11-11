@@ -2,37 +2,23 @@
 
 FROM node:20-alpine AS base
 ENV PNPM_HOME="/root/.local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 WORKDIR /repo
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json tsconfig.base.json eslint.config.mjs ./
-COPY apps/api-gateway/package.json ./apps/api-gateway/package.json
-COPY apps/auth-service/package.json ./apps/auth-service/package.json
-COPY apps/listings-service/package.json ./apps/listings-service/package.json
-COPY apps/media-service/package.json ./apps/media-service/package.json
-COPY apps/notifications-service/package.json ./apps/notifications-service/package.json
-COPY apps/orders-service/package.json ./apps/orders-service/package.json
-COPY apps/payments-service/package.json ./apps/payments-service/package.json
-COPY apps/web/package.json ./apps/web/package.json
-COPY packages/config/package.json ./packages/config/package.json
-COPY packages/database/package.json ./packages/database/package.json
-COPY packages/logger/package.json ./packages/logger/package.json
-COPY packages/observability/package.json ./packages/observability/package.json
+COPY packages ./packages
+COPY apps ./apps
 RUN pnpm install --frozen-lockfile
-COPY . .
 ARG PRISMA_GENERATE_DB_URL="postgresql://placeholder:placeholder@localhost:5432/cartrader?schema=public"
-ENV DATABASE_URL=${PRISMA_GENERATE_DB_URL}
+ENV DATABASE_URL=$PRISMA_GENERATE_DB_URL
 RUN PRISMA_GENERATE_SKIP_AUTOINSTALL=1 pnpm exec prisma generate --schema packages/database/prisma/schema.prisma
 RUN pnpm turbo run build --filter=@cartrader/auth-service...
-
-FROM deps AS deploy
 RUN pnpm deploy --filter=@cartrader/auth-service --prod /out
 
 FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 WORKDIR /app
-COPY --from=deploy /out/ .
+COPY --from=deps /out/ .
 EXPOSE 3010
 CMD ["node", "apps/auth-service/dist/main.js"]
