@@ -1,6 +1,6 @@
 "use client"
 
-import { MoonIcon, SunIcon } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -25,11 +25,11 @@ export function ThemeToggle() {
           className="size-9"
           aria-label="Toggle theme"
         >
-          <SunIcon
+          <Sun
             className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
             aria-hidden={!isDark}
           />
-          <MoonIcon
+          <Moon
             className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
             aria-hidden={isDark}
           />
@@ -40,21 +40,21 @@ export function ThemeToggle() {
           onClick={() => setTheme("light")}
           data-state={activeTheme === "light" ? "active" : undefined}
         >
-          <SunIcon className="mr-2 size-4" aria-hidden />
+          <Sun className="mr-2 size-4" aria-hidden />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("dark")}
           data-state={activeTheme === "dark" ? "active" : undefined}
         >
-          <MoonIcon className="mr-2 size-4" aria-hidden />
+          <Moon className="mr-2 size-4" aria-hidden />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => setTheme("system")}
           data-state={activeTheme === "system" ? "active" : undefined}
         >
-          <SunIcon className="mr-2 size-4" aria-hidden />
+          <Sun className="mr-2 size-4" aria-hidden />
           System
         </DropdownMenuItem>
       </DropdownMenuContent>
