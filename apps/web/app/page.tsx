@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { siteConfig } from "@/config/site"
 
 const quickActions = [
   {
@@ -118,16 +117,16 @@ const brandGrid = [
 
 const editorial = [
   {
-    title: "How we vet every listing before it goes live",
-    date: "Operations",
+    title: "How to read a CarTrader inspection report in five minutes",
+    date: "Guides",
   },
   {
-    title: "Building a nationwide inspection network with NestJS & BullMQ",
-    date: "Engineering",
+    title: "Pricing tips that help your car sell faster",
+    date: "Marketplace",
   },
   {
-    title: "Mock payments today, plug-in providers tomorrow",
-    date: "Product",
+    title: "Weekend driving spots worth the road trip",
+    date: "Community",
   },
 ]
 
@@ -139,16 +138,15 @@ export default function Home() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
               <Badge variant="outline" className="border-primary/40 text-primary">
-                Marketplace preview
+                Fresh inventory daily
               </Badge>
-              <span>Backend is production-ready — the UI is catching up fast.</span>
+              <span>Verified listings, trusted sellers, and helpful guidance in one place.</span>
             </div>
             <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-              Buy and sell with confidence across Pakistan.
+              Find the right car without the usual marketplace hassle.
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground">
-              {siteConfig.description} We already handle inspections, moderation, payments, and observability.
-              This frontend is about surfacing that maturity in a clean, modern flow.
+              Compare prices, review inspection highlights, and chat with responsive sellers across Pakistan — all from a single, trustworthy marketplace.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button size="lg" asChild>
@@ -159,9 +157,9 @@ export default function Home() {
               </Button>
             </div>
             <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-              <Stat label="Active listings" value="8,432" />
-              <Stat label="Verified sellers" value="3,021" />
-              <Stat label="Average response" value="9 min" />
+              <Stat label="Verified vehicles" value="8,400+" />
+              <Stat label="Trusted sellers" value="3,000+" />
+              <Stat label="Average reply time" value="under 10 min" />
             </div>
           </div>
           <HeroSearch />
@@ -311,40 +309,40 @@ export default function Home() {
       <section className="container grid gap-8 rounded-3xl border border-border/60 bg-card/80 p-8 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-4">
           <Badge variant="outline" className="w-fit uppercase tracking-wide">
-            Built for operators
+            Why drivers choose cartrader
           </Badge>
           <h2 className="text-3xl font-semibold leading-tight">
-            Everything the backend already powers — now reflected upfront.
+            Confidence features you can actually see.
           </h2>
           <div className="space-y-4 text-sm text-muted-foreground">
             <p className="flex items-start gap-2">
               <ShieldCheck className="mt-1 size-4 text-primary" />
-              Listings run through moderation workflows with audit logs and status transitions your team can track.
+              Every verified listing includes inspection highlights, service records, and photo proofs.
             </p>
             <p className="flex items-start gap-2">
               <Clock className="mt-1 size-4 text-primary" />
-              Webhooks and mock payments sync with orders, so checkout flows stay deterministic from day one.
+              Instant alerts when sellers respond or drop their asking price — no more inbox refreshing.
             </p>
             <p className="flex items-start gap-2">
               <Fuel className="mt-1 size-4 text-primary" />
-              Observability stack is shipping traces, metrics, and logs — surface them where it matters.
+              Pay in cash, finance with partners, or reserve for a test drive — all managed from your dashboard.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild>
-              <Link href="/dashboard/seller">Enter seller workspace</Link>
+              <Link href="/listings?verified=true">Explore verified listings</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/docs/operations">Ops runbooks</Link>
+              <Link href="/inspections">See inspection checklist</Link>
             </Button>
           </div>
         </div>
         <Card className="border-border/50 bg-background/90">
           <CardContent className="space-y-5 p-6">
             <div>
-              <h3 className="text-lg font-semibold">Latest from the engineering blog</h3>
+              <h3 className="text-lg font-semibold">Latest from the CarTrader community</h3>
               <p className="text-sm text-muted-foreground">
-                Ship notes from the backend journey powering this experience.
+                Helpful tips, buyer stories, and weekend drives to inspire your next ride.
               </p>
             </div>
             <Separator />
@@ -366,9 +364,9 @@ export default function Home() {
 
       <section className="container grid gap-6 rounded-3xl border border-border/60 bg-muted/30 p-8 md:grid-cols-[1fr_0.7fr]">
         <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Never miss a launch.</h2>
+          <h2 className="text-2xl font-semibold">Get updates before everyone else.</h2>
           <p className="text-sm text-muted-foreground">
-            Subscribe for early access to the React app once we wire it fully to the production-ready backend.
+            Subscribe for new inventory alerts, price drops, and buying tips tailored to your garage.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="flex-1">
@@ -386,23 +384,23 @@ export default function Home() {
         <Card className="border-border/50 bg-background">
           <CardContent className="flex flex-col gap-4 p-6">
             <div className="space-y-1">
-              <p className="text-sm font-medium text-primary">Showcase timeline</p>
+              <p className="text-sm font-medium text-primary">What to expect next</p>
               <p className="text-xs text-muted-foreground">
-                A glimpse at what’s already in motion.
+                Here’s what we’re rolling out for shoppers over the coming weeks.
               </p>
             </div>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3">
                 <span className="mt-1 size-2 rounded-full bg-primary" />
-                <span>Backend MVP complete — auth, listings, media, orders, payments, notifications, search.</span>
+                <span>Daily drops of freshly inspected cars, bikes, and SUVs from every major city.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1 size-2 rounded-full bg-primary" />
-                <span>Observability stack deployed with Grafana, Loki, Tempo, and OTEL collector.</span>
+                <span>Weekly spotlight on price drops plus hand-picked weekend getaway rides.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1 size-2 rounded-full bg-primary" />
-                <span>Frontend shell ready — next sprint: live queries, auth wiring, dashboards.</span>
+                <span>Saved searches with instant notifications so you never miss the right match.</span>
               </li>
             </ul>
           </CardContent>

@@ -2,6 +2,10 @@
 
 FROM node:20-alpine AS base
 ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PNPM_FETCH_TIMEOUT=120000 \
+    PNPM_FETCH_RETRIES=5 \
+    PNPM_FETCH_RETRY_FACTOR=2 \
+    PNPM_FETCH_RETRY_MINTIMEOUT=2000
 RUN corepack enable
 WORKDIR /repo
 
