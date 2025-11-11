@@ -35,3 +35,4 @@ logs/
 pnpm-debug.log
 yarn-error.log
 npm-debug.log
+tools/pnpm/pnpm-linuxstatic-x64

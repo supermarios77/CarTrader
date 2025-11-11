@@ -14,10 +14,17 @@ ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV npm_config_registry=$PNPM_REGISTRY
 ENV PNPM_REGISTRY=$PNPM_REGISTRY
-RUN apk add --no-cache curl ca-certificates && \
-    curl -fsSL --retry 5 --retry-delay 5 "$PNPM_DOWNLOAD_URL" -o /tmp/pnpm && \
-    if [ -n "$PNPM_SHA256" ]; then echo "$PNPM_SHA256  /tmp/pnpm" | sha256sum -c -; fi && \
-    chmod +x /tmp/pnpm && mv /tmp/pnpm /usr/local/bin/pnpm && \
+RUN --mount=type=bind,source=tools/pnpm/pnpm-linuxstatic-x64,target=/tmp/pnpm-local,readonly,optional \
+    set -eux; \
+    apk add --no-cache curl ca-certificates; \
+    if [ -s /tmp/pnpm-local ]; then \
+        install -m755 /tmp/pnpm-local /usr/local/bin/pnpm; \
+    else \
+        curl -fsSL --retry 5 --retry-delay 5 "$PNPM_DOWNLOAD_URL" -o /tmp/pnpm-download; \
+        if [ -n "$PNPM_SHA256" ]; then echo "$PNPM_SHA256  /tmp/pnpm-download" | sha256sum -c -; fi; \
+        install -m755 /tmp/pnpm-download /usr/local/bin/pnpm; \
+        rm -f /tmp/pnpm-download; \
+    fi; \
     apk del curl
 WORKDIR /repo
 

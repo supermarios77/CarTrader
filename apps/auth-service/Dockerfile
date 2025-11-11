@@ -1,9 +1,31 @@
 # syntax=docker/dockerfile:1.6
 
+ARG PNPM_VERSION=9.11.0
+ARG PNPM_DOWNLOAD_URL="https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linuxstatic-x64"
+ARG PNPM_SHA256=""
+ARG PNPM_REGISTRY="https://registry.npmjs.org"
+
 FROM node:20-alpine AS base
+ARG PNPM_VERSION
+ARG PNPM_DOWNLOAD_URL
+ARG PNPM_SHA256
+ARG PNPM_REGISTRY
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+ENV npm_config_registry=$PNPM_REGISTRY
+ENV PNPM_REGISTRY=$PNPM_REGISTRY
+RUN --mount=type=bind,source=tools/pnpm/pnpm-linuxstatic-x64,target=/tmp/pnpm-local,readonly,optional \
+    set -eux; \
+    apk add --no-cache curl ca-certificates; \
+    if [ -s /tmp/pnpm-local ]; then \
+        install -m755 /tmp/pnpm-local /usr/local/bin/pnpm; \
+    else \
+        curl -fsSL --retry 5 --retry-delay 5 "$PNPM_DOWNLOAD_URL" -o /tmp/pnpm-download; \
+        if [ -n "$PNPM_SHA256" ]; then echo "$PNPM_SHA256  /tmp/pnpm-download" | sha256sum -c -; fi; \
+        install -m755 /tmp/pnpm-download /usr/local/bin/pnpm; \
+        rm -f /tmp/pnpm-download; \
+    fi; \
+    apk del curl
 WORKDIR /repo
 
 FROM base AS deps
