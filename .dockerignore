@@ -12,3 +12,16 @@ Dockerfile*
 .env
 .env.*
 *.log
+.vscode
+.idea
+*.tsbuildinfo
+tmp
+coverage/
+reports/
+docs/
+tests/
+ops/
+apps/web/.next
+apps/web/out
+apps/web/.turbo
+apps/web/node_modules
