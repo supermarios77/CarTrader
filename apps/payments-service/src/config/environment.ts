@@ -7,6 +7,8 @@ const paymentsEnvSchema = baseEnvSchema.extend({
   PAYMENTS_SERVICE_CORS_ORIGINS: z.string().default('*'),
   PAYMENTS_PROVIDER: z.enum(['mock']).default('mock'),
   PAYMENTS_WEBHOOK_SECRET: z.string().min(1).default('mock-webhook-secret'),
+  TRACING_ENABLED: z.coerce.boolean().default(false),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
 });
 
 export type PaymentsServiceEnv = z.infer<typeof paymentsEnvSchema>;

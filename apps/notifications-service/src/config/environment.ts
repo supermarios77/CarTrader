@@ -13,6 +13,8 @@ const notificationsEnvSchema = baseEnvSchema.extend({
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),
   SMTP_USER: z.string().min(1),
   SMTP_PASSWORD: z.string().min(1),
+  TRACING_ENABLED: z.coerce.boolean().default(false),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
 });
 
 export type NotificationsEnv = z.infer<typeof notificationsEnvSchema>;

@@ -14,6 +14,8 @@ const mediaServiceEnvSchema = baseEnvSchema.extend({
   MEDIA_ASSET_BASE_URL: z.string().url().optional(),
   MEDIA_UPLOAD_URL_TTL: z.coerce.number().int().min(60).max(86400).default(900),
   MEDIA_DOWNLOAD_URL_TTL: z.coerce.number().int().min(60).max(86400).default(3600),
+  TRACING_ENABLED: z.coerce.boolean().default(false),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
 });
 
 export type MediaServiceEnv = z.infer<typeof mediaServiceEnvSchema>;

@@ -9,6 +9,8 @@ const searchEnvSchema = baseEnvSchema.extend({
   OPENSEARCH_USERNAME: z.string().min(1),
   OPENSEARCH_PASSWORD: z.string().min(1),
   OPENSEARCH_INDEX_LISTINGS: z.string().min(1).default('listings'),
+  TRACING_ENABLED: z.coerce.boolean().default(false),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
 });
 
 export type SearchServiceEnv = z.infer<typeof searchEnvSchema>;

@@ -1,17 +1,25 @@
 import { LoggerService, ValidationPipe, VersioningType, RequestMethod } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
+import { initTracing } from '@cartrader/observability';
 import { getLogger } from '@cartrader/logger';
 
 import { AppModule } from './app.module';
 import { loadSearchServiceConfig } from './config/environment';
 
 async function bootstrap(): Promise<void> {
+  const config = loadSearchServiceConfig();
+
+  await initTracing({
+    serviceName: 'search-service',
+    enabled: config.TRACING_ENABLED,
+    exporterEndpoint: config.OTEL_EXPORTER_OTLP_ENDPOINT,
+  });
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
 
-  const config = loadSearchServiceConfig();
   const logger = getLogger();
   app.useLogger(logger as unknown as LoggerService);
 

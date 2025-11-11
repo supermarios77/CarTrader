@@ -8,6 +8,8 @@ const ordersEnvSchema = baseEnvSchema.extend({
   DATABASE_URL: z.string().min(1),
   PAYMENTS_SERVICE_BASE_URL: z.string().url().default('http://payments-service:3060/api/v1'),
   PAYMENTS_WEBHOOK_SECRET: z.string().min(1).default('mock-webhook-secret'),
+  TRACING_ENABLED: z.coerce.boolean().default(false),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
 });
 
 export type OrdersServiceEnv = z.infer<typeof ordersEnvSchema>;
