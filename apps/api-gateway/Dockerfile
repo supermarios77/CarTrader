@@ -17,7 +17,7 @@ COPY apps ./apps
 RUN --mount=type=cache,target=/root/.pnpm-store pnpm fetch --frozen-lockfile
 RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --frozen-lockfile --prefer-offline
 RUN pnpm turbo run build --filter=@cartrader/api-gateway...
-RUN pnpm deploy --filter=@cartrader/api-gateway --prod /out
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm deploy --filter=@cartrader/api-gateway --prod --offline /out
 
 FROM node:20-alpine AS runner
 ENV NODE_ENV=production
