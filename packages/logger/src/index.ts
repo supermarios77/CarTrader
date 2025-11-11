@@ -5,6 +5,8 @@ import pino, {
   stdTimeFunctions,
 } from 'pino';
 
+import { trace, isSpanContextValid, type Span } from '@opentelemetry/api';
+
 import { loadBaseConfig, type BaseEnv } from '@cartrader/config';
 
 export type AppLogger = Logger<string>;
@@ -20,6 +22,32 @@ const buildBaseOptions = (overrides?: LoggerOptions): LoggerOptions => {
     },
     timestamp: stdTimeFunctions.isoTime,
   };
+
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-redundant-type-constituents */
+  const otelMixin: LoggerOptions['mixin'] = () => {
+    const span: Span | undefined = trace.getActiveSpan();
+    if (!span) {
+      return {};
+    }
+
+    const spanContext = span.spanContext();
+    if (!isSpanContextValid(spanContext)) {
+      return {};
+    }
+
+    return {
+      traceId: spanContext.traceId,
+      spanId: spanContext.spanId,
+      traceFlags: spanContext.traceFlags,
+    };
+  };
+  /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-redundant-type-constituents */
+
+  const existingMixin = baseOptions.mixin;
+
+  baseOptions.mixin = existingMixin
+    ? ((...args) => ({ ...existingMixin!(...args), ...otelMixin(...args) }))
+    : otelMixin;
 
   if (baseConfig.NODE_ENV !== 'production') {
     baseOptions.transport = {

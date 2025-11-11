@@ -509,6 +509,9 @@ importers:
       '@cartrader/config':
         specifier: workspace:*
         version: link:../config
+      '@opentelemetry/api':
+        specifier: ^1.9.0
+        version: 1.9.0
       pino:
         specifier: ^9.5.0
         version: 9.14.0

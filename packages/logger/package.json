@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@cartrader/config": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
     "pino": "^9.5.0",
     "pino-pretty": "^11.2.2"
   }
