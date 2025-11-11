@@ -1,11 +1,11 @@
 import Link from "next/link"
+import { CarFront } from "lucide-react"
 
 import { siteConfig } from "@/config/site"
 import { Button } from "@/components/ui/button"
 
 import { AuthActions, MainNav } from "./main-nav"
 import { MobileNav } from "./mobile-nav"
-import { Icons } from "../shared/icons"
 import { ThemeToggle } from "../theme-toggle"
 
 export function SiteHeader() {
@@ -14,7 +14,7 @@ export function SiteHeader() {
       <div className="container flex h-16 items-center gap-3 sm:h-20">
         <MobileNav />
         <Link href="/" className="flex items-center gap-2">
-          <Icons.logo className="size-6 text-primary" aria-hidden />
+          <CarFront className="size-6 text-primary" aria-hidden />
           <span className="text-base font-semibold leading-none sm:text-lg">
             {siteConfig.name}
           </span>

@@ -1,6 +1,6 @@
 import Link from "next/link"
+import { Gauge, ShieldCheck, Sparkles, Smartphone } from "lucide-react"
 
-import { Icons } from "@/components/shared/icons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,19 +13,19 @@ const highlights = [
     title: "Verified sellers",
     description:
       "Every listing passes identity & fraud checks so buyers know exactly who they’re dealing with.",
-    icon: Icons.shield,
+    icon: ShieldCheck,
   },
   {
     title: "Smart search",
     description:
       "Filter by budget, mileage, ownership history, and more. Get instant alerts as new matches land.",
-    icon: Icons.gauge,
+    icon: Gauge,
   },
   {
     title: "Checkout handled",
     description:
       "Reserve your ride, finalize payment, and schedule delivery — all with one guided flow.",
-    icon: Icons.sparkle,
+    icon: Sparkles,
   },
 ]
 
@@ -157,21 +157,21 @@ export default function Home() {
           </p>
           <ul className="space-y-4 text-sm">
             <li className="flex items-start gap-3">
-              <Icons.sparkle className="mt-1 size-4 text-primary" />
+              <Sparkles className="mt-1 size-4 text-primary" />
               <span>
                 Guided listing flows with validation powered by NestJS + Zod,
                 backed by Prisma migrations.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <Icons.mobile className="mt-1 size-4 text-primary" />
+              <Smartphone className="mt-1 size-4 text-primary" />
               <span>
                 Presigned uploads direct to MinIO, optimized for photo-heavy
                 vehicle listings.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <Icons.shield className="mt-1 size-4 text-primary" />
+              <ShieldCheck className="mt-1 size-4 text-primary" />
               <span>
                 Moderation dashboard with audit logs, suspension workflows, and
                 instant OpenSearch sync.

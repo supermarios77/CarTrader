@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { Menu } from "lucide-react"
 
 import { siteConfig } from "@/config/site"
 import { Button } from "@/components/ui/button"
@@ -14,8 +15,6 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-import { Icons } from "../shared/icons"
-
 export function MobileNav() {
   return (
     <Sheet>
@@ -26,7 +25,7 @@ export function MobileNav() {
           className="size-9 lg:hidden"
           aria-label="Open navigation"
         >
-          <Icons.menu className="size-4" />
+          <Menu className="size-4" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="flex w-[280px] flex-col gap-4">
