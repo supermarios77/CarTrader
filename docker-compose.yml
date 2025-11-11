@@ -25,6 +25,7 @@ services:
     image: cartrader/api-gateway:dev
     environment:
       NODE_ENV: development
+      APP_NAME: api-gateway
       API_GATEWAY_PORT: 3000
       API_GATEWAY_GLOBAL_PREFIX: api
       API_GATEWAY_CORS_ORIGINS: http://localhost:3000
@@ -32,6 +33,8 @@ services:
       MEDIA_SERVICE_BASE_URL: http://media-service:3030/api
       NOTIFICATIONS_SERVICE_BASE_URL: http://notifications-service:3040/api
       SEARCH_SERVICE_BASE_URL: http://search-service:3050/api
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3000:3000"
     depends_on:
@@ -47,8 +50,11 @@ services:
     image: cartrader/auth-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: auth-service
       AUTH_SERVICE_PORT: 3010
       DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3010:3010"
     depends_on:
@@ -62,11 +68,14 @@ services:
     image: cartrader/listings-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: listings-service
       LISTINGS_SERVICE_PORT: 3020
       LISTINGS_SERVICE_GLOBAL_PREFIX: api
       LISTINGS_SERVICE_CORS_ORIGINS: http://localhost:3000
       DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
       SEARCH_SERVICE_BASE_URL: http://search-service:3050/api/v1
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3020:3020"
     depends_on:
@@ -82,6 +91,7 @@ services:
     image: cartrader/media-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: media-service
       MEDIA_SERVICE_PORT: 3030
       MEDIA_SERVICE_GLOBAL_PREFIX: api
       MEDIA_SERVICE_CORS_ORIGINS: http://localhost:3000
@@ -94,6 +104,8 @@ services:
       MEDIA_ASSET_BASE_URL: http://localhost:9000/cartrader-media
       MEDIA_UPLOAD_URL_TTL: 900
       MEDIA_DOWNLOAD_URL_TTL: 3600
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3030:3030"
     depends_on:
@@ -113,6 +125,7 @@ services:
     image: cartrader/notifications-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: notifications-service
       NOTIFICATIONS_SERVICE_PORT: 3040
       NOTIFICATIONS_SERVICE_GLOBAL_PREFIX: api
       NOTIFICATIONS_SERVICE_CORS_ORIGINS: http://localhost:3000
@@ -124,6 +137,8 @@ services:
       SMTP_PORT: 1025
       SMTP_USER: cartrader
       SMTP_PASSWORD: cartrader
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3040:3040"
     depends_on:
@@ -141,11 +156,14 @@ services:
     image: cartrader/payments-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: payments-service
       PAYMENTS_SERVICE_PORT: 3060
       PAYMENTS_SERVICE_GLOBAL_PREFIX: api
       PAYMENTS_SERVICE_CORS_ORIGINS: http://localhost:3000
       PAYMENTS_PROVIDER: mock
       PAYMENTS_WEBHOOK_SECRET: mock-webhook-secret
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3060:3060"
     depends_on:
@@ -159,12 +177,15 @@ services:
     image: cartrader/orders-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: orders-service
       ORDERS_SERVICE_PORT: 3070
       ORDERS_SERVICE_GLOBAL_PREFIX: api
       ORDERS_SERVICE_CORS_ORIGINS: http://localhost:3000
       DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
       PAYMENTS_SERVICE_BASE_URL: http://payments-service:3060/api/v1
       PAYMENTS_WEBHOOK_SECRET: mock-webhook-secret
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3070:3070"
     depends_on:
@@ -182,6 +203,7 @@ services:
     image: cartrader/search-service:dev
     environment:
       NODE_ENV: development
+      APP_NAME: search-service
       SEARCH_SERVICE_PORT: 3050
       SEARCH_SERVICE_GLOBAL_PREFIX: api
       SEARCH_SERVICE_CORS_ORIGINS: http://localhost:3000
@@ -189,6 +211,8 @@ services:
       OPENSEARCH_USERNAME: admin
       OPENSEARCH_PASSWORD: admin
       OPENSEARCH_INDEX_LISTINGS: listings
+      TRACING_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
       - "3050:3050"
     depends_on:
@@ -258,6 +282,80 @@ services:
       timeout: 5s
       retries: 5
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.116.0
+    container_name: cartrader-otel-collector
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./ops/observability/otel-collector-config.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+      - "13133:13133"
+    depends_on:
+      tempo:
+        condition: service_started
+      loki:
+        condition: service_started
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: cartrader-loki
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - loki-data:/loki
+      - ./ops/observability/loki-config.yaml:/etc/loki/local-config.yaml:ro
+    ports:
+      - "3100:3100"
+
+  tempo:
+    image: grafana/tempo:2.4.1
+    container_name: cartrader-tempo
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - tempo-data:/tempo
+      - ./ops/observability/tempo.yaml:/etc/tempo/tempo.yaml:ro
+    ports:
+      - "3200:3200"
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: cartrader-promtail
+    command: ["--config.file=/etc/promtail/config.yaml"]
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - promtail-data:/var/lib/promtail
+      - ./ops/observability/promtail-config.yaml:/etc/promtail/config.yaml:ro
+    depends_on:
+      loki:
+        condition: service_started
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: cartrader-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_ROOT_URL: http://localhost:3001
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./ops/observability/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    depends_on:
+      loki:
+        condition: service_started
+      tempo:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+
 volumes:
   postgres-data:
   minio-data:
+  loki-data:
+  tempo-data:
+  promtail-data:
+  grafana-data:
