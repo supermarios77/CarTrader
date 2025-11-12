@@ -20,7 +20,7 @@ ARG PRISMA_GENERATE_DB_URL="postgresql://placeholder:placeholder@localhost:5432/
 ENV DATABASE_URL=$PRISMA_GENERATE_DB_URL
 RUN PRISMA_GENERATE_SKIP_AUTOINSTALL=1 pnpm exec prisma generate --schema packages/database/prisma/schema.prisma
 RUN pnpm turbo run build --filter=@cartrader/orders-service...
-RUN --mount=type=cache,target=/root/.pnpm-store pnpm deploy --filter=@cartrader/orders-service --prod --offline /out
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm deploy --filter=@cartrader/orders-service --prod --prefer-offline /out
 
 FROM node:20-alpine AS runner
 ENV NODE_ENV=production
