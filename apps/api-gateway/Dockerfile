@@ -14,8 +14,8 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json tsconfig.base.json eslint.config.mjs ./
 COPY packages ./packages
 COPY apps ./apps
-RUN --mount=type=cache,target=/root/.pnpm-store pnpm fetch --frozen-lockfile
-RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --frozen-lockfile --prefer-offline
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm fetch --frozen-lockfile --filter=@cartrader/api-gateway...
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --frozen-lockfile --prefer-offline --filter=@cartrader/api-gateway...
 RUN pnpm turbo run build --filter=@cartrader/api-gateway...
 RUN --mount=type=cache,target=/root/.pnpm-store pnpm deploy --filter=@cartrader/api-gateway --prod --prefer-offline /out
 

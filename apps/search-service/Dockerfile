@@ -14,8 +14,8 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json tsconfig.base.json eslint.config.mjs ./
 COPY packages ./packages
 COPY apps ./apps
-RUN --mount=type=cache,target=/root/.pnpm-store pnpm fetch --frozen-lockfile
-RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --frozen-lockfile --prefer-offline
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm fetch --frozen-lockfile --filter=@cartrader/search-service...
+RUN --mount=type=cache,target=/root/.pnpm-store pnpm install --frozen-lockfile --prefer-offline --filter=@cartrader/search-service...
 ARG PRISMA_GENERATE_DB_URL="postgresql://placeholder:placeholder@localhost:5432/cartrader?schema=public"
 ENV DATABASE_URL=$PRISMA_GENERATE_DB_URL
 RUN PRISMA_GENERATE_SKIP_AUTOINSTALL=1 pnpm exec prisma generate --schema packages/database/prisma/schema.prisma
