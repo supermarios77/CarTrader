@@ -51,6 +51,8 @@ services:
       APP_NAME: auth-service
       AUTH_SERVICE_PORT: 3010
       DATABASE_URL: postgresql://cartrader:cartrader@postgres:5432/cartrader?schema=public
+      AUTH_JWT_SECRET: cartrader-jwt-secret-dev-change-in-production
+      AUTH_REFRESH_SECRET: cartrader-refresh-secret-dev-change-in-production
       TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
     ports:
@@ -292,9 +294,9 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.116.0
     container_name: cartrader-otel-collector
-    command: ["--config=/etc/observability/otel-collector-config.yaml"]
+    command: ["--config=/etc/otel/config.yaml"]
     volumes:
-      - nfs-observability-config:/etc/observability:ro
+      - ./ops/observability/otel-collector-config.yaml:/etc/otel/config.yaml:delegated,ro
     ports:
       - "4317:4317"
       - "4318:4318"
@@ -309,31 +311,31 @@ services:
   loki:
     image: grafana/loki:3.0.0
     container_name: cartrader-loki
-    command: ["-config.file=/etc/observability/loki-config.yaml"]
+    command: ["-config.file=/etc/loki/local-config.yaml"]
     volumes:
       - loki-data:/loki
-      - nfs-observability-config:/etc/observability:ro
+      - ./ops/observability/loki-config.yaml:/etc/loki/local-config.yaml:delegated,ro
     ports:
       - "3100:3100"
 
   tempo:
     image: grafana/tempo:2.4.1
     container_name: cartrader-tempo
-    command: ["-config.file=/etc/observability/tempo.yaml"]
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
     volumes:
       - tempo-data:/var/tempo
-      - nfs-observability-config:/etc/observability:ro
+      - ./ops/observability/tempo.yaml:/etc/tempo/tempo.yaml:delegated,ro
     ports:
       - "3200:3200"
 
   promtail:
     image: grafana/promtail:3.0.0
     container_name: cartrader-promtail
-    command: ["--config.file=/etc/observability/promtail-config.yaml"]
+    command: ["--config.file=/etc/promtail/config.yaml"]
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - promtail-data:/var/lib/promtail
-      - nfs-observability-config:/etc/observability:ro
+      - ./ops/observability/promtail-config.yaml:/etc/promtail/config.yaml:delegated,ro
     depends_on:
       loki:
         condition: service_started

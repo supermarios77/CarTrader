@@ -7,7 +7,12 @@ import { MetricsController } from './metrics.controller';
 
 @Global()
 @Module({
-  imports: [PrometheusModule.register({})],
+  imports: [
+    PrometheusModule.register({
+      // PrometheusModule will handle default metrics collection
+      // No need to manually call collectDefaultMetrics in the interceptor
+    }),
+  ],
   controllers: [MetricsController],
   providers: [
     HttpMetricsInterceptor,

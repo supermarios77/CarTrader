@@ -21,6 +21,9 @@ ENV DATABASE_URL=$PRISMA_GENERATE_DB_URL
 RUN PRISMA_GENERATE_SKIP_AUTOINSTALL=1 pnpm exec prisma generate --schema packages/database/prisma/schema.prisma
 RUN pnpm turbo run build --filter=@cartrader/notifications-service...
 RUN --mount=type=cache,target=/root/.pnpm-store pnpm deploy --filter=@cartrader/notifications-service --prod --prefer-offline /out
+# Copy generated Prisma client to deploy output
+RUN cp -r node_modules/.prisma /out/node_modules/.prisma 2>/dev/null || true
+RUN cp -r node_modules/@prisma /out/node_modules/@prisma 2>/dev/null || true
 
 FROM node:20-alpine AS runner
 ENV NODE_ENV=production

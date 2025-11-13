@@ -1,8 +1,10 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { Histogram, Registry, collectDefaultMetrics, register } from 'prom-client';
+import { Histogram, register } from 'prom-client';
 
+// PrometheusModule.register({}) already calls collectDefaultMetrics, so we don't call it here
+// Use the default register which PrometheusModule uses
 const httpHistogram: Histogram<string> = new Histogram({
   name: 'http_request_duration_seconds',
   help: 'HTTP request duration in seconds',
@@ -11,21 +13,8 @@ const httpHistogram: Histogram<string> = new Histogram({
   registers: [register],
 });
 
-let metricsInitialized = false;
-
-const ensureDefaultMetrics = (registry: Registry) => {
-  if (!metricsInitialized) {
-    collectDefaultMetrics({ register: registry });
-    metricsInitialized = true;
-  }
-};
-
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
-  constructor() {
-    ensureDefaultMetrics(register);
-  }
-
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (context.getType() !== 'http') {
       return next.handle();
