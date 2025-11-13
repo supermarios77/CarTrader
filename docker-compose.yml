@@ -207,7 +207,7 @@ services:
       SEARCH_SERVICE_CORS_ORIGINS: http://localhost:3000
       OPENSEARCH_NODE: http://opensearch:9200
       OPENSEARCH_USERNAME: admin
-      OPENSEARCH_PASSWORD: admin
+      OPENSEARCH_PASSWORD: CartraderAdmin123!@#
       OPENSEARCH_INDEX_LISTINGS: listings
       TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
@@ -268,9 +268,18 @@ services:
   opensearch:
     image: opensearchproject/opensearch:2.14.0
     environment:
-      - discovery.type=single-node
       - plugins.security.disabled=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=CartraderAdmin123!@#
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - discovery.type=single-node
+      - bootstrap.memory_lock=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     ports:
       - "9200:9200"
       - "9600:9600"
@@ -283,9 +292,9 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.116.0
     container_name: cartrader-otel-collector
-    command: ["--config=/etc/otel/config.yaml"]
+    command: ["--config=/etc/observability/otel-collector-config.yaml"]
     volumes:
-      - ./ops/observability/otel-collector-config.yaml:/etc/otel/config.yaml:ro
+      - nfs-observability-config:/etc/observability:ro
     ports:
       - "4317:4317"
       - "4318:4318"
@@ -300,31 +309,31 @@ services:
   loki:
     image: grafana/loki:3.0.0
     container_name: cartrader-loki
-    command: ["-config.file=/etc/loki/local-config.yaml"]
+    command: ["-config.file=/etc/observability/loki-config.yaml"]
     volumes:
       - loki-data:/loki
-      - ./ops/observability/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - nfs-observability-config:/etc/observability:ro
     ports:
       - "3100:3100"
 
   tempo:
     image: grafana/tempo:2.4.1
     container_name: cartrader-tempo
-    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    command: ["-config.file=/etc/observability/tempo.yaml"]
     volumes:
-      - tempo-data:/tempo
-      - ./ops/observability/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+      - nfs-observability-config:/etc/observability:ro
     ports:
       - "3200:3200"
 
   promtail:
     image: grafana/promtail:3.0.0
     container_name: cartrader-promtail
-    command: ["--config.file=/etc/promtail/config.yaml"]
+    command: ["--config.file=/etc/observability/promtail-config.yaml"]
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - promtail-data:/var/lib/promtail
-      - ./ops/observability/promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - nfs-observability-config:/etc/observability:ro
     depends_on:
       loki:
         condition: service_started
@@ -339,7 +348,7 @@ services:
       GF_SERVER_ROOT_URL: http://localhost:3001
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./ops/observability/grafana/provisioning:/etc/grafana/provisioning
+      - ./ops/observability/grafana/provisioning:/etc/grafana/provisioning:delegated
     ports:
       - "3001:3000"
     depends_on:
@@ -357,3 +366,11 @@ volumes:
   tempo-data:
   promtail-data:
   grafana-data:
+  # NFS volume for observability configs (better performance on macOS)
+  # Configured via scripts/setup-nfs.sh
+  nfs-observability-config:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=host.docker.internal,rw,nolock,hard,nointr,nfsvers=3
+      device: ":/System/Volumes/Data/Users/mario/Documents/Projects/Web/cartrader/ops/observability"

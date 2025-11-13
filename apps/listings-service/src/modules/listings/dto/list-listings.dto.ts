@@ -18,7 +18,7 @@ const toInt = ({ value }: { value: unknown }): number | undefined => {
     }
 
     const parsed = Number.parseInt(trimmed, 10);
-    return Number.isNaN(parsed) ? undefined : parsed;
+  return Number.isNaN(parsed) ? undefined : parsed;
   }
 
   if (typeof value === 'bigint') {

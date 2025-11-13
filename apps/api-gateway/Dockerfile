@@ -24,4 +24,4 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps /out/ .
 EXPOSE 3000
-CMD ["node", "apps/api-gateway/dist/main.js"]
+CMD ["node", "dist/main.js"]

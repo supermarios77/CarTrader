@@ -27,4 +27,4 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps /out/ .
 EXPOSE 3030
-CMD ["node", "apps/media-service/dist/main.js"]
+CMD ["node", "dist/main.js"]

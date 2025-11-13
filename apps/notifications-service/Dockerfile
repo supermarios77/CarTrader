@@ -27,4 +27,4 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=deps /out/ .
 EXPOSE 3040
-CMD ["node", "apps/notifications-service/dist/main.js"]
+CMD ["node", "dist/main.js"]
