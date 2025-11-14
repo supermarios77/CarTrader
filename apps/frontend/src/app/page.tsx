@@ -13,7 +13,7 @@ export default function Home() {
             <p>✅ Next.js Frontend (Port 3000)</p>
             <p>✅ NestJS Backend (Port 3001)</p>
             <p>✅ Monorepo with pnpm workspaces</p>
-          </div>
+        </div>
         </div>
       </main>
     </div>
