@@ -1,0 +1,72 @@
+version: '3.8'
+
+# Development overrides
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: cartrader_dev
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: cartrader_dev
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    # No password in development
+
+  minio:
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile.dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/backend/node_modules
+      - /app/packages/shared/node_modules
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://cartrader_dev:dev_password@postgres:5432/cartrader_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      FRONTEND_URL: http://localhost:3000
+    command: pnpm dev
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile.dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/frontend/node_modules
+      - /app/apps/frontend/.next
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    command: pnpm dev
+    ports:
+      - "3000:3000"
+
+  nginx:
+    ports:
+      - "80:80"
+    # Development nginx config (no SSL)
+

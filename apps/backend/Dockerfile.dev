@@ -1,0 +1,27 @@
+# Development Dockerfile
+FROM node:20-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Install development tools
+RUN apk add --no-cache git
+
+# Set working directory
+WORKDIR /app
+
+# Copy workspace files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY packages ./packages
+COPY apps/backend ./apps/backend
+
+# Install all dependencies (including dev)
+RUN pnpm install
+
+# Expose port
+EXPOSE 3001
+
+# Start in watch mode
+WORKDIR /app/apps/backend
+CMD ["pnpm", "dev"]
+
