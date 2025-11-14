@@ -5,7 +5,7 @@
 Before running e2e tests, ensure:
 
 1. **Database is running**: The tests require a PostgreSQL database. You can either:
-   - Use Docker Compose: `docker-compose -f docker-compose.dev.yml up -d postgres`
+   - Use Docker Compose (from project root): `docker-compose -f docker-compose.dev.yml up -d postgres`
    - Or set `DATABASE_URL` environment variable to point to your test database
 
 2. **Environment Variables**: The tests will use default values if not set:
@@ -44,8 +44,14 @@ When running tests inside a Docker container (e.g., in CI/CD or Docker Compose):
 - No additional configuration needed
 
 ```bash
+# From the project root directory (where docker-compose.dev.yml is located)
+cd /path/to/cartrader
+
 # Run tests inside Docker container
 docker-compose -f docker-compose.dev.yml exec backend pnpm test:e2e
+
+# Or if you're already in the backend directory, use:
+cd ../../ && docker-compose -f docker-compose.dev.yml exec backend pnpm test:e2e
 ```
 
 ## Test Coverage
