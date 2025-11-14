@@ -126,7 +126,7 @@ async function apiRequest<T>(
       headers['Authorization'] = `Bearer ${newAccessToken}`;
       response = await fetch(url, {
         ...options,
-        headers,
+        headers: headers as HeadersInit,
         credentials: 'include',
       });
     } else {

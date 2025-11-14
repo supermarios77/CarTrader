@@ -23,13 +23,12 @@ message_size_limit = 10240000
 
 # TLS (optional, can be enabled later)
 smtpd_tls_security_level = may
-smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-snakeoil.pem
-smtpd_tls_key_file = /etc/ssl/private/ssl-cert-snakeoil.key
 smtpd_tls_received_header = yes
 
-# Restrictions
+# Restrictions - allow all from Docker network
 smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
 smtpd_sender_restrictions = permit_mynetworks, permit_sasl_authenticated
+mynetworks = 127.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 10.0.0.0/8
 
 # Logging
 maillog_file = /var/log/mail.log
