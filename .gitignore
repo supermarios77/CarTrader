@@ -55,3 +55,4 @@ lerna-debug.log*
 .vercel/
 
 .pnpm-store/
+.pnpm-store/#
