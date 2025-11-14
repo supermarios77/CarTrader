@@ -22,12 +22,30 @@ Before running e2e tests, ensure:
 
 ## Running Tests
 
+### Local Development (outside Docker)
+
 ```bash
 # From the backend directory
+# Make sure postgres is running (via Docker or locally)
 pnpm test:e2e
 
 # Or with custom database URL
 TEST_DATABASE_URL="postgresql://user:pass@localhost:5432/testdb" pnpm test:e2e
+
+# If connecting to Docker database from host
+POSTGRES_HOST=localhost pnpm test:e2e
+```
+
+### Inside Docker Container
+
+When running tests inside a Docker container (e.g., in CI/CD or Docker Compose):
+- The `DATABASE_URL` environment variable is automatically set by docker-compose
+- It will use `postgres` as the hostname (Docker service name)
+- No additional configuration needed
+
+```bash
+# Run tests inside Docker container
+docker-compose -f docker-compose.dev.yml exec backend pnpm test:e2e
 ```
 
 ## Test Coverage

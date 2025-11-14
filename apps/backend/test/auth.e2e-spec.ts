@@ -7,11 +7,15 @@ import { PrismaService } from '../src/prisma/prisma.service';
 
 // Set DATABASE_URL if not provided (for test environment)
 if (!process.env.DATABASE_URL) {
-  // Use test database URL - adjust based on your setup
-  // For local testing, you can use: postgresql://cartrader_dev:dev_password@localhost:5432/cartrader_dev?schema=public
+  // Detect if running in Docker or connecting to Docker database
+  // - If POSTGRES_HOST is set, use it (allows explicit override)
+  // - If running in Docker container, DATABASE_URL should already be set by docker-compose
+  // - Otherwise, default to localhost for local development
+  const dbHost = process.env.POSTGRES_HOST || 'localhost';
+  
   process.env.DATABASE_URL =
     process.env.TEST_DATABASE_URL ||
-    'postgresql://cartrader_dev:dev_password@localhost:5432/cartrader_dev?schema=public';
+    `postgresql://cartrader_dev:dev_password@${dbHost}:5432/cartrader_dev?schema=public`;
 }
 
 // Set JWT secrets if not provided
