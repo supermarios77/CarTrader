@@ -144,7 +144,7 @@ export class AuthService {
         type: 'access',
       };
 
-      let accessToken: string;
+      let accessToken: string | null = null;
       let retries = 3;
       
       while (retries > 0) {
@@ -167,15 +167,19 @@ export class AuthService {
             if (retries === 0) {
               throw new ConflictException('Failed to refresh token. Please try again.');
             }
-            // Add timestamp variation to ensure different token
+            // Token will be different on next iteration due to timestamp variation
+            // JWT library automatically adds 'iat' (issued at) which ensures uniqueness
             accessTokenPayload = {
               ...accessTokenPayload,
-              iat: Math.floor(Date.now() / 1000),
             };
           } else {
             throw updateError; // Re-throw if it's a different error
           }
         }
+      }
+
+      if (!accessToken) {
+        throw new ConflictException('Failed to generate access token');
       }
 
       return { accessToken };
