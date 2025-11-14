@@ -261,7 +261,7 @@ export class AuthService {
       type: 'refresh',
     };
 
-    const accessToken = this.jwtService.sign(accessTokenPayload, {
+    let accessToken = this.jwtService.sign(accessTokenPayload, {
       secret: process.env.JWT_SECRET || 'change-me-in-production',
       expiresIn: '15m',
     });
@@ -297,9 +297,13 @@ export class AuthService {
           if (retries === 0) {
             throw new ConflictException('Failed to create session. Please try again.');
           }
-          // Generate a new access token with a slight variation (add timestamp to payload)
+          // Generate a new access token with a unique jti (JWT ID) to ensure uniqueness
           accessToken = this.jwtService.sign(
-            { ...accessTokenPayload, iat: Math.floor(Date.now() / 1000) },
+            { 
+              ...accessTokenPayload, 
+              jti: randomUUID(), // Add unique JWT ID
+              iat: Math.floor(Date.now() / 1000),
+            },
             {
               secret: process.env.JWT_SECRET || 'change-me-in-production',
               expiresIn: '15m',
