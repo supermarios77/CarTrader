@@ -91,13 +91,17 @@ services:
           cpus: '0.25'
           memory: 256M
 
-  # Postfix SMTP Server (Self-hosted, no usage limits)
+  # Postfix SMTP Server (Self-hosted, no usage limits, production-ready)
   postfix:
-    build:
-      context: ./docker/postfix
-      dockerfile: Dockerfile
+    image: catatnight/postfix:latest
     container_name: cartrader-postfix
     restart: unless-stopped
+    environment:
+      maildomain: cartrader.local
+      smtp_user: ${SMTP_USER:-}
+      smtp_password: ${SMTP_PASSWORD:-}
+    volumes:
+      - ./docker/postfix/main.cf:/etc/postfix/main.cf:ro
     ports:
       - "${SMTP_PORT:-25}:25"
     networks:
