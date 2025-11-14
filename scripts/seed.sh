@@ -49,6 +49,12 @@ if [ -z "$DATABASE_URL" ]; then
   exit 1
 fi
 
+# Generate Prisma Client first (required for seed script)
+echo "🔨 Generating Prisma Client..."
+pnpm generate
+
+# Run seed script
+echo "🌱 Running seed script..."
 pnpm db:seed
 
 echo "✅ Seeding completed!"

@@ -12,7 +12,7 @@
     "migrate:status": "prisma migrate status",
     "db:push": "prisma db push",
     "db:pull": "prisma db pull",
-    "db:seed": "tsx seed.ts",
+    "db:seed": "prisma generate && tsx seed.ts",
     "studio": "prisma studio",
     "format": "prisma format",
     "validate": "prisma validate"
