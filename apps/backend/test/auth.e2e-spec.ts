@@ -5,6 +5,23 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 
+// Set DATABASE_URL if not provided (for test environment)
+if (!process.env.DATABASE_URL) {
+  // Use test database URL - adjust based on your setup
+  // For local testing, you can use: postgresql://cartrader_dev:dev_password@localhost:5432/cartrader_dev?schema=public
+  process.env.DATABASE_URL =
+    process.env.TEST_DATABASE_URL ||
+    'postgresql://cartrader_dev:dev_password@localhost:5432/cartrader_dev?schema=public';
+}
+
+// Set JWT secrets if not provided
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test-jwt-secret';
+}
+if (!process.env.JWT_REFRESH_SECRET) {
+  process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret';
+}
+
 describe('AuthController (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
@@ -12,6 +29,14 @@ describe('AuthController (e2e)', () => {
   let createdUserId: string;
 
   beforeAll(async () => {
+    // Setup test user data before app initialization
+    testUser = {
+      email: `test-${Date.now()}@example.com`,
+      password: 'Test1234Password',
+      firstName: 'Test',
+      lastName: 'User',
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -29,14 +54,6 @@ describe('AuthController (e2e)', () => {
     );
 
     await app.init();
-
-    // Setup test user data
-    testUser = {
-      email: `test-${Date.now()}@example.com`,
-      password: 'Test1234Password',
-      firstName: 'Test',
-      lastName: 'User',
-    };
   });
 
   afterAll(async () => {
