@@ -7,15 +7,16 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Set working directory
 WORKDIR /app
 
-# Copy workspace files
+# Copy only package files first (for better layer caching)
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY packages ./packages
-COPY apps/backend ./apps/backend
+COPY packages/prisma/package.json ./packages/prisma/
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/backend/package.json ./apps/backend/
 
 # Dependencies stage
 FROM base AS dependencies
 
-# Install dependencies
+# Install dependencies (cached unless package files change)
 RUN pnpm install --frozen-lockfile --filter @cartrader/backend...
 
 # Build stage
@@ -25,7 +26,11 @@ FROM base AS build
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/packages ./packages
 
-# Generate Prisma Client
+# Copy source code (this layer rebuilds on code changes)
+COPY packages ./packages
+COPY apps/backend ./apps/backend
+
+# Generate Prisma Client (cached unless schema changes)
 WORKDIR /app/packages/prisma
 RUN pnpm generate
 

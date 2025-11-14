@@ -7,15 +7,16 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Set working directory
 WORKDIR /app
 
-# Copy workspace files
+# Copy only package files first (for better layer caching)
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY packages ./packages
-COPY apps/frontend ./apps/frontend
+COPY packages/prisma/package.json ./packages/prisma/
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/frontend/package.json ./apps/frontend/
 
 # Dependencies stage
 FROM base AS dependencies
 
-# Install dependencies
+# Install dependencies (cached unless package files change)
 RUN pnpm install --frozen-lockfile --filter @cartrader/frontend...
 
 # Build stage
@@ -24,6 +25,10 @@ FROM base AS build
 # Copy dependencies
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/packages ./packages
+
+# Copy source code (this layer rebuilds on code changes)
+COPY packages ./packages
+COPY apps/frontend ./apps/frontend
 
 # Set build arguments
 ARG NEXT_PUBLIC_API_URL

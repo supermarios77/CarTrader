@@ -10,13 +10,22 @@ RUN apk add --no-cache git
 # Set working directory
 WORKDIR /app
 
-# Copy workspace files
+# Copy only package files first (for better layer caching)
+# This layer will be cached unless package.json or pnpm-lock.yaml changes
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-COPY packages ./packages
-COPY apps/frontend ./apps/frontend
+COPY packages/prisma/package.json ./packages/prisma/
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/frontend/package.json ./apps/frontend/
 
 # Install all dependencies (including dev)
-RUN pnpm install
+# This step will be cached unless dependencies change
+RUN pnpm install --frozen-lockfile
+
+# Now copy the rest of the files (source code, etc.)
+# This layer will be rebuilt on code changes, but dependencies stay cached
+COPY packages ./packages
+COPY apps/frontend ./apps/frontend
 
 # Expose port
 EXPOSE 3000

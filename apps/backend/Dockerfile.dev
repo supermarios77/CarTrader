@@ -10,15 +10,25 @@ RUN apk add --no-cache git
 # Set working directory
 WORKDIR /app
 
-# Copy workspace files
+# Copy only package files first (for better layer caching)
+# This layer will be cached unless package.json or pnpm-lock.yaml changes
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY packages/prisma/package.json ./packages/prisma/
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/backend/package.json ./apps/backend/
+COPY apps/frontend/package.json ./apps/frontend/
+
+# Install all dependencies (including dev)
+# This step will be cached unless dependencies change
+RUN pnpm install --frozen-lockfile
+
+# Now copy the rest of the files (source code, etc.)
+# This layer will be rebuilt on code changes, but dependencies stay cached
 COPY packages ./packages
 COPY apps/backend ./apps/backend
 
-# Install all dependencies (including dev)
-RUN pnpm install
-
 # Generate Prisma Client
+# This will be cached unless schema changes
 WORKDIR /app/packages/prisma
 RUN pnpm generate
 
