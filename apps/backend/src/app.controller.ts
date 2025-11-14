@@ -17,7 +17,7 @@ export class AppController {
   @Get('health')
   async getHealth() {
     const dbHealthy = await this.prisma.isHealthy();
-    
+
     return {
       status: dbHealthy ? 'ok' : 'degraded',
       timestamp: new Date().toISOString(),

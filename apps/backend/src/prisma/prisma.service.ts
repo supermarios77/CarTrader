@@ -2,10 +2,16 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   constructor() {
     super({
-      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      log:
+        process.env.NODE_ENV === 'development'
+          ? ['query', 'error', 'warn']
+          : ['error'],
       errorFormat: 'pretty',
     });
   }
@@ -37,18 +43,21 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     if (process.env.NODE_ENV === 'production') {
       throw new Error('Cannot clean database in production');
     }
-    
+
     // Get all model names from Prisma Client (string keys only)
     // Object.keys only returns string keys, so we're safe here
     const modelKeys = Object.keys(this).filter(
       (key) => key[0] !== '_' && key !== 'constructor',
     );
-    
+
     return Promise.all(
       modelKeys.map((modelKey: string) => {
         // Type assertion needed because PrismaClient has dynamic model properties
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         const model = (this as any)[modelKey];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (model && typeof model.deleteMany === 'function') {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           return model.deleteMany({});
         }
         return Promise.resolve();
@@ -56,4 +65,3 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     );
   }
 }
-
