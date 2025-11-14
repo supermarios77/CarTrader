@@ -130,15 +130,14 @@ export class AuthService {
         throw new UnauthorizedException('User account is not active');
       }
 
-      // Generate new access token
-      const accessTokenPayload: JwtPayload = {
+      // Generate new access token with retry logic for unique constraint
+      let accessTokenPayload: JwtPayload = {
         sub: session.userId,
         email: session.user.email,
         role: session.user.role,
         type: 'access',
       };
 
-      // Generate new access token with retry logic for unique constraint
       let accessToken: string;
       let retries = 3;
       
