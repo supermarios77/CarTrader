@@ -60,6 +60,7 @@ model User {
   notifications Notification[]
   sessions      Session[]
   emailVerificationToken EmailVerificationToken?
+  passwordResetTokens PasswordResetToken[]
   
   // Indexes
   @@index([email])
@@ -100,6 +101,23 @@ model EmailVerificationToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([used])
+  @@map("password_reset_tokens")
 }
 
 // ============================================

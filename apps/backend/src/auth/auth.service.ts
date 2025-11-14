@@ -444,5 +444,110 @@ export class AuthService {
       token,
     );
   }
+
+  /**
+   * Request password reset (forgot password)
+   */
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Don't reveal if email exists for security
+      return {
+        message: 'If an account exists with this email, a password reset link has been sent.',
+      };
+    }
+
+    // Generate password reset token
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+
+    // Invalidate any existing unused reset tokens for this user
+    await this.prisma.passwordResetToken.updateMany({
+      where: {
+        userId: user.id,
+        used: false,
+      },
+      data: {
+        used: true,
+      },
+    });
+
+    // Create new password reset token
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        token,
+        expiresAt,
+      },
+    });
+
+    // Send password reset email
+    await this.emailService.sendPasswordResetEmail(
+      user.email,
+      user.firstName,
+      token,
+    );
+
+    return {
+      message: 'If an account exists with this email, a password reset link has been sent.',
+    };
+  }
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    // Find reset token
+    const resetToken = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!resetToken) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Check if token is expired
+    if (resetToken.expiresAt < new Date()) {
+      // Mark as used
+      await this.prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true },
+      });
+      throw new BadRequestException('Reset token has expired. Please request a new one.');
+    }
+
+    // Check if token is already used
+    if (resetToken.used) {
+      throw new BadRequestException('This reset token has already been used. Please request a new one.');
+    }
+
+    // Check if user is active
+    if (resetToken.user.status !== 'ACTIVE') {
+      throw new BadRequestException('Your account is not active. Please contact support.');
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password and mark token as used
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: resetToken.userId },
+        data: { passwordHash },
+      }),
+      this.prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true },
+      }),
+    ]);
+
+    return { message: 'Password reset successfully' };
+  }
 }
 
