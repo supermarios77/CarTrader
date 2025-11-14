@@ -13,6 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { JwtRefreshPayload } from './strategies/jwt-refresh.strategy';
+import { getRequiredEnv } from './utils/env.utils';
 
 @Injectable()
 export class AuthService {
@@ -105,7 +106,7 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
     try {
       const payload = this.jwtService.verify<JwtRefreshPayload>(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET || 'change-me-in-production-refresh',
+        secret: getRequiredEnv('JWT_REFRESH_SECRET'),
       });
 
       if (payload.type !== 'refresh') {
@@ -143,7 +144,7 @@ export class AuthService {
       
       while (retries > 0) {
         accessToken = this.jwtService.sign(accessTokenPayload, {
-          secret: process.env.JWT_SECRET || 'change-me-in-production',
+          secret: getRequiredEnv('JWT_SECRET'),
           expiresIn: '15m',
         });
 
@@ -262,12 +263,12 @@ export class AuthService {
     };
 
     let accessToken = this.jwtService.sign(accessTokenPayload, {
-      secret: process.env.JWT_SECRET || 'change-me-in-production',
+      secret: getRequiredEnv('JWT_SECRET'),
       expiresIn: '15m',
     });
 
     const refreshToken = this.jwtService.sign(refreshTokenPayload, {
-      secret: process.env.JWT_REFRESH_SECRET || 'change-me-in-production-refresh',
+      secret: getRequiredEnv('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
     });
 
@@ -305,7 +306,7 @@ export class AuthService {
               iat: Math.floor(Date.now() / 1000),
             },
             {
-              secret: process.env.JWT_SECRET || 'change-me-in-production',
+              secret: getRequiredEnv('JWT_SECRET'),
               expiresIn: '15m',
             },
           );

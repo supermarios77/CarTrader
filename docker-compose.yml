@@ -111,7 +111,8 @@ services:
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
-      JWT_SECRET: ${JWT_SECRET:-change_this_in_production}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     depends_on:
       postgres:

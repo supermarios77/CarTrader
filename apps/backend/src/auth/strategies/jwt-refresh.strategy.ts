@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { getRequiredEnv } from '../utils/env.utils';
 
 export interface JwtRefreshPayload {
   sub: string; // user id
@@ -15,7 +16,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
     super({
       jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_REFRESH_SECRET || 'change-me-in-production-refresh',
+      secretOrKey: getRequiredEnv('JWT_REFRESH_SECRET'),
       passReqToCallback: true,
       // Don't throw error if token is missing - let DTO validation handle it
     });
