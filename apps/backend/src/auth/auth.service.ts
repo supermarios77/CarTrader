@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -20,6 +21,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   /**
@@ -47,7 +49,7 @@ export class AuthService {
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         phone: registerDto.phone,
-        emailVerified: false, // Email verification can be added later
+        emailVerified: false,
         role: 'USER',
         status: 'ACTIVE',
       },
@@ -60,6 +62,9 @@ export class AuthService {
         emailVerified: true,
       },
     });
+
+    // Generate and send verification email
+    await this.sendVerificationEmail(user.id, user.email, user.firstName);
 
     // Create session and generate tokens
     return this.createSessionAndTokens(user.id, user.email, user.role);
@@ -334,6 +339,110 @@ export class AuthService {
       refreshToken,
       user: user!,
     };
+  }
+
+  /**
+   * Verify email address with token
+   */
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    // Find verification token
+    const verificationToken = await this.prisma.emailVerificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!verificationToken) {
+      throw new BadRequestException('Invalid or expired verification token');
+    }
+
+    // Check if token is expired
+    if (verificationToken.expiresAt < new Date()) {
+      // Delete expired token
+      await this.prisma.emailVerificationToken.delete({
+        where: { id: verificationToken.id },
+      });
+      throw new BadRequestException('Verification token has expired. Please request a new one.');
+    }
+
+    // Check if email is already verified
+    if (verificationToken.user.emailVerified) {
+      // Delete token since it's already used
+      await this.prisma.emailVerificationToken.delete({
+        where: { id: verificationToken.id },
+      });
+      throw new BadRequestException('Email is already verified');
+    }
+
+    // Verify email and delete token
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: verificationToken.userId },
+        data: { emailVerified: true },
+      }),
+      this.prisma.emailVerificationToken.delete({
+        where: { id: verificationToken.id },
+      }),
+    ]);
+
+    return { message: 'Email verified successfully' };
+  }
+
+  /**
+   * Resend verification email
+   */
+  async resendVerificationEmail(email: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      // Don't reveal if email exists for security
+      return { message: 'If an account exists with this email, a verification email has been sent.' };
+    }
+
+    if (user.emailVerified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    // Send verification email
+    await this.sendVerificationEmail(user.id, user.email, user.firstName);
+
+    return { message: 'Verification email sent successfully' };
+  }
+
+  /**
+   * Helper: Generate and send verification email
+   */
+  private async sendVerificationEmail(
+    userId: string,
+    email: string,
+    firstName: string | null,
+  ): Promise<void> {
+    // Generate verification token
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours expiry
+
+    // Delete any existing verification token for this user
+    await this.prisma.emailVerificationToken.deleteMany({
+      where: { userId },
+    });
+
+    // Create new verification token
+    await this.prisma.emailVerificationToken.create({
+      data: {
+        userId,
+        token,
+        expiresAt,
+      },
+    });
+
+    // Send verification email
+    await this.emailService.sendVerificationEmail(
+      email,
+      firstName || null,
+      token,
+    );
   }
 }
 

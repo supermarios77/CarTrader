@@ -59,6 +59,7 @@ model User {
   reviews       Review[]
   notifications Notification[]
   sessions      Session[]
+  emailVerificationToken EmailVerificationToken?
   
   // Indexes
   @@index([email])
@@ -84,6 +85,21 @@ model Session {
   @@index([token])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
 }
 
 // ============================================
