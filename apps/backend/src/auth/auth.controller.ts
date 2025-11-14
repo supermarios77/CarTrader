@@ -14,6 +14,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -49,11 +50,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
-  async logout(@CurrentUser('id') userId: string, @Body('sessionId') sessionId: string) {
-    if (!sessionId) {
-      throw new Error('Session ID is required');
-    }
-    return this.authService.logout(sessionId);
+  async logout(@CurrentUser('id') userId: string, @Body() logoutDto: LogoutDto) {
+    return this.authService.logout(userId, logoutDto.sessionId);
   }
 
   @Get('me')
