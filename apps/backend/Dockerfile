@@ -56,6 +56,16 @@ COPY --from=build --chown=nestjs:nodejs /app/apps/backend/dist ./apps/backend/di
 COPY --from=build --chown=nestjs:nodejs /app/apps/backend/package.json ./apps/backend/
 COPY --from=build --chown=nestjs:nodejs /app/packages/prisma ./packages/prisma
 
+# Generate Prisma Client in production stage
+# Install Prisma CLI temporarily (needed to generate client)
+# Note: Prisma CLI is small (~5MB) and can stay in production
+RUN pnpm add -D prisma --filter @cartrader/prisma
+
+# Generate Prisma Client (required for runtime)
+WORKDIR /app/packages/prisma
+RUN pnpm generate
+WORKDIR /app
+
 # Install postgresql-client for health checks (before switching user)
 RUN apk add --no-cache postgresql-client
 
