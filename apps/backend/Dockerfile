@@ -74,7 +74,7 @@ WORKDIR /app
 # Install postgresql-client for health checks (before switching user)
 RUN apk add --no-cache postgresql-client
 
-# Copy entrypoint script
+# Copy entrypoint script (from build context)
 COPY --chown=nestjs:nodejs scripts/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 

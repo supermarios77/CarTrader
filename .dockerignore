@@ -60,4 +60,5 @@ Dockerfile*
 
 # Scripts (keep only necessary ones)
 scripts/
+!scripts/docker-entrypoint.sh
 
