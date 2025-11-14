@@ -138,10 +138,40 @@ export class AuthService {
         type: 'access',
       };
 
-      const accessToken = this.jwtService.sign(accessTokenPayload, {
-        secret: process.env.JWT_SECRET || 'change-me-in-production',
-        expiresIn: '15m',
-      });
+      // Generate new access token with retry logic for unique constraint
+      let accessToken: string;
+      let retries = 3;
+      
+      while (retries > 0) {
+        accessToken = this.jwtService.sign(accessTokenPayload, {
+          secret: process.env.JWT_SECRET || 'change-me-in-production',
+          expiresIn: '15m',
+        });
+
+        // Update session with new access token
+        try {
+          await this.prisma.session.update({
+            where: { id: payload.sessionId },
+            data: { token: accessToken },
+          });
+          break; // Success, exit retry loop
+        } catch (updateError: any) {
+          // If update fails due to unique constraint on token, generate new token and retry
+          if (updateError.code === 'P2002' && updateError.meta?.target?.includes('token')) {
+            retries--;
+            if (retries === 0) {
+              throw new ConflictException('Failed to refresh token. Please try again.');
+            }
+            // Add timestamp variation to ensure different token
+            accessTokenPayload = {
+              ...accessTokenPayload,
+              iat: Math.floor(Date.now() / 1000),
+            };
+          } else {
+            throw updateError; // Re-throw if it's a different error
+          }
+        }
+      }
 
       return { accessToken };
     } catch (error) {
@@ -246,15 +276,41 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
-    await this.prisma.session.create({
-      data: {
-        id: sessionId,
-        userId,
-        token: accessToken,
-        refreshToken,
-        expiresAt,
-      },
-    });
+    // Handle potential unique constraint violation on token field
+    // Retry with a new token if collision occurs (extremely rare)
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        await this.prisma.session.create({
+          data: {
+            id: sessionId,
+            userId,
+            token: accessToken,
+            refreshToken,
+            expiresAt,
+          },
+        });
+        break; // Success, exit retry loop
+      } catch (error: any) {
+        // If unique constraint violation on token, generate new access token and retry
+        if (error.code === 'P2002' && error.meta?.target?.includes('token')) {
+          retries--;
+          if (retries === 0) {
+            throw new ConflictException('Failed to create session. Please try again.');
+          }
+          // Generate a new access token with a slight variation (add timestamp to payload)
+          accessToken = this.jwtService.sign(
+            { ...accessTokenPayload, iat: Math.floor(Date.now() / 1000) },
+            {
+              secret: process.env.JWT_SECRET || 'change-me-in-production',
+              expiresIn: '15m',
+            },
+          );
+        } else {
+          throw error; // Re-throw if it's a different error
+        }
+      }
+    }
 
     // Get user for response
     const user = await this.prisma.user.findUnique({

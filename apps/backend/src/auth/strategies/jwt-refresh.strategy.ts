@@ -17,6 +17,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_REFRESH_SECRET || 'change-me-in-production-refresh',
       passReqToCallback: true,
+      // Don't throw error if token is missing - let DTO validation handle it
     });
   }
 

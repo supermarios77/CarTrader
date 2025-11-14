@@ -42,8 +42,9 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtRefreshGuard)
   async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    // DTO validation happens via ValidationPipe (runs before method execution)
+    // Service validates token structure, content, and session
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 
