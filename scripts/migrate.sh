@@ -56,6 +56,17 @@ fi
 
 echo "✅ DATABASE_URL is set"
 
+# Remove connection pool parameters for migrations (they can cause advisory lock timeouts)
+# Keep only the basic connection string
+CLEAN_DATABASE_URL=$(echo "$DATABASE_URL" | sed 's/?.*$//')
+if [[ "$DATABASE_URL" =~ schema=([^&]+) ]]; then
+  SCHEMA="${BASH_REMATCH[1]}"
+  CLEAN_DATABASE_URL="${CLEAN_DATABASE_URL}?schema=${SCHEMA}"
+fi
+export DATABASE_URL="$CLEAN_DATABASE_URL"
+
+echo "📝 Using DATABASE_URL for migrations: ${DATABASE_URL//:[^:@]*@/:****@}"
+
 if [ "$ENV" = "prod" ] || [ "$ENV" = "production" ]; then
   echo "📦 Deploying migrations to production..."
   pnpm migrate:deploy
