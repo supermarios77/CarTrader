@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Development overrides
 services:
   postgres:
@@ -66,8 +64,7 @@ services:
     ports:
       - "3000:3000"
 
-  nginx:
-    ports:
-      - "80:80"
-    # Development nginx config (no SSL)
+  # Nginx is not needed in development - access services directly on their ports
+  # Frontend: http://localhost:3000
+  # Backend: http://localhost:3001
 
