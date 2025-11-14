@@ -29,6 +29,13 @@ Complete Docker configuration for CarTrader - production-ready with no loopholes
 
 ## Quick Start
 
+> **💡 No Domain Needed!** This setup works perfectly with:
+> - `http://localhost` (local development)
+> - `http://YOUR_VPS_IP` (production without domain)
+> - `https://yourdomain.com` (only if you have a domain)
+>
+> SSL/HTTPS is completely optional. HTTP works fine for self-hosted applications.
+
 ### Development
 
 ```bash
@@ -140,6 +147,13 @@ docker-compose down
 
 ## Environment Variables
 
+### No Domain Required! 🎉
+
+**The setup works perfectly without a domain.** You can use:
+- **Localhost**: `http://localhost` (for local development)
+- **VPS IP**: `http://YOUR_VPS_IP` (for production without domain)
+- **Domain**: `https://yourdomain.com` (only if you have one and want SSL)
+
 ### Required for Production
 
 ```bash
@@ -150,6 +164,16 @@ REDIS_PASSWORD=strong_redis_password
 MINIO_ROOT_USER=minio_user
 MINIO_ROOT_PASSWORD=strong_minio_password
 JWT_SECRET=min_32_characters_long_secret
+
+# For localhost (no domain):
+FRONTEND_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# OR for VPS IP (no domain):
+FRONTEND_URL=http://YOUR_VPS_IP:3000
+NEXT_PUBLIC_API_URL=http://YOUR_VPS_IP:3001
+
+# OR for domain (if you have one):
 FRONTEND_URL=https://yourdomain.com
 NEXT_PUBLIC_API_URL=https://yourdomain.com
 ```
@@ -179,9 +203,11 @@ docker exec cartrader-redis redis-cli --rdb /data/dump.rdb
 mc mirror minio/data ./backups/minio
 ```
 
-## SSL/TLS Setup
+## SSL/TLS Setup (Optional - Only if you have a domain)
 
-### Using Let's Encrypt
+**Note**: SSL/TLS is completely optional. The application works fine over HTTP with localhost or VPS IP.
+
+### If you have a domain and want HTTPS:
 
 1. Install certbot
 2. Generate certificates:
@@ -196,7 +222,15 @@ cp /etc/letsencrypt/live/yourdomain.com/privkey.pem docker/nginx/ssl/key.pem
 ```
 
 4. Uncomment HTTPS server block in `docker/nginx/nginx.conf`
-5. Restart Nginx: `docker-compose restart nginx`
+5. Update `.env` with your domain URLs
+6. Restart Nginx: `docker-compose restart nginx`
+
+### Without a domain:
+
+- Use `http://localhost` for local development
+- Use `http://YOUR_VPS_IP` for production
+- Nginx is configured to work with any hostname (no domain required)
+- HTTP works perfectly fine for self-hosted applications
 
 ## Monitoring
 
@@ -262,9 +296,8 @@ All containers run as non-root. If you encounter permission issues:
 ## Production Deployment Checklist
 
 - [ ] Set strong passwords in `.env`
-- [ ] Configure SSL certificates
-- [ ] Set up domain DNS
-- [ ] Configure firewall (ports 80, 443, 22)
+- [ ] Configure `FRONTEND_URL` and `NEXT_PUBLIC_API_URL` (localhost, VPS IP, or domain)
+- [ ] Configure firewall (ports 80, 443 if using SSL, 22 for SSH)
 - [ ] Set up automated backups
 - [ ] Configure monitoring/alerting
 - [ ] Set resource limits appropriate for your VPS
@@ -272,6 +305,8 @@ All containers run as non-root. If you encounter permission issues:
 - [ ] Set up health check monitoring
 - [ ] Review and update security headers
 - [ ] Test disaster recovery procedures
+- [ ] (Optional) Configure SSL certificates if you have a domain
+- [ ] (Optional) Set up domain DNS if you have a domain
 
 ## Scaling
 
