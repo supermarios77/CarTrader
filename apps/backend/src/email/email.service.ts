@@ -1,8 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter;
+
+  constructor() {
+    // Initialize SMTP transporter using self-hosted Postfix
+    const smtpHost = process.env.SMTP_HOST || 'postfix';
+    const smtpPort = parseInt(process.env.SMTP_PORT || '25', 10);
+    const smtpFrom = process.env.SMTP_FROM || 'noreply@cartrader.local';
+
+    this.transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: false, // Postfix on port 25 doesn't use TLS by default
+      // No authentication needed for local Postfix
+      tls: {
+        rejectUnauthorized: false, // Allow self-signed certificates
+      },
+    });
+
+    this.logger.log(`📧 Email service initialized: ${smtpHost}:${smtpPort} (self-hosted Postfix)`);
+  }
 
   /**
    * Send email verification email
@@ -15,28 +36,22 @@ export class EmailService {
   ): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const verificationUrl = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
+    const fromEmail = process.env.SMTP_FROM || 'noreply@cartrader.local';
 
-    // TODO: Replace with actual email service in production
-    // For now, log the verification link
-    this.logger.log(`📧 Email verification for ${email}:`);
-    this.logger.log(`   Verification URL: ${verificationUrl}`);
-    this.logger.log(`   Token: ${verificationToken}`);
+    try {
+      await this.transporter.sendMail({
+        from: fromEmail,
+        to: email,
+        subject: 'Verify your email address - CarTrader',
+        html: this.getVerificationEmailTemplate(name, verificationUrl),
+      });
 
-    // In production, use an email service like:
-    // - SendGrid: @sendgrid/mail
-    // - AWS SES: @aws-sdk/client-ses
-    // - Nodemailer: nodemailer
-    // - Resend: resend
-
-    // Example with a real email service:
-    /*
-    await this.emailClient.send({
-      to: email,
-      from: process.env.EMAIL_FROM || 'noreply@cartrader.com',
-      subject: 'Verify your email address',
-      html: this.getVerificationEmailTemplate(name, verificationUrl),
-    });
-    */
+      this.logger.log(`✅ Verification email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send verification email to ${email}:`, error);
+      // Don't throw - log error but don't break registration
+      // In production, you might want to queue for retry
+    }
   }
 
   /**
@@ -87,28 +102,22 @@ export class EmailService {
   ): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+    const fromEmail = process.env.SMTP_FROM || 'noreply@cartrader.local';
 
-    // TODO: Replace with actual email service in production
-    // For now, log the reset link
-    this.logger.log(`📧 Password reset for ${email}:`);
-    this.logger.log(`   Reset URL: ${resetUrl}`);
-    this.logger.log(`   Token: ${resetToken}`);
+    try {
+      await this.transporter.sendMail({
+        from: fromEmail,
+        to: email,
+        subject: 'Reset your password - CarTrader',
+        html: this.getPasswordResetEmailTemplate(name, resetUrl),
+      });
 
-    // In production, use an email service like:
-    // - SendGrid: @sendgrid/mail
-    // - AWS SES: @aws-sdk/client-ses
-    // - Nodemailer: nodemailer
-    // - Resend: resend
-
-    // Example with a real email service:
-    /*
-    await this.emailClient.send({
-      to: email,
-      from: process.env.EMAIL_FROM || 'noreply@cartrader.com',
-      subject: 'Reset your password',
-      html: this.getPasswordResetEmailTemplate(name, resetUrl),
-    });
-    */
+      this.logger.log(`✅ Password reset email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset email to ${email}:`, error);
+      // Don't throw - log error but don't break the flow
+      // In production, you might want to queue for retry
+    }
   }
 
   /**

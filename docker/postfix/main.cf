@@ -1,0 +1,36 @@
+# Postfix main configuration
+# Self-hosted SMTP server - no usage limits, production-ready
+
+# Basic settings
+myhostname = postfix.local
+mydomain = local
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+
+# Network settings
+mydestination = $myhostname, localhost.$mydomain, localhost
+relayhost =
+
+# Security
+smtpd_banner = $myhostname ESMTP
+disable_vrfy_command = yes
+smtpd_helo_required = yes
+
+# Delivery
+mailbox_size_limit = 0
+message_size_limit = 10240000
+
+# TLS (optional, can be enabled later)
+smtpd_tls_security_level = may
+smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file = /etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_tls_received_header = yes
+
+# Restrictions
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination
+smtpd_sender_restrictions = permit_mynetworks, permit_sasl_authenticated
+
+# Logging
+maillog_file = /var/log/mail.log
+
