@@ -38,6 +38,7 @@ describe('AppController', () => {
       expect(result).toHaveProperty('timestamp');
       expect(result).toHaveProperty('service', 'cartrader-backend');
       expect(result).toHaveProperty('database');
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(prismaService.isHealthy).toHaveBeenCalled();
     });
   });
