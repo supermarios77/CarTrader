@@ -18,6 +18,10 @@ COPY apps/backend ./apps/backend
 # Install all dependencies (including dev)
 RUN pnpm install
 
+# Generate Prisma Client
+WORKDIR /app/packages/prisma
+RUN pnpm generate
+
 # Expose port
 EXPOSE 3001
 
