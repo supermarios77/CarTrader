@@ -1,0 +1,461 @@
+// Prisma Schema for CarTrader
+// Production-ready, secure, and comprehensive
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./node_modules/.prisma/client"
+  previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  emailVerified Boolean     @default(false)
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  phone         String?
+  phoneVerified Boolean     @default(false)
+  role          UserRole    @default(USER)
+  status        UserStatus  @default(ACTIVE)
+  avatar        String?
+  bio           String?     @db.Text
+  location      String?
+  city          String?
+  country       String?
+  
+  // Timestamps
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relations
+  vehicles      Vehicle[]
+  favorites     Favorite[]
+  messagesSent Message[]   @relation("MessageSender")
+  messagesReceived Message[] @relation("MessageReceiver")
+  savedSearches SavedSearch[]
+  reviews       Review[]
+  notifications Notification[]
+  sessions      Session[]
+  
+  // Indexes
+  @@index([email])
+  @@index([status])
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  refreshToken String?  @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ============================================
+// VEHICLE CATEGORIES & MAKES
+// ============================================
+
+enum VehicleCategory {
+  CAR
+  BIKE
+  AUTO_PARTS
+  ACCESSORIES
+}
+
+enum VehicleStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  EXPIRED
+  SUSPENDED
+}
+
+enum TransmissionType {
+  MANUAL
+  AUTOMATIC
+  CVT
+  SEMI_AUTOMATIC
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  HYBRID
+  ELECTRIC
+  CNG
+  LPG
+}
+
+enum BodyType {
+  SEDAN
+  HATCHBACK
+  SUV
+  COUPE
+  CONVERTIBLE
+  WAGON
+  VAN
+  PICKUP
+  MOTORCYCLE
+  SCOOTER
+  OTHER
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  icon        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  makes       Make[]
+  
+  @@index([slug])
+  @@index([isActive])
+  @@map("categories")
+}
+
+model Make {
+  id          String   @id @default(uuid())
+  categoryId  String
+  name        String
+  slug        String
+  logo        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  models      Model[]
+  vehicles    Vehicle[]
+  
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("makes")
+}
+
+model Model {
+  id          String   @id @default(uuid())
+  makeId      String
+  name        String
+  slug        String
+  yearFrom    Int?
+  yearTo      Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  make        Make     @relation(fields: [makeId], references: [id], onDelete: Cascade)
+  vehicles    Vehicle[]
+  
+  @@unique([makeId, slug])
+  @@index([makeId])
+  @@index([slug])
+  @@index([isActive])
+  @@map("models")
+}
+
+// ============================================
+// VEHICLES
+// ============================================
+
+model Vehicle {
+  id              String          @id @default(uuid())
+  userId          String
+  categoryId      String
+  makeId          String
+  modelId         String
+  
+  // Basic Info
+  title           String
+  description     String?        @db.Text
+  price           Decimal         @db.Decimal(12, 2)
+  currency        String          @default("PKR")
+  year            Int
+  mileage         Int
+  mileageUnit     String          @default("km")
+  transmission    TransmissionType
+  fuelType        FuelType
+  bodyType        BodyType
+  engineCapacity  Int?            // in CC
+  color           String?
+  registrationCity String?
+  registrationYear Int?
+  
+  // Location
+  city            String
+  province        String?
+  address         String?
+  latitude        Float?
+  longitude       Float?
+  
+  // Status
+  status          VehicleStatus   @default(DRAFT)
+  featured        Boolean         @default(false)
+  featuredUntil   DateTime?
+  views           Int             @default(0)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  publishedAt     DateTime?
+  soldAt          DateTime?
+  expiresAt       DateTime?
+  
+  // Relations
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        Category        @relation(fields: [categoryId], references: [id])
+  make            Make            @relation(fields: [makeId], references: [id])
+  model           Model           @relation(fields: [modelId], references: [id])
+  images          VehicleImage[]
+  favorites       Favorite[]
+  messages        Message[]
+  reviews         Review[]
+  features        VehicleFeature[]
+  
+  // Indexes
+  @@index([userId])
+  @@index([categoryId])
+  @@index([makeId])
+  @@index([modelId])
+  @@index([status])
+  @@index([featured])
+  @@index([city])
+  @@index([price])
+  @@index([year])
+  @@index([createdAt])
+  @@index([publishedAt])
+  @@fulltext([title, description])
+  @@map("vehicles")
+}
+
+model VehicleImage {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  url         String
+  thumbnailUrl String?
+  order       Int      @default(0)
+  isPrimary   Boolean  @default(false)
+  alt         String?
+  createdAt   DateTime @default(now())
+  
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  @@index([vehicleId])
+  @@index([isPrimary])
+  @@map("vehicle_images")
+}
+
+model VehicleFeature {
+  id          String   @id @default(uuid())
+  vehicleId   String
+  name        String
+  value       String?
+  createdAt   DateTime @default(now())
+  
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  @@index([vehicleId])
+  @@map("vehicle_features")
+}
+
+// ============================================
+// USER INTERACTIONS
+// ============================================
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  vehicleId String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, vehicleId])
+  @@index([userId])
+  @@index([vehicleId])
+  @@map("favorites")
+}
+
+model SavedSearch {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  searchQuery Json     // Store search filters as JSON
+  alertEnabled Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("saved_searches")
+}
+
+// ============================================
+// MESSAGING
+// ============================================
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+model Message {
+  id          String        @id @default(uuid())
+  senderId    String
+  receiverId  String
+  vehicleId    String?
+  subject      String?
+  content      String        @db.Text
+  status       MessageStatus @default(SENT)
+  readAt       DateTime?
+  createdAt    DateTime      @default(now())
+  
+  sender      User          @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User          @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle?      @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([vehicleId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// ============================================
+// REVIEWS & RATINGS
+// ============================================
+
+model Review {
+  id          String   @id @default(uuid())
+  userId      String
+  vehicleId   String
+  rating      Int      // 1-5
+  title       String?
+  comment     String?  @db.Text
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([vehicleId])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+enum NotificationType {
+  MESSAGE
+  FAVORITE
+  REVIEW
+  VEHICLE_APPROVED
+  VEHICLE_REJECTED
+  VEHICLE_EXPIRING
+  SYSTEM
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+model Notification {
+  id          String            @id @default(uuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String            @db.Text
+  link        String?
+  status      NotificationStatus @default(UNREAD)
+  readAt      DateTime?
+  createdAt   DateTime          @default(now())
+  
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================
+// ADMIN & MODERATION
+// ============================================
+
+enum ModerationAction {
+  APPROVE
+  REJECT
+  SUSPEND
+  DELETE
+}
+
+model ModerationLog {
+  id          String            @id @default(uuid())
+  moderatorId String?           // User ID of moderator/admin
+  entityType  String            // 'vehicle', 'user', 'review', etc.
+  entityId    String
+  action      ModerationAction
+  reason      String?           @db.Text
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  
+  @@index([moderatorId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("moderation_logs")
+}
+

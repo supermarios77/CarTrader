@@ -35,7 +35,7 @@ services:
       - /app/packages/shared/node_modules
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://cartrader_dev:dev_password@postgres:5432/cartrader_dev
+      DATABASE_URL: postgresql://cartrader_dev:dev_password@postgres:5432/cartrader_dev?schema=public&connection_limit=5&pool_timeout=20
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ""

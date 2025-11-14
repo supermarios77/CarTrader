@@ -103,7 +103,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://${POSTGRES_USER:-cartrader}:${POSTGRES_PASSWORD:-cartrader_password}@postgres:5432/${POSTGRES_DB:-cartrader}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cartrader}:${POSTGRES_PASSWORD:-cartrader_password}@postgres:5432/${POSTGRES_DB:-cartrader}?schema=public&connection_limit=10&pool_timeout=20
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}

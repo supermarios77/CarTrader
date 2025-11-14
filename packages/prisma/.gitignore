@@ -1,0 +1,12 @@
+# Prisma
+migrations/
+*.db
+*.db-journal
+
+# Environment
+.env
+.env.local
+
+# Generated
+node_modules/.prisma/
+

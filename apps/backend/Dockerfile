@@ -25,6 +25,10 @@ FROM base AS build
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=dependencies /app/packages ./packages
 
+# Generate Prisma Client
+WORKDIR /app/packages/prisma
+RUN pnpm generate
+
 # Build the application
 WORKDIR /app/apps/backend
 RUN pnpm build
@@ -50,6 +54,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate && \
 # Copy built application
 COPY --from=build --chown=nestjs:nodejs /app/apps/backend/dist ./apps/backend/dist
 COPY --from=build --chown=nestjs:nodejs /app/apps/backend/package.json ./apps/backend/
+COPY --from=build --chown=nestjs:nodejs /app/packages/prisma ./packages/prisma
+
+# Install postgresql-client for health checks (before switching user)
+RUN apk add --no-cache postgresql-client
+
+# Copy entrypoint script
+COPY --chown=nestjs:nodejs scripts/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Switch to non-root user
 USER nestjs
@@ -61,7 +73,6 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start application
-WORKDIR /app/apps/backend
-CMD ["node", "dist/main.js"]
+# Start application with entrypoint
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
