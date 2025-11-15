@@ -131,9 +131,6 @@ export class VehiclesService {
     // For authenticated users: Show ACTIVE vehicles + their own DRAFT vehicles
     const now = new Date();
     
-    // Debug logging
-    this.logger.debug(`🔍 Finding vehicles - userId: ${userId || 'none'}, filters: ${JSON.stringify(filterDto)}`);
-    
     const where: Prisma.VehicleWhereInput = userId
       ? {
           // Authenticated users: Show ACTIVE vehicles (non-expired) OR their own DRAFT vehicles
@@ -272,7 +269,6 @@ export class VehiclesService {
     }
 
     // Execute query
-    this.logger.debug(`🔎 Executing query - skip: ${skip}, take: ${limit}`);
     const [vehicles, total] = await Promise.all([
       this.prisma.vehicle.findMany({
         where,
@@ -330,8 +326,6 @@ export class VehiclesService {
       }),
       this.prisma.vehicle.count({ where }),
     ]);
-
-    this.logger.debug(`✅ Query results - Found ${vehicles.length} vehicles, Total: ${total}`);
 
     // Check if vehicles are favorited by user
     const vehiclesWithFavorites = userId
@@ -433,7 +427,8 @@ export class VehiclesService {
           },
         },
       });
-      (vehicle as any).isFavorite = !!favorite;
+      // Add isFavorite property to vehicle
+      Object.assign(vehicle, { isFavorite: !!favorite });
     }
 
     return this.mapToResponseDto(vehicle);
@@ -595,10 +590,29 @@ export class VehiclesService {
     }
 
     // Delete images from storage
+    // Extract keys from URLs - handle both transformed and original URLs
     const imageKeys = vehicle.images.map((img) => {
-      // Extract key from URL
-      const urlParts = img.url.split('/');
-      return urlParts.slice(-2).join('/'); // vehicles/filename
+      try {
+        // Try to extract key from URL path
+        // URLs can be: http://localhost:9000/vehicles/vehicles/file.jpg
+        // or: http://minio:9000/vehicles/vehicles/file.jpg
+        const urlObj = new URL(img.url);
+        const path = urlObj.pathname;
+        // Remove leading slash and extract the path after bucket name
+        // Path format: /vehicles/vehicles/file.jpg -> vehicles/vehicles/file.jpg
+        const pathWithoutSlash = path.startsWith('/') ? path.slice(1) : path;
+        // If path starts with 'vehicles/', return as-is, otherwise extract last two parts
+        if (pathWithoutSlash.startsWith('vehicles/')) {
+          return pathWithoutSlash;
+        }
+        // Fallback: extract last two path segments
+        const parts = pathWithoutSlash.split('/');
+        return parts.slice(-2).join('/');
+      } catch {
+        // Fallback: simple string extraction
+        const urlParts = img.url.split('/');
+        return urlParts.slice(-2).join('/');
+      }
     });
 
     if (imageKeys.length > 0) {
@@ -855,7 +869,7 @@ export class VehiclesService {
       })),
       features: vehicle.features,
       _count: vehicle._count,
-      isFavorite: (vehicle as any).isFavorite || false,
+      isFavorite: 'isFavorite' in vehicle ? Boolean(vehicle.isFavorite) : false,
     };
   }
 }

@@ -37,34 +37,14 @@ export default function VehiclesPage() {
       setLoading(true);
       setError(null);
       try {
-        console.log('🔍 [DEBUG] Fetching vehicles with filters:', {
-          ...filters,
-          search: searchQuery || undefined,
-        });
-        
         const response = await getVehicles({
           ...filters,
           search: searchQuery || undefined,
         });
         
-        console.log('✅ [DEBUG] Vehicles API Response:', {
-          vehiclesCount: response.vehicles.length,
-          total: response.pagination.total,
-          pagination: response.pagination,
-          vehicles: response.vehicles.map(v => ({
-            id: v.id,
-            title: v.title,
-            status: v.status,
-            publishedAt: v.publishedAt,
-            expiresAt: v.expiresAt,
-            hasImages: v.images?.length > 0,
-          })),
-        });
-        
         setVehicles(response.vehicles);
         setPagination(response.pagination);
       } catch (err) {
-        console.error('❌ [DEBUG] Error fetching vehicles:', err);
         setError(err instanceof Error ? err.message : 'Failed to load vehicles');
       } finally {
         setLoading(false);

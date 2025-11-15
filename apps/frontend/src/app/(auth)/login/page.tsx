@@ -121,8 +121,7 @@ export default function LoginPage() {
       // In production, consider sending to error tracking service
       if (process.env.NODE_ENV === 'development' && err instanceof ApiClientError) {
         // Only log in development for debugging
-        // Note: console.error is acceptable in development mode
-        console.error('Login error:', err.message, err.statusCode);
+        // Error is handled by setError below
       }
     } finally {
       setIsSubmitting(false);

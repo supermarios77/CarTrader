@@ -35,7 +35,6 @@ export default function VehicleDetailPage() {
         setVehicle(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Vehicle not found');
-        console.error('Error fetching vehicle:', err);
       } finally {
         setLoading(false);
       }

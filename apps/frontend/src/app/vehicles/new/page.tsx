@@ -93,7 +93,6 @@ export default function CreateVehiclePage() {
       router.push(`/vehicles/${vehicle.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create vehicle');
-      console.error('Error creating vehicle:', err);
     } finally {
       setLoading(false);
     }

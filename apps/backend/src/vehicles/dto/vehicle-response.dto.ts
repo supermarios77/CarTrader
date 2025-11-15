@@ -10,6 +10,7 @@ import {
   Make,
   Model,
   User,
+  Prisma,
 } from '@prisma/client';
 
 export interface VehicleWithRelations {
@@ -20,7 +21,7 @@ export interface VehicleWithRelations {
   modelId: string;
   title: string;
   description: string | null;
-  price: any; // Decimal from Prisma
+  price: Prisma.Decimal | number | string; // Decimal from Prisma
   currency: string;
   year: number;
   mileage: number;

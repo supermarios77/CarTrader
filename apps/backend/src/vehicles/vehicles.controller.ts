@@ -67,8 +67,6 @@ export class VehiclesController {
     @Query() filterDto: FilterVehiclesDto,
     @CurrentUser('id') userId?: string,
   ) {
-    // Debug logging
-    console.log('🔍 [VehiclesController] GET /vehicles - userId:', userId || 'none (not authenticated)');
     return this.vehiclesService.findAll(filterDto, userId);
   }
 

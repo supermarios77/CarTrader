@@ -204,7 +204,7 @@ export default function RegisterPage() {
       if (process.env.NODE_ENV === 'development' && err instanceof ApiClientError) {
         // Only log in development
         // eslint-disable-next-line no-console
-        console.error('Registration error:', err.message, err.statusCode);
+        // Error is handled by setError below
       }
     } finally {
       setIsSubmitting(false);
