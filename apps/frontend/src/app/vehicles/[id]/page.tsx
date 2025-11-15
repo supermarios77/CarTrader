@@ -161,6 +161,12 @@ export default function VehicleDetailPage() {
                         src={vehicle.images[0].url}
                         alt={vehicle.images[0].alt || vehicle.title}
                         className="h-96 w-full rounded-lg object-cover"
+                        loading="eager"
+                        decoding="async"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23ddd" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="20" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EImage not available%3C/text%3E%3C/svg%3E';
+                        }}
                       />
                     </div>
                     {vehicle.images.slice(1, 5).map((image) => (
@@ -169,6 +175,12 @@ export default function VehicleDetailPage() {
                         src={image.url}
                         alt={image.alt || vehicle.title}
                         className="h-48 w-full rounded-lg object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ddd" width="200" height="150"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EN/A%3C/text%3E%3C/svg%3E';
+                        }}
                       />
                     ))}
                   </div>

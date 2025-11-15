@@ -744,6 +744,47 @@ export class VehiclesService {
   }
 
   /**
+   * Transform image URL from internal Docker hostname to public URL
+   */
+  private transformImageUrl(url: string): string {
+    // Replace internal Docker hostnames with public URLs
+    const isDev = process.env.NODE_ENV === 'development';
+    const publicEndpoint = process.env.MINIO_PUBLIC_ENDPOINT || (isDev ? 'localhost' : 'localhost');
+    const publicPort = process.env.MINIO_PUBLIC_PORT || (isDev ? '9000' : '9000');
+    const useSSL = process.env.MINIO_USE_SSL === 'true';
+    const protocol = useSSL ? 'https' : 'http';
+
+    // Replace common internal hostnames
+    const internalPatterns = [
+      /^https?:\/\/minio:\d+\//,
+      /^https?:\/\/localhost:\d+\/vehicles\//,
+      /^https?:\/\/127\.0\.0\.1:\d+\//,
+    ];
+
+    let transformedUrl = url;
+    for (const pattern of internalPatterns) {
+      if (pattern.test(url)) {
+        // Extract the path after the hostname
+        const urlObj = new URL(url);
+        const path = urlObj.pathname;
+        transformedUrl = `${protocol}://${publicEndpoint}:${publicPort}${path}`;
+        break;
+      }
+    }
+
+    // If URL doesn't match internal patterns but contains 'minio', replace it
+    if (url.includes('minio:') || url.includes('localhost:9000/vehicles/vehicles/')) {
+      // Extract bucket and file path
+      const match = url.match(/\/(vehicles\/.+)$/);
+      if (match) {
+        transformedUrl = `${protocol}://${publicEndpoint}:${publicPort}/${match[1]}`;
+      }
+    }
+
+    return transformedUrl;
+  }
+
+  /**
    * Map vehicle to response DTO
    */
   private mapToResponseDto(vehicle: VehicleWithRelations): VehicleResponseDto {
@@ -784,7 +825,11 @@ export class VehiclesService {
       make: vehicle.make,
       model: vehicle.model,
       user: vehicle.user,
-      images: vehicle.images,
+      images: vehicle.images.map((img) => ({
+        ...img,
+        url: this.transformImageUrl(img.url),
+        thumbnailUrl: img.thumbnailUrl ? this.transformImageUrl(img.thumbnailUrl) : null,
+      })),
       features: vehicle.features,
       _count: vehicle._count,
       isFavorite: (vehicle as any).isFavorite || false,

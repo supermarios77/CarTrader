@@ -200,6 +200,20 @@ export default function VehiclesPage() {
                           src={vehicle.images[0].url}
                           alt={vehicle.images[0].alt || vehicle.title}
                           className="h-full w-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            // Fallback to placeholder if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent && !parent.querySelector('.image-error')) {
+                              const placeholder = document.createElement('div');
+                              placeholder.className = 'image-error flex h-full items-center justify-center text-muted-foreground';
+                              placeholder.textContent = 'Image not available';
+                              parent.appendChild(placeholder);
+                            }
+                          }}
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center text-muted-foreground">
