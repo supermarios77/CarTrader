@@ -40,6 +40,7 @@ RUN chmod +x /app/docker-dev-backend.sh
 EXPOSE 3001
 
 # Start in watch mode using startup script
+# Use shell form to execute the script properly
 WORKDIR /app
-CMD ["/app/docker-dev-backend.sh"]
+CMD ["/bin/sh", "/app/docker-dev-backend.sh"]
 

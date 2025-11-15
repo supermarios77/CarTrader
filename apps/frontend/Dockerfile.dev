@@ -35,6 +35,7 @@ RUN chmod +x /app/docker-dev-frontend.sh
 EXPOSE 3000
 
 # Start in development mode using startup script
+# Use shell form to execute the script properly
 WORKDIR /app
-CMD ["/app/docker-dev-frontend.sh"]
+CMD ["/bin/sh", "/app/docker-dev-frontend.sh"]
 
