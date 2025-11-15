@@ -74,59 +74,76 @@ export class MessagesService {
       throw new BadRequestException('Failed to encrypt message content');
     }
 
-    // Create message
-    const message = await this.prisma.message.create({
-      data: {
-        senderId,
-        receiverId: createMessageDto.receiverId,
-        vehicleId: createMessageDto.vehicleId || null,
-        subject: createMessageDto.subject || null,
-        content: encryptedContent, // Store encrypted
-        status: MessageStatus.SENT,
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatar: true,
-          },
+    // Create message with error handling
+    let message;
+    try {
+      message = await this.prisma.message.create({
+        data: {
+          senderId,
+          receiverId: createMessageDto.receiverId,
+          vehicleId: createMessageDto.vehicleId || null,
+          subject: createMessageDto.subject?.trim() || null,
+          content: encryptedContent, // Store encrypted
+          status: MessageStatus.SENT,
         },
-        receiver: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatar: true,
+        include: {
+          sender: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
           },
-        },
-        vehicle: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            currency: true,
-            year: true,
-            images: {
-              where: { isPrimary: true },
-              take: 1,
-              select: {
-                id: true,
-                url: true,
-                thumbnailUrl: true,
-                isPrimary: true,
+          receiver: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          vehicle: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              currency: true,
+              year: true,
+              images: {
+                where: { isPrimary: true },
+                take: 1,
+                select: {
+                  id: true,
+                  url: true,
+                  thumbnailUrl: true,
+                  isPrimary: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to create message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to create message');
+    }
 
     // Decrypt content for response
-    const decryptedContent = decryptMessage(message.content);
+    let decryptedContent: string;
+    try {
+      decryptedContent = decryptMessage(message.content);
+    } catch (error) {
+      this.logger.error(
+        `Failed to decrypt newly created message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      // This shouldn't happen, but handle gracefully
+      throw new BadRequestException('Failed to decrypt message content');
+    }
 
     this.logger.log(
       `✅ Message sent from ${senderId} to ${createMessageDto.receiverId}`,
@@ -232,11 +249,20 @@ export class MessagesService {
       this.prisma.message.count({ where }),
     ]);
 
-    // Decrypt all messages
+    // Decrypt all messages with error handling
     const decryptedMessages = messages.map((msg) => {
-      const decryptedContent = isEncrypted(msg.content)
-        ? decryptMessage(msg.content)
-        : msg.content; // Fallback for unencrypted messages (migration)
+      let decryptedContent: string;
+      try {
+        decryptedContent = isEncrypted(msg.content)
+          ? decryptMessage(msg.content)
+          : msg.content; // Fallback for unencrypted messages (migration)
+      } catch (error) {
+        this.logger.error(
+          `Failed to decrypt message ${msg.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+        // Return error message instead of failing completely
+        decryptedContent = '[Message decryption failed]';
+      }
       return this.mapToResponse(msg, decryptedContent);
     });
 
@@ -319,11 +345,24 @@ export class MessagesService {
         msg.senderId === userId ? msg.receiverId : msg.senderId;
       const partner = msg.senderId === userId ? msg.receiver : msg.sender;
 
+      if (!partnerId || !partner) {
+        this.logger.warn(`Skipping message ${msg.id} with invalid partner`);
+        continue;
+      }
+
       if (!conversationMap.has(partnerId)) {
-        // Decrypt last message content
-        const decryptedContent = isEncrypted(msg.content)
-          ? decryptMessage(msg.content)
-          : msg.content;
+        // Decrypt last message content with error handling
+        let decryptedContent: string;
+        try {
+          decryptedContent = isEncrypted(msg.content)
+            ? decryptMessage(msg.content)
+            : msg.content;
+        } catch (error) {
+          this.logger.error(
+            `Failed to decrypt message ${msg.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          decryptedContent = '[Message decryption failed]';
+        }
 
         conversationMap.set(partnerId, {
           partnerId,
@@ -431,26 +470,48 @@ export class MessagesService {
     userId: string,
     conversationPartnerId: string,
   ): Promise<{ message: string; count: number }> {
-    const result = await this.prisma.message.updateMany({
-      where: {
-        senderId: conversationPartnerId,
-        receiverId: userId,
-        status: { not: MessageStatus.READ },
-      },
-      data: {
-        status: MessageStatus.READ,
-        readAt: new Date(),
-      },
+    // Validate inputs
+    if (!userId || !conversationPartnerId) {
+      throw new BadRequestException('User ID and partner ID are required');
+    }
+
+    // Validate partner exists
+    const partner = await this.prisma.user.findUnique({
+      where: { id: conversationPartnerId },
+      select: { id: true },
     });
 
-    this.logger.log(
-      `✅ Marked ${result.count} messages as read for user ${userId}`,
-    );
+    if (!partner) {
+      throw new NotFoundException('Conversation partner not found');
+    }
 
-    return {
-      message: 'Messages marked as read',
-      count: result.count,
-    };
+    try {
+      const result = await this.prisma.message.updateMany({
+        where: {
+          senderId: conversationPartnerId,
+          receiverId: userId,
+          status: { not: MessageStatus.READ },
+        },
+        data: {
+          status: MessageStatus.READ,
+          readAt: new Date(),
+        },
+      });
+
+      this.logger.log(
+        `✅ Marked ${result.count} messages as read for user ${userId}`,
+      );
+
+      return {
+        message: 'Messages marked as read',
+        count: result.count,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to mark messages as read: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to mark messages as read');
+    }
   }
 
   /**
@@ -512,20 +573,35 @@ export class MessagesService {
       throw new ForbiddenException('You do not have access to this message');
     }
 
-    // Decrypt content
-    const decryptedContent = isEncrypted(message.content)
-      ? decryptMessage(message.content)
-      : message.content;
+    // Decrypt content with error handling
+    let decryptedContent: string;
+    try {
+      decryptedContent = isEncrypted(message.content)
+        ? decryptMessage(message.content)
+        : message.content;
+    } catch (error) {
+      this.logger.error(
+        `Failed to decrypt message ${messageId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to decrypt message content');
+    }
 
-    // Mark as read if user is receiver
+    // Mark as read if user is receiver (don't wait for it)
     if (message.receiverId === userId && message.status !== MessageStatus.READ) {
-      await this.prisma.message.update({
-        where: { id: messageId },
-        data: {
-          status: MessageStatus.READ,
-          readAt: new Date(),
-        },
-      });
+      this.prisma.message
+        .update({
+          where: { id: messageId },
+          data: {
+            status: MessageStatus.READ,
+            readAt: new Date(),
+          },
+        })
+        .catch((error) => {
+          this.logger.warn(
+            `Failed to mark message ${messageId} as read: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          // Don't throw - this is a non-critical operation
+        });
     }
 
     return this.mapToResponse(message, decryptedContent);
