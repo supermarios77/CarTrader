@@ -35,7 +35,7 @@ export class EmailService {
     verificationToken: string,
   ): Promise<void> {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const verificationUrl = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
+    const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
     const fromEmail = process.env.SMTP_FROM || 'noreply@cartrader.local';
 
     try {
