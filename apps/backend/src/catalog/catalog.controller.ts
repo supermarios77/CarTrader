@@ -1,6 +1,8 @@
-import { Controller, Get, Param, Query, ParseUUIDPipe, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Query, ParseUUIDPipe } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
 import { Public } from '../auth/decorators/public.decorator';
+import { GetMakesDto } from './dto/get-makes.dto';
+import { GetModelsDto } from './dto/get-models.dto';
 
 @Controller('catalog')
 @Public() // Public endpoints - no authentication required
@@ -30,16 +32,8 @@ export class CatalogController {
    * GET /catalog/makes?categoryId=...
    */
   @Get('makes')
-  async getMakes(@Query('categoryId') categoryId?: string) {
-    if (!categoryId) {
-      throw new BadRequestException('categoryId query parameter is required');
-    }
-    try {
-      new ParseUUIDPipe().transform(categoryId, { type: 'query', data: 'categoryId' });
-    } catch {
-      throw new BadRequestException('Invalid categoryId format. Must be a valid UUID.');
-    }
-    return this.catalogService.getMakes(categoryId);
+  async getMakes(@Query() query: GetMakesDto) {
+    return this.catalogService.getMakes(query.categoryId);
   }
 
   /**
@@ -56,16 +50,8 @@ export class CatalogController {
    * GET /catalog/models?makeId=...
    */
   @Get('models')
-  async getModels(@Query('makeId') makeId?: string) {
-    if (!makeId) {
-      throw new BadRequestException('makeId query parameter is required');
-    }
-    try {
-      new ParseUUIDPipe().transform(makeId, { type: 'query', data: 'makeId' });
-    } catch {
-      throw new BadRequestException('Invalid makeId format. Must be a valid UUID.');
-    }
-    return this.catalogService.getModels(makeId);
+  async getModels(@Query() query: GetModelsDto) {
+    return this.catalogService.getModels(query.makeId);
   }
 
   /**
