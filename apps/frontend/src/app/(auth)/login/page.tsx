@@ -117,8 +117,10 @@ export default function LoginPage() {
       router.refresh();
     } catch (err) {
       // Error is handled by auth context
-      // Just log for debugging
-      if (err instanceof ApiClientError) {
+      // In production, consider sending to error tracking service
+      if (process.env.NODE_ENV === 'development' && err instanceof ApiClientError) {
+        // Only log in development for debugging
+        // Note: console.error is acceptable in development mode
         console.error('Login error:', err.message, err.statusCode);
       }
     } finally {
@@ -159,7 +161,7 @@ export default function LoginPage() {
                   className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400"
                   role="alert"
                 >
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <AlertCircle className="h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
@@ -244,7 +246,7 @@ export default function LoginPage() {
                 )}
               </Button>
               <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/register"
                   className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"

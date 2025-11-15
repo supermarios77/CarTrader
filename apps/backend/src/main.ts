@@ -1,14 +1,27 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
+  const app = await NestFactory.create(AppModule, {
+    logger: process.env.NODE_ENV === 'production' 
+      ? ['error', 'warn', 'log'] 
+      : ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
 
-  // Enable CORS for frontend
+  // Enable CORS for frontend - stricter in production
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (!frontendUrl && process.env.NODE_ENV === 'production') {
+    logger.warn('FRONTEND_URL not set in production - CORS may not work correctly');
+  }
+  
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: frontendUrl || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:3000'),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Type'],
   });
 
   // Global validation pipe for DTOs
@@ -20,11 +33,13 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true, // Enable implicit type conversion
       },
+      disableErrorMessages: process.env.NODE_ENV === 'production', // Hide detailed errors in production
     }),
   );
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  console.log(`🚀 Backend is running on: http://localhost:${port}`);
+  logger.log(`🚀 Backend is running on: http://localhost:${port}`);
+  logger.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
 }
 void bootstrap();

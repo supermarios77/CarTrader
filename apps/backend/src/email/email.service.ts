@@ -55,10 +55,25 @@ export class EmailService {
   }
 
   /**
+   * Escape HTML to prevent XSS attacks
+   */
+  private escapeHtml(text: string | null): string {
+    if (!text) return '';
+    const map: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    };
+    return text.replace(/[&<>"']/g, (m) => map[m]);
+  }
+
+  /**
    * Get verification email HTML template
    */
   private getVerificationEmailTemplate(name: string | null, verificationUrl: string): string {
-    const displayName = name || 'there';
+    const displayName = this.escapeHtml(name) || 'there';
     return `
       <!DOCTYPE html>
       <html>
@@ -124,7 +139,7 @@ export class EmailService {
    * Get password reset email HTML template
    */
   private getPasswordResetEmailTemplate(name: string | null, resetUrl: string): string {
-    const displayName = name || 'there';
+    const displayName = this.escapeHtml(name) || 'there';
     return `
       <!DOCTYPE html>
       <html>

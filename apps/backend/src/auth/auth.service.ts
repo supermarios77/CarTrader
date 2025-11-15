@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
@@ -15,6 +16,23 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { JwtRefreshPayload } from './strategies/jwt-refresh.strategy';
 import { getRequiredEnv } from './utils/env.utils';
+
+/**
+ * Type guard to check if error is a Prisma unique constraint violation
+ */
+function isPrismaUniqueConstraintError(
+  error: unknown,
+): error is Prisma.PrismaClientKnownRequestError & {
+  code: 'P2002';
+  meta?: { target?: string[] };
+} {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code: string }).code === 'P2002'
+  );
+}
 
 @Injectable()
 export class AuthService {
@@ -160,9 +178,12 @@ export class AuthService {
             data: { token: accessToken },
           });
           break; // Success, exit retry loop
-        } catch (updateError: any) {
+        } catch (updateError: unknown) {
           // If update fails due to unique constraint on token, generate new token and retry
-          if (updateError.code === 'P2002' && updateError.meta?.target?.includes('token')) {
+          if (
+            isPrismaUniqueConstraintError(updateError) &&
+            updateError.meta?.target?.includes('token')
+          ) {
             retries--;
             if (retries === 0) {
               throw new ConflictException('Failed to refresh token. Please try again.');
@@ -300,9 +321,12 @@ export class AuthService {
           },
         });
         break; // Success, exit retry loop
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If unique constraint violation on token, generate new access token and retry
-        if (error.code === 'P2002' && error.meta?.target?.includes('token')) {
+        if (
+          isPrismaUniqueConstraintError(error) &&
+          error.meta?.target?.includes('token')
+        ) {
           retries--;
           if (retries === 0) {
             throw new ConflictException('Failed to create session. Please try again.');

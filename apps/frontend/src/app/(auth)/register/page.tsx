@@ -198,8 +198,10 @@ export default function RegisterPage() {
       }, 2000);
     } catch (err) {
       // Error is handled by auth context
-      // Just log for debugging
-      if (err instanceof ApiClientError) {
+      // In production, consider sending to error tracking service
+      if (process.env.NODE_ENV === 'development' && err instanceof ApiClientError) {
+        // Only log in development
+        // eslint-disable-next-line no-console
         console.error('Registration error:', err.message, err.statusCode);
       }
     } finally {
@@ -240,7 +242,7 @@ export default function RegisterPage() {
                   className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-400"
                   role="alert"
                 >
-                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
                   <div className="flex-1">
                     <p className="font-medium">Account created successfully!</p>
                     <p className="text-xs mt-1">
@@ -256,7 +258,7 @@ export default function RegisterPage() {
                   className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400"
                   role="alert"
                 >
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <AlertCircle className="h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}

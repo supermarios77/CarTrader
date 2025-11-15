@@ -12,7 +12,7 @@ export class PrismaService
         process.env.NODE_ENV === 'development'
           ? ['query', 'error', 'warn']
           : ['error'],
-      errorFormat: 'pretty',
+      errorFormat: process.env.NODE_ENV === 'production' ? 'minimal' : 'pretty',
     });
   }
 
