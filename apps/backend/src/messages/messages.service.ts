@@ -30,6 +30,19 @@ export class MessagesService {
     senderId: string,
     createMessageDto: CreateMessageDto,
   ): Promise<MessageResponse> {
+    // Validate inputs
+    if (!senderId || typeof senderId !== 'string') {
+      throw new BadRequestException('Invalid sender ID');
+    }
+
+    if (!createMessageDto.receiverId || typeof createMessageDto.receiverId !== 'string') {
+      throw new BadRequestException('Invalid receiver ID');
+    }
+
+    if (!createMessageDto.content || typeof createMessageDto.content !== 'string') {
+      throw new BadRequestException('Message content is required');
+    }
+
     // Validate receiver exists
     const receiver = await this.prisma.user.findUnique({
       where: { id: createMessageDto.receiverId },
@@ -38,6 +51,11 @@ export class MessagesService {
 
     if (!receiver) {
       throw new NotFoundException('Receiver not found');
+    }
+
+    // Check receiver status
+    if (receiver.status !== 'ACTIVE') {
+      throw new BadRequestException('Cannot send message to inactive user');
     }
 
     // Prevent self-messaging
