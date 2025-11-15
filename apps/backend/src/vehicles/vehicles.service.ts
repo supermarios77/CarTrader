@@ -129,29 +129,39 @@ export class VehiclesService {
     // Build where clause
     // For public (no userId): Only show ACTIVE, non-expired vehicles
     // For authenticated users: Show ACTIVE vehicles + their own DRAFT vehicles
+    const baseStatusFilter: Prisma.VehicleWhereInput = userId
+      ? {
+          // Authenticated users: Show ACTIVE vehicles (non-expired) OR their own DRAFT vehicles
+          OR: [
+            {
+              status: VehicleStatus.ACTIVE,
+              AND: [
+                {
+                  OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } },
+                  ],
+                },
+              ],
+            },
+            { userId, status: VehicleStatus.DRAFT },
+          ],
+        }
+      : {
+          // Public: Only ACTIVE, non-expired vehicles
+          status: VehicleStatus.ACTIVE,
+          AND: [
+            {
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: new Date() } },
+              ],
+            },
+          ],
+        };
+
     const where: Prisma.VehicleWhereInput = {
-      ...(userId
-        ? {
-            // Authenticated users: Show ACTIVE vehicles (non-expired) OR their own DRAFT vehicles
-            OR: [
-              {
-                status: VehicleStatus.ACTIVE,
-                OR: [
-                  { expiresAt: null },
-                  { expiresAt: { gt: new Date() } },
-                ],
-              },
-              { userId, status: VehicleStatus.DRAFT },
-            ],
-          }
-        : {
-            // Public: Only ACTIVE, non-expired vehicles
-            status: VehicleStatus.ACTIVE,
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } },
-            ],
-          }),
+      ...baseStatusFilter,
     };
 
     // Apply filters
@@ -210,10 +220,15 @@ export class VehiclesService {
       }
     }
     if (filterDto.search) {
-      where.OR = [
-        { title: { contains: filterDto.search, mode: 'insensitive' } },
-        { description: { contains: filterDto.search, mode: 'insensitive' } },
-      ];
+      // Combine search with existing filters using AND
+      const searchFilter = {
+        OR: [
+          { title: { contains: filterDto.search, mode: 'insensitive' } },
+          { description: { contains: filterDto.search, mode: 'insensitive' } },
+        ],
+      };
+      // Merge search filter with existing where clause
+      where.AND = where.AND ? [...where.AND, searchFilter] : [searchFilter];
     }
     if (filterDto.featured !== undefined) {
       where.featured = filterDto.featured;
