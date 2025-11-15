@@ -20,7 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,6 +36,7 @@ export default function LoginPage() {
     password?: string;
   }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   /**
    * Validate email format
@@ -136,7 +137,7 @@ export default function LoginPage() {
         {/* Logo/Header */}
         <div className="text-center space-y-3">
           <Link href="/" className="inline-block">
-            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
+            <h1 className="text-5xl font-bold tracking-tight text-foreground">
               🚗 CarTrader
             </h1>
           </Link>
@@ -205,20 +206,35 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={isFormDisabled}
-                  placeholder="Enter your password"
-                  className={`h-12 rounded-xl text-base ${validationErrors.password ? 'border-2 border-red-500 focus-visible:ring-2 focus-visible:ring-red-500' : 'border-2 focus-visible:ring-2 focus-visible:ring-blue-500'}`}
-                  aria-invalid={validationErrors.password ? 'true' : 'false'}
-                  aria-describedby={validationErrors.password ? 'password-error' : undefined}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    disabled={isFormDisabled}
+                    placeholder="Enter your password"
+                    className={`h-12 rounded-xl text-base pr-10 ${validationErrors.password ? 'border-2 border-red-500 focus-visible:ring-2 focus-visible:ring-red-500' : 'border-2 focus-visible:ring-2 focus-visible:ring-blue-500'}`}
+                    aria-invalid={validationErrors.password ? 'true' : 'false'}
+                    aria-describedby={validationErrors.password ? 'password-error' : undefined}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 {validationErrors.password && (
                   <p
                     id="password-error"
@@ -234,7 +250,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isFormDisabled}
-                className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all"
+                className="w-full h-12 rounded-xl text-base font-semibold shadow-lg hover:shadow-xl transition-all"
               >
                 {isSubmitting ? (
                   <>
