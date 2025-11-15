@@ -210,7 +210,7 @@ export class VehiclesService {
     }
     if (filterDto.search) {
       // Add search filter - combine with existing OR using AND
-      const searchOr = {
+      const searchOr: Prisma.VehicleWhereInput = {
         OR: [
           { title: { contains: filterDto.search, mode: 'insensitive' } },
           { description: { contains: filterDto.search, mode: 'insensitive' } },
@@ -219,16 +219,22 @@ export class VehiclesService {
       
       // If where already has OR, wrap everything in AND
       if (where.OR) {
+        const existingOr = where.OR;
         where.AND = [
-          { OR: where.OR },
+          { OR: existingOr } as Prisma.VehicleWhereInput,
           searchOr,
         ];
-        delete where.OR;
+        // Remove OR since we've moved it into AND
+        const { OR, ...rest } = where;
+        Object.assign(where, rest);
       } else {
         // Otherwise, add search as AND condition
-        where.AND = where.AND 
-          ? (Array.isArray(where.AND) ? [...where.AND, searchOr] : [where.AND, searchOr])
-          : [searchOr];
+        if (where.AND) {
+          const existingAnd = Array.isArray(where.AND) ? where.AND : [where.AND];
+          where.AND = [...existingAnd, searchOr];
+        } else {
+          where.AND = [searchOr];
+        }
       }
     }
     if (filterDto.featured !== undefined) {
