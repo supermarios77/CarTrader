@@ -209,19 +209,26 @@ export class VehiclesService {
       }
     }
     if (filterDto.search) {
-      // Combine search with existing filters using AND
-      const searchFilter = {
+      // Add search filter - combine with existing OR using AND
+      const searchOr = {
         OR: [
           { title: { contains: filterDto.search, mode: 'insensitive' } },
           { description: { contains: filterDto.search, mode: 'insensitive' } },
         ],
       };
-      // Merge search filter with existing where clause
-      if (where.AND) {
-        const existingAnd = Array.isArray(where.AND) ? where.AND : [where.AND];
-        where.AND = [...existingAnd, searchFilter];
+      
+      // If where already has OR, wrap everything in AND
+      if (where.OR) {
+        where.AND = [
+          { OR: where.OR },
+          searchOr,
+        ];
+        delete where.OR;
       } else {
-        where.AND = [searchFilter];
+        // Otherwise, add search as AND condition
+        where.AND = where.AND 
+          ? (Array.isArray(where.AND) ? [...where.AND, searchOr] : [where.AND, searchOr])
+          : [searchOr];
       }
     }
     if (filterDto.featured !== undefined) {
