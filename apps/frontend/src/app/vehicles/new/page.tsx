@@ -5,11 +5,12 @@
  * Form to create a new vehicle listing
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createVehicle } from '@/lib/vehicles-api';
 import type { CreateVehicleData } from '@/types/vehicle';
+import { getCategories, getMakes, getModels, type Category, type Make, type Model } from '@/lib/catalog-api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,16 @@ export default function CreateVehiclePage() {
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<File[]>([]);
 
+  // Catalog data state
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [makes, setMakes] = useState<Make[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState({
+    categories: true,
+    makes: false,
+    models: false,
+  });
+
   const [formData, setFormData] = useState<CreateVehicleData>({
     categoryId: '',
     makeId: '',
@@ -45,6 +56,74 @@ export default function CreateVehiclePage() {
     city: '',
     province: '',
   });
+
+  // Load categories on mount
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        setLoadingCatalog((prev) => ({ ...prev, categories: true }));
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        setError('Failed to load categories. Please refresh the page.');
+      } finally {
+        setLoadingCatalog((prev) => ({ ...prev, categories: false }));
+      }
+    }
+    loadCategories();
+  }, []);
+
+  // Load makes when category changes
+  useEffect(() => {
+    async function loadMakes() {
+      if (!formData.categoryId) {
+        setMakes([]);
+        setModels([]);
+        setFormData((prev) => ({ ...prev, makeId: '', modelId: '' }));
+        return;
+      }
+
+      try {
+        setLoadingCatalog((prev) => ({ ...prev, makes: true }));
+        const data = await getMakes(formData.categoryId);
+        setMakes(data);
+        // Reset make and model when category changes
+        setModels([]);
+        setFormData((prev) => ({ ...prev, makeId: '', modelId: '' }));
+      } catch (err) {
+        setError('Failed to load makes. Please try again.');
+        setMakes([]);
+      } finally {
+        setLoadingCatalog((prev) => ({ ...prev, makes: false }));
+      }
+    }
+    loadMakes();
+  }, [formData.categoryId]);
+
+  // Load models when make changes
+  useEffect(() => {
+    async function loadModels() {
+      if (!formData.makeId) {
+        setModels([]);
+        setFormData((prev) => ({ ...prev, modelId: '' }));
+        return;
+      }
+
+      try {
+        setLoadingCatalog((prev) => ({ ...prev, models: true }));
+        const data = await getModels(formData.makeId);
+        setModels(data);
+        // Reset model when make changes
+        setFormData((prev) => ({ ...prev, modelId: '' }));
+      } catch (err) {
+        setError('Failed to load models. Please try again.');
+        setModels([]);
+      } finally {
+        setLoadingCatalog((prev) => ({ ...prev, models: false }));
+      }
+    }
+    loadModels();
+  }, [formData.makeId]);
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
@@ -372,50 +451,83 @@ export default function CreateVehiclePage() {
               </CardContent>
             </Card>
 
-            {/* Category/Make/Model - Temporary Input */}
+            {/* Category/Make/Model - Dropdown Selection */}
             <Card>
               <CardHeader>
                 <CardTitle>Vehicle Classification</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4 text-sm text-yellow-900 dark:text-yellow-200">
-                  <p className="font-semibold mb-2">⚠️ Temporary: Direct ID Input</p>
-                  <p>For now, you need to provide category, make, and model IDs from the database.</p>
-                  <p className="mt-2">Run the seed script first: <code className="bg-background px-1 rounded">pnpm db:seed</code></p>
-                </div>
                 <div className="grid gap-4 sm:grid-cols-3">
+                  {/* Category Dropdown */}
                   <div>
-                    <Label htmlFor="categoryId">Category ID *</Label>
-                    <Input
+                    <Label htmlFor="categoryId">Category *</Label>
+                    <select
                       id="categoryId"
                       name="categoryId"
                       value={formData.categoryId}
                       onChange={handleInputChange}
-                      placeholder="UUID"
                       required
-                    />
+                      disabled={loadingCatalog.categories}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                    {loadingCatalog.categories && (
+                      <p className="mt-1 text-xs text-muted-foreground">Loading categories...</p>
+                    )}
                   </div>
+
+                  {/* Make Dropdown */}
                   <div>
-                    <Label htmlFor="makeId">Make ID *</Label>
-                    <Input
+                    <Label htmlFor="makeId">Make *</Label>
+                    <select
                       id="makeId"
                       name="makeId"
                       value={formData.makeId}
                       onChange={handleInputChange}
-                      placeholder="UUID"
                       required
-                    />
+                      disabled={!formData.categoryId || loadingCatalog.makes}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">{formData.categoryId ? 'Select Make' : 'Select Category First'}</option>
+                      {makes.map((make) => (
+                        <option key={make.id} value={make.id}>
+                          {make.name}
+                        </option>
+                      ))}
+                    </select>
+                    {loadingCatalog.makes && (
+                      <p className="mt-1 text-xs text-muted-foreground">Loading makes...</p>
+                    )}
                   </div>
+
+                  {/* Model Dropdown */}
                   <div>
-                    <Label htmlFor="modelId">Model ID *</Label>
-                    <Input
+                    <Label htmlFor="modelId">Model *</Label>
+                    <select
                       id="modelId"
                       name="modelId"
                       value={formData.modelId}
                       onChange={handleInputChange}
-                      placeholder="UUID"
                       required
-                    />
+                      disabled={!formData.makeId || loadingCatalog.models}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">{formData.makeId ? 'Select Model' : 'Select Make First'}</option>
+                      {models.map((model) => (
+                        <option key={model.id} value={model.id}>
+                          {model.name}
+                        </option>
+                      ))}
+                    </select>
+                    {loadingCatalog.models && (
+                      <p className="mt-1 text-xs text-muted-foreground">Loading models...</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
