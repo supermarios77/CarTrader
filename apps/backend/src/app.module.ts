@@ -9,6 +9,7 @@ import { VehiclesModule } from './vehicles/vehicles.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { MessagesModule } from './messages/messages.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -19,6 +20,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     CatalogModule,
     FavoritesModule,
     DashboardModule,
+    MessagesModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute

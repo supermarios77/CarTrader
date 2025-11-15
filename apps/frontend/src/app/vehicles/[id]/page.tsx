@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useAuth } from '@/contexts/auth-context';
+import { MessageSquare } from 'lucide-react';
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -307,13 +308,20 @@ export default function VehicleDetailPage() {
               <CardHeader>
                 <CardTitle>Seller Information</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <p className="font-semibold">
                     {vehicle.user.firstName} {vehicle.user.lastName}
                   </p>
                   <p className="text-sm text-muted-foreground">{vehicle.user.city || 'Location not specified'}</p>
                 </div>
+                {!isOwner && isAuthenticated && (
+                  <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`}>
+                    <Button className="w-full">
+                      Contact Seller
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
 
