@@ -760,8 +760,10 @@ export class VehiclesService {
       const path = urlObj.pathname;
 
       // Check if it's an internal Docker hostname
+      // minio:9000 is the internal Docker hostname that doesn't work from frontend
       const isInternal = urlObj.hostname === 'minio' || 
                         urlObj.hostname.includes('minio') ||
+                        url.includes('minio:') ||
                         (urlObj.hostname === 'localhost' && urlObj.port === '9000' && path.includes('/vehicles/vehicles/'));
 
       if (isInternal) {
