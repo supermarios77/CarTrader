@@ -131,44 +131,44 @@ export default function LoginPage() {
   const isFormDisabled = isLoading || isSubmitting;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-zinc-50 px-4 py-12 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-16">
+      <div className="w-full max-w-md space-y-10">
         {/* Logo/Header */}
-        <div className="text-center">
+        <div className="text-center space-y-3">
           <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-purple-400">
               🚗 CarTrader
             </h1>
           </Link>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-base text-muted-foreground">
             Sign in to your account to continue
           </p>
         </div>
 
         {/* Login Card */}
-        <Card className="border-zinc-200 shadow-lg dark:border-zinc-800 dark:shadow-zinc-900/50">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-semibold">Welcome back</CardTitle>
-            <CardDescription>
+        <Card className="border-2 rounded-3xl shadow-xl dark:shadow-2xl border-border/50 bg-card/50 backdrop-blur-sm">
+          <CardHeader className="space-y-2 px-8 pt-10 pb-6">
+            <CardTitle className="text-3xl font-bold">Welcome back</CardTitle>
+            <CardDescription className="text-base">
               Enter your email and password to sign in to your account
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 px-8">
               {/* API Error Message */}
               {error && (
                 <div
-                  className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400"
+                  className="flex items-center gap-3 rounded-2xl border-2 border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20 p-4 text-sm text-red-700 dark:text-red-400"
                   role="alert"
                 >
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{error}</span>
+                  <AlertCircle className="h-5 w-5 shrink-0" />
+                  <span className="font-medium">{error}</span>
                 </div>
               )}
 
               {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-base font-medium">Email Address</Label>
                 <Input
                   id="email"
                   name="email"
@@ -179,14 +179,14 @@ export default function LoginPage() {
                   onChange={handleChange}
                   disabled={isFormDisabled}
                   placeholder="you@example.com"
-                  className={validationErrors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  className={`h-12 rounded-xl text-base ${validationErrors.email ? 'border-2 border-red-500 focus-visible:ring-2 focus-visible:ring-red-500' : 'border-2 focus-visible:ring-2 focus-visible:ring-blue-500'}`}
                   aria-invalid={validationErrors.email ? 'true' : 'false'}
                   aria-describedby={validationErrors.email ? 'email-error' : undefined}
                 />
                 {validationErrors.email && (
                   <p
                     id="email-error"
-                    className="text-sm text-red-600 dark:text-red-400"
+                    className="text-sm font-medium text-red-600 dark:text-red-400"
                     role="alert"
                   >
                     {validationErrors.email}
@@ -195,12 +195,12 @@ export default function LoginPage() {
               </div>
 
               {/* Password Field */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-base font-medium">Password</Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -215,14 +215,14 @@ export default function LoginPage() {
                   onChange={handleChange}
                   disabled={isFormDisabled}
                   placeholder="Enter your password"
-                  className={validationErrors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}
+                  className={`h-12 rounded-xl text-base ${validationErrors.password ? 'border-2 border-red-500 focus-visible:ring-2 focus-visible:ring-red-500' : 'border-2 focus-visible:ring-2 focus-visible:ring-blue-500'}`}
                   aria-invalid={validationErrors.password ? 'true' : 'false'}
                   aria-describedby={validationErrors.password ? 'password-error' : undefined}
                 />
                 {validationErrors.password && (
                   <p
                     id="password-error"
-                    className="text-sm text-red-600 dark:text-red-400"
+                    className="text-sm font-medium text-red-600 dark:text-red-400"
                     role="alert"
                   >
                     {validationErrors.password}
@@ -230,26 +230,26 @@ export default function LoginPage() {
                 )}
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
+            <CardFooter className="flex flex-col space-y-5 px-8 pb-10">
               <Button
                 type="submit"
                 disabled={isFormDisabled}
-                className="w-full"
+                className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Signing in...
                   </>
                 ) : (
                   'Sign in'
                 )}
               </Button>
-              <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/register"
-                  className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                 >
                   Sign up
                 </Link>
@@ -260,8 +260,8 @@ export default function LoginPage() {
 
         {/* Debug Info (only in development) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-400">
-            <p className="font-semibold">Debug Info:</p>
+          <div className="rounded-2xl border-2 border-border/50 bg-muted/30 p-5 text-xs text-muted-foreground backdrop-blur-sm">
+            <p className="font-semibold mb-2">Debug Info:</p>
             <p>API URL: {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}</p>
             <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
             <p>Submitting: {isSubmitting ? 'Yes' : 'No'}</p>
