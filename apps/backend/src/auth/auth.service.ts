@@ -231,20 +231,33 @@ export class AuthService {
    */
   async logout(
     userId: string,
-    sessionId: string,
+    sessionId?: string,
   ): Promise<{ message: string }> {
-    // Verify session belongs to user
-    const session = await this.prisma.session.findFirst({
-      where: { id: sessionId, userId },
-    });
+    if (sessionId) {
+      // Verify session belongs to user
+      const session = await this.prisma.session.findFirst({
+        where: { id: sessionId, userId },
+      });
 
-    if (!session) {
-      throw new BadRequestException('Session not found');
+      if (!session) {
+        throw new BadRequestException('Session not found');
+      }
+
+      await this.prisma.session.delete({
+        where: { id: sessionId },
+      });
+
+      this.logger.log(`✅ User ${userId} logged out (session ${sessionId})`);
+    } else {
+      // If no sessionId provided, delete all sessions for the user
+      const result = await this.prisma.session.deleteMany({
+        where: { userId },
+      });
+
+      this.logger.log(
+        `✅ User ${userId} logged out (all ${result.count} sessions deleted)`,
+      );
     }
-
-    await this.prisma.session.delete({
-      where: { id: sessionId },
-    });
 
     return { message: 'Logged out successfully' };
   }
