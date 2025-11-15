@@ -127,11 +127,31 @@ export class VehiclesService {
     const skip = (page - 1) * limit;
 
     // Build where clause
+    // For public (no userId): Only show ACTIVE, non-expired vehicles
+    // For authenticated users: Show ACTIVE vehicles + their own DRAFT vehicles
     const where: Prisma.VehicleWhereInput = {
-      // Only show ACTIVE vehicles to public, unless user is owner/admin
       ...(userId
-        ? {} // Authenticated users can see their own DRAFT vehicles
-        : { status: VehicleStatus.ACTIVE }),
+        ? {
+            // Authenticated users: Show ACTIVE vehicles (non-expired) OR their own DRAFT vehicles
+            OR: [
+              {
+                status: VehicleStatus.ACTIVE,
+                OR: [
+                  { expiresAt: null },
+                  { expiresAt: { gt: new Date() } },
+                ],
+              },
+              { userId, status: VehicleStatus.DRAFT },
+            ],
+          }
+        : {
+            // Public: Only ACTIVE, non-expired vehicles
+            status: VehicleStatus.ACTIVE,
+            OR: [
+              { expiresAt: null },
+              { expiresAt: { gt: new Date() } },
+            ],
+          }),
     };
 
     // Apply filters
