@@ -754,34 +754,52 @@ export class VehiclesService {
     const useSSL = process.env.MINIO_USE_SSL === 'true';
     const protocol = useSSL ? 'https' : 'http';
 
-    // Replace common internal hostnames
-    const internalPatterns = [
-      /^https?:\/\/minio:\d+\//,
-      /^https?:\/\/localhost:\d+\/vehicles\//,
-      /^https?:\/\/127\.0\.0\.1:\d+\//,
-    ];
+    try {
+      // Parse the URL
+      const urlObj = new URL(url);
+      const path = urlObj.pathname;
 
-    let transformedUrl = url;
-    for (const pattern of internalPatterns) {
-      if (pattern.test(url)) {
-        // Extract the path after the hostname
-        const urlObj = new URL(url);
-        const path = urlObj.pathname;
-        transformedUrl = `${protocol}://${publicEndpoint}:${publicPort}${path}`;
-        break;
+      // Check if it's an internal Docker hostname
+      const isInternal = urlObj.hostname === 'minio' || 
+                        urlObj.hostname.includes('minio') ||
+                        (urlObj.hostname === 'localhost' && urlObj.port === '9000' && path.includes('/vehicles/vehicles/'));
+
+      if (isInternal) {
+        // Extract the actual file path (remove duplicate 'vehicles' if present)
+        // URLs like: http://minio:9000/vehicles/vehicles/file.jpg
+        // Should become: http://localhost:9000/vehicles/file.jpg
+        let filePath = path;
+        
+        // Remove duplicate 'vehicles' in path
+        if (filePath.startsWith('/vehicles/vehicles/')) {
+          filePath = filePath.replace('/vehicles/vehicles/', '/vehicles/');
+        } else if (filePath.startsWith('/vehicles/')) {
+          // Already correct format
+        } else {
+          // If path doesn't start with /vehicles/, add it
+          filePath = '/vehicles' + (filePath.startsWith('/') ? filePath : '/' + filePath);
+        }
+
+        return `${protocol}://${publicEndpoint}:${publicPort}${filePath}`;
       }
-    }
 
-    // If URL doesn't match internal patterns but contains 'minio', replace it
-    if (url.includes('minio:') || url.includes('localhost:9000/vehicles/vehicles/')) {
-      // Extract bucket and file path
-      const match = url.match(/\/(vehicles\/.+)$/);
-      if (match) {
-        transformedUrl = `${protocol}://${publicEndpoint}:${publicPort}/${match[1]}`;
+      // If URL already looks correct, return as-is
+      return url;
+    } catch (error) {
+      // If URL parsing fails, try simple string replacement
+      this.logger.warn(`Failed to parse image URL: ${url}, using fallback transformation`);
+      
+      // Fallback: simple string replacement
+      let transformedUrl = url;
+      if (url.includes('minio:')) {
+        transformedUrl = url.replace(/https?:\/\/minio:\d+/, `${protocol}://${publicEndpoint}:${publicPort}`);
       }
+      
+      // Fix duplicate 'vehicles' in path
+      transformedUrl = transformedUrl.replace('/vehicles/vehicles/', '/vehicles/');
+      
+      return transformedUrl;
     }
-
-    return transformedUrl;
   }
 
   /**
