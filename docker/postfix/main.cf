@@ -21,9 +21,10 @@ smtpd_helo_required = yes
 mailbox_size_limit = 0
 message_size_limit = 10240000
 
-# TLS (optional, can be enabled later)
-smtpd_tls_security_level = may
-smtpd_tls_received_header = yes
+# TLS (disabled for development - enable in production)
+smtpd_tls_security_level = none
+smtp_tls_security_level = none
+smtpd_tls_received_header = no
 
 # Restrictions - allow all from Docker network
 smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unauth_destination

@@ -5,15 +5,17 @@
 ### Email Verification
 - ✅ Backend endpoints (GET and POST)
 - ✅ Email sending via Postfix (self-hosted, free)
-- ✅ Frontend verification page at `/auth/verify-email`
+- ✅ Frontend verification page at `/verify-email`
 - ✅ Auto-verification from email link
 - ✅ Manual token entry
 - ✅ Resend verification email
+- ✅ TLS disabled for development (no TLS errors)
 
-### Phone Verification
-- ✅ Backend endpoints (send, verify, resend)
+### Phone Verification (Optional)
+- ✅ Phone number is **optional** in registration
+- ✅ Backend endpoints (send, verify, resend) - only if user wants to verify
 - ✅ SMS service (mock for development, swappable for production)
-- ✅ Frontend verification page at `/auth/verify-phone`
+- ✅ Frontend verification page at `/verify-phone`
 - ✅ 6-digit code verification
 - ✅ Resend with countdown timer
 - ✅ Rate limiting and security
@@ -31,7 +33,9 @@
 - Uses Postfix (already configured in Docker)
 - No domain needed for development
 - Emails sent from `noreply@cartrader.local` (configurable via `SMTP_FROM`)
-- In production, emails might go to spam without proper domain setup
+- TLS disabled for development (no certificate errors)
+- In development, emails are accepted by Postfix and logged (not actually delivered)
+- In production, configure relayhost or use external SMTP service
 
 ### Phone Verification Flow
 

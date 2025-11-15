@@ -16,6 +16,8 @@ export class EmailService {
       host: smtpHost,
       port: smtpPort,
       secure: false, // Postfix on port 25 doesn't use TLS by default
+      requireTLS: false, // Disable TLS requirement for development
+      ignoreTLS: true, // Ignore TLS errors in development
       // No authentication needed for local Postfix
       tls: {
         rejectUnauthorized: false, // Allow self-signed certificates
