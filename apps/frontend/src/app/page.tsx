@@ -1,4 +1,12 @@
+'use client';
+
+import { useAuth } from '@/contexts/auth-context';
+import { getAccessToken } from '@/lib/api-client';
+
 export default function Home() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const accessToken = getAccessToken();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center py-32 px-16 bg-white dark:bg-black">
@@ -13,7 +21,54 @@ export default function Home() {
             <p>✅ Next.js Frontend (Port 3000)</p>
             <p>✅ NestJS Backend (Port 3001)</p>
             <p>✅ Monorepo with pnpm workspaces</p>
-        </div>
+          </div>
+
+          {/* Auth State Log - For Testing */}
+          <div className="mt-12 w-full max-w-md rounded-2xl border-2 border-border/50 bg-muted/30 p-6 text-left backdrop-blur-sm">
+            <h2 className="mb-4 text-lg font-semibold text-foreground">🔐 Auth State (Testing)</h2>
+            <div className="space-y-2 text-xs font-mono text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Loading:</span>
+                <span className={isLoading ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'}>
+                  {isLoading ? 'Yes' : 'No'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Authenticated:</span>
+                <span className={isAuthenticated ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  {isAuthenticated ? 'Yes' : 'No'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">Token Exists:</span>
+                <span className={accessToken ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  {accessToken ? 'Yes' : 'No'}
+                </span>
+              </div>
+              {user && (
+                <>
+                  <div className="mt-3 border-t border-border/50 pt-3">
+                    <span className="font-semibold">User ID:</span>
+                    <span className="ml-2 text-foreground">{user.id}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Email:</span>
+                    <span className="ml-2 text-foreground">{user.email}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Role:</span>
+                    <span className="ml-2 text-foreground">{user.role}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold">Email Verified:</span>
+                    <span className={`ml-2 ${user.emailVerified ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+                      {user.emailVerified ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </main>
     </div>
