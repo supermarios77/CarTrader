@@ -129,19 +129,16 @@ export class VehiclesService {
     // Build where clause
     // For public (no userId): Only show ACTIVE, non-expired vehicles
     // For authenticated users: Show ACTIVE vehicles + their own DRAFT vehicles
-    const baseStatusFilter: Prisma.VehicleWhereInput = userId
+    const now = new Date();
+    const where: Prisma.VehicleWhereInput = userId
       ? {
           // Authenticated users: Show ACTIVE vehicles (non-expired) OR their own DRAFT vehicles
           OR: [
             {
               status: VehicleStatus.ACTIVE,
-              AND: [
-                {
-                  OR: [
-                    { expiresAt: null },
-                    { expiresAt: { gt: new Date() } },
-                  ],
-                },
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: now } },
               ],
             },
             { userId, status: VehicleStatus.DRAFT },
@@ -150,19 +147,11 @@ export class VehiclesService {
       : {
           // Public: Only ACTIVE, non-expired vehicles
           status: VehicleStatus.ACTIVE,
-          AND: [
-            {
-              OR: [
-                { expiresAt: null },
-                { expiresAt: { gt: new Date() } },
-              ],
-            },
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gt: now } },
           ],
         };
-
-    const where: Prisma.VehicleWhereInput = {
-      ...baseStatusFilter,
-    };
 
     // Apply filters
     if (filterDto.categoryId) {
