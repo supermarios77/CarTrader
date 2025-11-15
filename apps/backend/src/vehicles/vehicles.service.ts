@@ -153,8 +153,6 @@ export class VehiclesService {
             { expiresAt: { gt: now } },
           ],
         };
-    
-    this.logger.debug(`📋 Where clause: ${JSON.stringify(where, null, 2)}`);
 
     // Apply filters
     if (filterDto.categoryId) {
