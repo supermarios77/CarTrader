@@ -768,19 +768,21 @@ export class VehiclesService {
                         (urlObj.hostname === 'localhost' && urlObj.port === '9000' && path.includes('/vehicles/vehicles/'));
 
       if (isInternal) {
-        // Extract the actual file path (remove duplicate 'vehicles' if present)
-        // URLs like: http://minio:9000/vehicles/vehicles/file.jpg
-        // Should become: http://localhost:9000/vehicles/file.jpg
+        // Extract the actual file path
+        // The path in the URL is: /vehicles/vehicles/file.jpg or /vehicles/file.jpg
+        // MinIO serves files as: http://localhost:9000/bucket-name/object-key
+        // So if the file is stored as "vehicles/file.jpg" in bucket "vehicles"
+        // The URL should be: http://localhost:9000/vehicles/vehicles/file.jpg
+        // But if the file is stored as "file.jpg" in bucket "vehicles"
+        // The URL should be: http://localhost:9000/vehicles/file.jpg
+        
+        // For now, keep the path as-is and just replace the hostname
+        // The path structure should match what's actually in MinIO
         let filePath = path;
         
-        // Remove duplicate 'vehicles' in path
-        if (filePath.startsWith('/vehicles/vehicles/')) {
-          filePath = filePath.replace('/vehicles/vehicles/', '/vehicles/');
-        } else if (filePath.startsWith('/vehicles/')) {
-          // Already correct format
-        } else {
-          // If path doesn't start with /vehicles/, add it
-          filePath = '/vehicles' + (filePath.startsWith('/') ? filePath : '/' + filePath);
+        // If path doesn't start with /, add it
+        if (!filePath.startsWith('/')) {
+          filePath = '/' + filePath;
         }
 
         return `${protocol}://${publicEndpoint}:${publicPort}${filePath}`;
