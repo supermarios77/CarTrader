@@ -6,7 +6,7 @@ import { api } from './api-client';
 import type { Vehicle, VehicleListResponse } from '@/types/vehicle';
 
 export interface FavoritesResponse extends VehicleListResponse {
-  vehicles: Array<Vehicle & { favoritedAt?: string }>;
+  vehicles: Vehicle[];
 }
 
 /**
