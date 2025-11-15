@@ -18,13 +18,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (isPublic) {
       // For public routes, still try to extract user from token if present
       // but don't require authentication
-      return super.canActivate(context).catch(() => {
-        // If token is invalid or missing, allow request to proceed (public route)
-        return true;
-      });
+      const result = super.canActivate(context);
+      if (result instanceof Promise) {
+        return result.catch(() => {
+          // If token is invalid or missing, allow request to proceed (public route)
+          return true;
+        });
+      }
+      // If result is boolean or Observable, return as-is
+      return result;
     }
 
     return super.canActivate(context);
   }
 }
-

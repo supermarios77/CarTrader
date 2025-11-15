@@ -49,7 +49,9 @@ export class VehiclesService {
 
     // Create vehicle with transaction
     const vehicle = await this.prisma.$transaction(async (tx) => {
-      // Create vehicle
+      // Create vehicle - auto-publish if images are provided
+      const hasImages = imageUrls.length > 0;
+      const now = new Date();
       const newVehicle = await tx.vehicle.create({
         data: {
           userId,
@@ -75,7 +77,10 @@ export class VehiclesService {
           address: createVehicleDto.address,
           latitude: createVehicleDto.latitude,
           longitude: createVehicleDto.longitude,
-          status: VehicleStatus.DRAFT,
+          // Auto-publish if images are provided, otherwise keep as DRAFT
+          status: hasImages ? VehicleStatus.ACTIVE : VehicleStatus.DRAFT,
+          publishedAt: hasImages ? now : null,
+          expiresAt: hasImages ? new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000) : null, // 90 days
         },
       });
 
