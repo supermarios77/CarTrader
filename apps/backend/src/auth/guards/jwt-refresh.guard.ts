@@ -22,12 +22,12 @@ export class JwtRefreshGuard extends AuthGuard('jwt-refresh') {
     return super.canActivate(context);
   }
 
-  handleRequest(
+  handleRequest<TUser = any>(
     err: Error | null,
-    user: unknown,
+    user: TUser | null,
     info: unknown,
     context: ExecutionContext,
-  ) {
+  ): TUser | null {
     // If token is missing or invalid, let the service handle the error
     // This allows DTO validation to run first
     const request = context.switchToHttp().getRequest();
