@@ -109,12 +109,15 @@ export class StorageService implements OnModuleInit {
         },
       );
 
-      // Construct URL (adjust based on your MinIO setup)
-      const endpoint = process.env.MINIO_ENDPOINT || 'localhost';
-      const port = process.env.MINIO_PORT || '9000';
+      // Construct public URL for frontend access
+      // In dev, use localhost with exposed port
+      // In production, use your domain/CDN
+      const isDev = process.env.NODE_ENV === 'development';
+      const publicEndpoint = process.env.MINIO_PUBLIC_ENDPOINT || (isDev ? 'localhost' : process.env.MINIO_ENDPOINT || 'localhost');
+      const publicPort = process.env.MINIO_PUBLIC_PORT || (isDev ? '9000' : process.env.MINIO_PORT || '9000');
       const useSSL = process.env.MINIO_USE_SSL === 'true';
       const protocol = useSSL ? 'https' : 'http';
-      const url = `${protocol}://${endpoint}:${port}/${this.bucketName}/${fileName}`;
+      const url = `${protocol}://${publicEndpoint}:${publicPort}/${this.bucketName}/${fileName}`;
 
       this.logger.log(`✅ Uploaded image: ${fileName}`);
 
