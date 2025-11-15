@@ -134,6 +134,8 @@ async function apiRequest<T>(
         ...options,
         headers: headers as HeadersInit,
         credentials: 'include',
+        cache: 'no-cache',
+        keepalive: true,
       });
     } else {
       // Refresh failed, clear tokens

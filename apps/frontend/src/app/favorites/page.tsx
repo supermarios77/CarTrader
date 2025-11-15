@@ -37,6 +37,8 @@ export default function FavoritesPage() {
 
   // Fetch favorites
   useEffect(() => {
+    const abortController = new AbortController();
+
     async function fetchFavorites() {
       if (!isAuthenticated) return;
 
@@ -44,16 +46,30 @@ export default function FavoritesPage() {
       setError(null);
       try {
         const response = await getFavorites(pagination.page, pagination.limit);
+        
+        // Don't update state if request was aborted
+        if (abortController.signal.aborted) return;
+        
         setVehicles(response.vehicles);
         setPagination(response.pagination);
       } catch (err) {
+        // Don't update state if request was aborted
+        if (abortController.signal.aborted) return;
+        
         setError(err instanceof Error ? err.message : 'Failed to load favorites');
       } finally {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchFavorites();
+
+    // Cleanup: abort request if dependencies change or component unmounts
+    return () => {
+      abortController.abort();
+    };
   }, [isAuthenticated, pagination.page, pagination.limit]);
 
   const handleRemoveFavorite = async (vehicleId: string) => {
@@ -61,7 +77,17 @@ export default function FavoritesPage() {
       await removeFavorite(vehicleId);
       // Remove from local state
       setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
-      setPagination((prev) => ({ ...prev, total: prev.total - 1 }));
+      setPagination((prev) => {
+        const newTotal = Math.max(0, prev.total - 1);
+        const newTotalPages = Math.ceil(newTotal / prev.limit);
+        return {
+          ...prev,
+          total: newTotal,
+          totalPages: newTotalPages,
+          // If current page is beyond total pages, go to last page
+          page: prev.page > newTotalPages && newTotalPages > 0 ? newTotalPages : prev.page,
+        };
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove favorite');
     }

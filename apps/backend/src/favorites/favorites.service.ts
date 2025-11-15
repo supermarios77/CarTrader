@@ -17,6 +17,11 @@ export class FavoritesService {
    * Add a vehicle to user's favorites
    */
   async addFavorite(userId: string, vehicleId: string): Promise<void> {
+    // Validate inputs
+    if (!userId || !vehicleId) {
+      throw new BadRequestException('User ID and Vehicle ID are required');
+    }
+
     // Check if vehicle exists and is active
     const vehicle = await this.prisma.vehicle.findUnique({
       where: { id: vehicleId },
@@ -45,21 +50,31 @@ export class FavoritesService {
       throw new BadRequestException('Vehicle is already in favorites');
     }
 
-    // Add to favorites
-    await this.prisma.favorite.create({
-      data: {
-        userId,
-        vehicleId,
-      },
-    });
+    // Add to favorites with error handling
+    try {
+      await this.prisma.favorite.create({
+        data: {
+          userId,
+          vehicleId,
+        },
+      });
 
-    this.logger.log(`✅ Added vehicle ${vehicleId} to favorites for user ${userId}`);
+      this.logger.log(`✅ Added vehicle ${vehicleId} to favorites for user ${userId}`);
+    } catch (error) {
+      this.logger.error(`Failed to add favorite: ${error}`);
+      throw new BadRequestException('Failed to add vehicle to favorites');
+    }
   }
 
   /**
    * Remove a vehicle from user's favorites
    */
   async removeFavorite(userId: string, vehicleId: string): Promise<void> {
+    // Validate inputs
+    if (!userId || !vehicleId) {
+      throw new BadRequestException('User ID and Vehicle ID are required');
+    }
+
     const favorite = await this.prisma.favorite.findUnique({
       where: {
         userId_vehicleId: {
@@ -73,13 +88,23 @@ export class FavoritesService {
       throw new NotFoundException('Favorite not found');
     }
 
-    await this.prisma.favorite.delete({
-      where: {
-        id: favorite.id,
-      },
-    });
+    // Verify ownership (security check)
+    if (favorite.userId !== userId) {
+      throw new BadRequestException('You can only remove your own favorites');
+    }
 
-    this.logger.log(`✅ Removed vehicle ${vehicleId} from favorites for user ${userId}`);
+    try {
+      await this.prisma.favorite.delete({
+        where: {
+          id: favorite.id,
+        },
+      });
+
+      this.logger.log(`✅ Removed vehicle ${vehicleId} from favorites for user ${userId}`);
+    } catch (error) {
+      this.logger.error(`Failed to remove favorite: ${error}`);
+      throw new BadRequestException('Failed to remove vehicle from favorites');
+    }
   }
 
   /**

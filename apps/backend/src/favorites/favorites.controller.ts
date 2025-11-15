@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,7 +28,7 @@ export class FavoritesController {
   @Post('vehicles/:id')
   @HttpCode(HttpStatus.CREATED)
   async addFavorite(
-    @Param('id') vehicleId: string,
+    @Param('id', ParseUUIDPipe) vehicleId: string,
     @CurrentUser('id') userId: string,
   ) {
     await this.favoritesService.addFavorite(userId, vehicleId);
@@ -41,7 +42,7 @@ export class FavoritesController {
   @Delete('vehicles/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeFavorite(
-    @Param('id') vehicleId: string,
+    @Param('id', ParseUUIDPipe) vehicleId: string,
     @CurrentUser('id') userId: string,
   ) {
     await this.favoritesService.removeFavorite(userId, vehicleId);
@@ -69,7 +70,7 @@ export class FavoritesController {
    */
   @Get('vehicles/:id/check')
   async checkFavorite(
-    @Param('id') vehicleId: string,
+    @Param('id', ParseUUIDPipe) vehicleId: string,
     @CurrentUser('id') userId: string,
   ) {
     const isFavorite = await this.favoritesService.isFavorite(

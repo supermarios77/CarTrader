@@ -5,7 +5,7 @@
  * Reusable component for adding/removing favorites
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { addFavorite, removeFavorite } from '@/lib/favorites-api';
@@ -33,11 +33,21 @@ export function FavoriteButton({
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = React.useRef<AbortController | null>(null);
 
   // Sync with prop changes
   useEffect(() => {
     setIsFavorite(initialIsFavorite);
   }, [initialIsFavorite]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Don't show if not authenticated
   if (!isAuthenticated) {
@@ -50,25 +60,43 @@ export function FavoriteButton({
 
     if (loading) return;
 
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller for this request
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     setLoading(true);
     setError(null);
 
     try {
       if (isFavorite) {
         await removeFavorite(vehicleId);
+        // Check if request was aborted
+        if (abortController.signal.aborted) return;
         setIsFavorite(false);
         onToggle?.(false);
       } else {
         await addFavorite(vehicleId);
+        // Check if request was aborted
+        if (abortController.signal.aborted) return;
         setIsFavorite(true);
         onToggle?.(true);
       }
     } catch (err) {
+      // Don't update state if request was aborted
+      if (abortController.signal.aborted) return;
+      
       setError(err instanceof Error ? err.message : 'Failed to update favorite');
       // Revert state on error
       setIsFavorite(!isFavorite);
     } finally {
-      setLoading(false);
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
   };
 
