@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Put,
   Delete,
   Body,
   UseGuards,
@@ -21,8 +22,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyPhoneDto } from './dto/verify-phone.dto';
 import { SendPhoneVerificationDto } from './dto/send-phone-verification.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 
@@ -57,30 +58,30 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
-  async logout(@CurrentUser('id') userId: string, @Body() logoutDto: LogoutDto) {
+  async logout(
+    @CurrentUser('id') userId: string,
+    @Body() logoutDto: LogoutDto,
+  ) {
     return this.authService.logout(userId, logoutDto.sessionId);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@CurrentUser() user: {
-    id: string;
-    email: string;
-    firstName: string | null;
-    lastName: string | null;
-    role: string;
-    emailVerified: boolean;
-    createdAt: Date;
-  }) {
-    return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      emailVerified: user.emailVerified,
-      createdAt: user.createdAt,
-    };
+  async getProfile(@CurrentUser('id') userId: string) {
+    return this.authService.getProfile(userId);
+  }
+
+  /**
+   * Update user profile
+   * PUT /auth/profile
+   */
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(userId, updateProfileDto);
   }
 
   @Get('sessions')
@@ -115,8 +116,12 @@ export class AuthController {
   @Public()
   @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
-  async resendVerification(@Body() resendVerificationDto: ResendVerificationDto) {
-    return this.authService.resendVerificationEmail(resendVerificationDto.email);
+  async resendVerification(
+    @Body() resendVerificationDto: ResendVerificationDto,
+  ) {
+    return this.authService.resendVerificationEmail(
+      resendVerificationDto.email,
+    );
   }
 
   @Public()
@@ -130,7 +135,10 @@ export class AuthController {
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.password);
+    return this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.password,
+    );
   }
 
   @Post('send-phone-verification')
@@ -140,7 +148,10 @@ export class AuthController {
     @CurrentUser('id') userId: string,
     @Body() sendPhoneVerificationDto: SendPhoneVerificationDto,
   ) {
-    return this.authService.sendPhoneVerificationCode(userId, sendPhoneVerificationDto.phone);
+    return this.authService.sendPhoneVerificationCode(
+      userId,
+      sendPhoneVerificationDto.phone,
+    );
   }
 
   @Post('verify-phone')
@@ -150,7 +161,10 @@ export class AuthController {
     @CurrentUser('id') userId: string,
     @Body() verifyPhoneDto: VerifyPhoneDto,
   ) {
-    return this.authService.verifyPhone(verifyPhoneDto.token, verifyPhoneDto.code);
+    return this.authService.verifyPhone(
+      verifyPhoneDto.token,
+      verifyPhoneDto.code,
+    );
   }
 
   @Post('resend-phone-verification')
@@ -160,4 +174,3 @@ export class AuthController {
     return this.authService.resendPhoneVerificationCode(userId);
   }
 }
-

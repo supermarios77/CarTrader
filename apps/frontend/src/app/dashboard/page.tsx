@@ -22,6 +22,7 @@ import {
   Plus,
   List,
   TrendingUp,
+  User,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -158,6 +159,12 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Link href="/profile/edit">
+              <Button variant="outline">
+                <User className="mr-2 h-4 w-4" />
+                Edit Profile
+              </Button>
+            </Link>
             <Link href="/vehicles/new">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />

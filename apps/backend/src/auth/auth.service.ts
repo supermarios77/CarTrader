@@ -3,6 +3,8 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -13,6 +15,7 @@ import { EmailService } from '../email/email.service';
 import { SmsService } from '../sms/sms.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { JwtRefreshPayload } from './strategies/jwt-refresh.strategy';
@@ -37,6 +40,8 @@ function isPrismaUniqueConstraintError(
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -105,11 +110,16 @@ export class AuthService {
 
     // Check if user is active
     if (user.status !== 'ACTIVE') {
-      throw new UnauthorizedException('Your account is not active. Please contact support.');
+      throw new UnauthorizedException(
+        'Your account is not active. Please contact support.',
+      );
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.passwordHash,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
@@ -166,7 +176,7 @@ export class AuthService {
 
       let accessToken: string | null = null;
       let retries = 3;
-      
+
       while (retries > 0) {
         accessToken = this.jwtService.sign(accessTokenPayload, {
           secret: getRequiredEnv('JWT_SECRET'),
@@ -188,7 +198,9 @@ export class AuthService {
           ) {
             retries--;
             if (retries === 0) {
-              throw new ConflictException('Failed to refresh token. Please try again.');
+              throw new ConflictException(
+                'Failed to refresh token. Please try again.',
+              );
             }
             // Generate a new access token with a unique jti (JWT ID) to ensure uniqueness
             accessTokenPayload = {
@@ -217,7 +229,10 @@ export class AuthService {
   /**
    * Logout user (invalidate session)
    */
-  async logout(userId: string, sessionId: string): Promise<{ message: string }> {
+  async logout(
+    userId: string,
+    sessionId: string,
+  ): Promise<{ message: string }> {
     // Verify session belongs to user
     const session = await this.prisma.session.findFirst({
       where: { id: sessionId, userId },
@@ -254,7 +269,10 @@ export class AuthService {
   /**
    * Revoke a specific session
    */
-  async revokeSession(userId: string, sessionId: string): Promise<{ message: string }> {
+  async revokeSession(
+    userId: string,
+    sessionId: string,
+  ): Promise<{ message: string }> {
     const session = await this.prisma.session.findFirst({
       where: { id: sessionId, userId },
     });
@@ -331,12 +349,14 @@ export class AuthService {
         ) {
           retries--;
           if (retries === 0) {
-            throw new ConflictException('Failed to create session. Please try again.');
+            throw new ConflictException(
+              'Failed to create session. Please try again.',
+            );
           }
           // Generate a new access token with a unique jti (JWT ID) to ensure uniqueness
           accessToken = this.jwtService.sign(
-            { 
-              ...accessTokenPayload, 
+            {
+              ...accessTokenPayload,
               jti: randomUUID(), // Add unique JWT ID
               iat: Math.floor(Date.now() / 1000),
             },
@@ -380,10 +400,11 @@ export class AuthService {
    */
   async verifyEmail(token: string): Promise<{ message: string }> {
     // Find verification token
-    const verificationToken = await this.prisma.emailVerificationToken.findUnique({
-      where: { token },
-      include: { user: true },
-    });
+    const verificationToken =
+      await this.prisma.emailVerificationToken.findUnique({
+        where: { token },
+        include: { user: true },
+      });
 
     if (!verificationToken) {
       throw new BadRequestException('Invalid or expired verification token');
@@ -395,7 +416,9 @@ export class AuthService {
       await this.prisma.emailVerificationToken.delete({
         where: { id: verificationToken.id },
       });
-      throw new BadRequestException('Verification token has expired. Please request a new one.');
+      throw new BadRequestException(
+        'Verification token has expired. Please request a new one.',
+      );
     }
 
     // Check if email is already verified
@@ -431,7 +454,10 @@ export class AuthService {
 
     if (!user) {
       // Don't reveal if email exists for security
-      return { message: 'If an account exists with this email, a verification email has been sent.' };
+      return {
+        message:
+          'If an account exists with this email, a verification email has been sent.',
+      };
     }
 
     if (user.emailVerified) {
@@ -490,7 +516,8 @@ export class AuthService {
     if (!user) {
       // Don't reveal if email exists for security
       return {
-        message: 'If an account exists with this email, a password reset link has been sent.',
+        message:
+          'If an account exists with this email, a password reset link has been sent.',
       };
     }
 
@@ -527,14 +554,18 @@ export class AuthService {
     );
 
     return {
-      message: 'If an account exists with this email, a password reset link has been sent.',
+      message:
+        'If an account exists with this email, a password reset link has been sent.',
     };
   }
 
   /**
    * Reset password with token
    */
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     // Find reset token
     const resetToken = await this.prisma.passwordResetToken.findUnique({
       where: { token },
@@ -552,17 +583,23 @@ export class AuthService {
         where: { id: resetToken.id },
         data: { used: true },
       });
-      throw new BadRequestException('Reset token has expired. Please request a new one.');
+      throw new BadRequestException(
+        'Reset token has expired. Please request a new one.',
+      );
     }
 
     // Check if token is already used
     if (resetToken.used) {
-      throw new BadRequestException('This reset token has already been used. Please request a new one.');
+      throw new BadRequestException(
+        'This reset token has already been used. Please request a new one.',
+      );
     }
 
     // Check if user is active
     if (resetToken.user.status !== 'ACTIVE') {
-      throw new BadRequestException('Your account is not active. Please contact support.');
+      throw new BadRequestException(
+        'Your account is not active. Please contact support.',
+      );
     }
 
     // Hash new password
@@ -594,7 +631,10 @@ export class AuthService {
   /**
    * Send phone verification code
    */
-  async sendPhoneVerificationCode(userId: string, phone: string): Promise<{ message: string; token: string }> {
+  async sendPhoneVerificationCode(
+    userId: string,
+    phone: string,
+  ): Promise<{ message: string; token: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -643,10 +683,11 @@ export class AuthService {
    */
   async verifyPhone(token: string, code: string): Promise<{ message: string }> {
     // Find verification token
-    const verificationToken = await this.prisma.phoneVerificationToken.findUnique({
-      where: { token },
-      include: { user: true },
-    });
+    const verificationToken =
+      await this.prisma.phoneVerificationToken.findUnique({
+        where: { token },
+        include: { user: true },
+      });
 
     if (!verificationToken) {
       throw new BadRequestException('Invalid or expired verification token');
@@ -662,7 +703,9 @@ export class AuthService {
       await this.prisma.phoneVerificationToken.delete({
         where: { id: verificationToken.id },
       });
-      throw new BadRequestException('Verification code has expired. Please request a new one.');
+      throw new BadRequestException(
+        'Verification code has expired. Please request a new one.',
+      );
     }
 
     // Check attempts (max 5 attempts)
@@ -670,7 +713,9 @@ export class AuthService {
       await this.prisma.phoneVerificationToken.delete({
         where: { id: verificationToken.id },
       });
-      throw new BadRequestException('Too many failed attempts. Please request a new verification code.');
+      throw new BadRequestException(
+        'Too many failed attempts. Please request a new verification code.',
+      );
     }
 
     // Verify code
@@ -700,7 +745,9 @@ export class AuthService {
   /**
    * Resend phone verification code
    */
-  async resendPhoneVerificationCode(userId: string): Promise<{ message: string; token: string }> {
+  async resendPhoneVerificationCode(
+    userId: string,
+  ): Promise<{ message: string; token: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -710,7 +757,9 @@ export class AuthService {
     }
 
     if (!user.phone) {
-      throw new BadRequestException('No phone number associated with this account');
+      throw new BadRequestException(
+        'No phone number associated with this account',
+      );
     }
 
     if (user.phoneVerified) {
@@ -719,5 +768,105 @@ export class AuthService {
 
     return this.sendPhoneVerificationCode(userId, user.phone);
   }
-}
 
+  /**
+   * Get user profile with full details
+   */
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        phoneVerified: true,
+        role: true,
+        emailVerified: true,
+        avatar: true,
+        bio: true,
+        location: true,
+        city: true,
+        country: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    // Validate user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Update user profile
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(updateProfileDto.firstName !== undefined && {
+          firstName: updateProfileDto.firstName || null,
+        }),
+        ...(updateProfileDto.lastName !== undefined && {
+          lastName: updateProfileDto.lastName || null,
+        }),
+        ...(updateProfileDto.phone !== undefined && {
+          phone: updateProfileDto.phone || null,
+          // Reset phone verification if phone is changed
+          phoneVerified: updateProfileDto.phone ? false : undefined,
+        }),
+        ...(updateProfileDto.bio !== undefined && {
+          bio: updateProfileDto.bio || null,
+        }),
+        ...(updateProfileDto.location !== undefined && {
+          location: updateProfileDto.location || null,
+        }),
+        ...(updateProfileDto.city !== undefined && {
+          city: updateProfileDto.city || null,
+        }),
+        ...(updateProfileDto.country !== undefined && {
+          country: updateProfileDto.country || null,
+        }),
+        ...(updateProfileDto.avatar !== undefined && {
+          avatar: updateProfileDto.avatar || null,
+        }),
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        phoneVerified: true,
+        role: true,
+        emailVerified: true,
+        avatar: true,
+        bio: true,
+        location: true,
+        city: true,
+        country: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    this.logger.log(`✅ Profile updated for user ${userId}`);
+
+    return updatedUser;
+  }
+}
