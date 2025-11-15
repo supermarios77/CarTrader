@@ -124,11 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      // Get current session ID if available (optional - backend handles gracefully)
-      const sessionId = null; // Could be stored in context if needed
-      
-      // Try to logout on server (don't fail if it errors)
-      await api.post('/auth/logout', { sessionId }).catch(() => {
+      // Try to logout on server (sessionId is optional - backend handles gracefully)
+      await api.post('/auth/logout', {}).catch(() => {
         // Ignore errors - clear tokens anyway
       });
     } catch {
