@@ -35,6 +35,16 @@ export default function ConversationPage() {
   const [messageContent, setMessageContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Track mount status
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -59,26 +69,27 @@ export default function ConversationPage() {
           limit: 100,
         });
 
-        // Don't update state if request was aborted
-        if (abortController.signal.aborted) return;
+        // Don't update state if request was aborted or component unmounted
+        if (abortController.signal.aborted || !isMountedRef.current) return;
 
-        // Reverse to show oldest first
-        setMessages(response.messages.reverse());
+        // Reverse to show oldest first (create new array to avoid mutating)
+        const reversedMessages = [...response.messages].reverse();
+        setMessages(reversedMessages);
 
-        // Mark as read
-        try {
-          await markAsRead(partnerId);
-        } catch (err) {
-          // Ignore mark as read errors
-          console.error('Failed to mark as read:', err);
-        }
+        // Mark as read (don't wait for it)
+        markAsRead(partnerId).catch((err) => {
+          // Ignore mark as read errors, but log in development
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to mark as read:', err);
+          }
+        });
       } catch (err) {
-        // Don't update state if request was aborted
-        if (abortController.signal.aborted) return;
+        // Don't update state if request was aborted or component unmounted
+        if (abortController.signal.aborted || !isMountedRef.current) return;
 
         setError(err instanceof Error ? err.message : 'Failed to load messages');
       } finally {
-        if (!abortController.signal.aborted) {
+        if (!abortController.signal.aborted && isMountedRef.current) {
           setLoading(false);
         }
       }
@@ -94,14 +105,38 @@ export default function ConversationPage() {
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (!isMountedRef.current) return;
+
+    // Clear previous timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
+
+    // Use timeout to ensure DOM is updated
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (messagesEndRef.current && isMountedRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+
+    // Cleanup timeout
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = null;
+      }
+    };
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageContent.trim() || sending) return;
+    if (!messageContent.trim() || sending || !isMountedRef.current) return;
+
+    // Validate partnerId
+    if (!partnerId || typeof partnerId !== 'string') {
+      setError('Invalid conversation partner');
+      return;
+    }
 
     const content = messageContent.trim();
     setMessageContent('');
@@ -115,20 +150,31 @@ export default function ConversationPage() {
         content,
       });
 
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
+
       // Add to messages list
       setMessages((prev) => [...prev, newMessage]);
 
       // Scroll to bottom
-      setTimeout(() => {
-        if (messagesEndRef.current) {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (messagesEndRef.current && isMountedRef.current) {
           messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
     } catch (err) {
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
+
       setError(err instanceof Error ? err.message : 'Failed to send message');
       setMessageContent(content); // Restore content on error
     } finally {
-      setSending(false);
+      if (isMountedRef.current) {
+        setSending(false);
+      }
     }
   };
 
@@ -160,15 +206,17 @@ export default function ConversationPage() {
   };
 
   const getPartnerName = (message: Message) => {
-    const partner = message.senderId === user?.id ? message.receiver : message.sender;
+    if (!message || !user) return 'Unknown';
+    const partner = message.senderId === user.id ? message.receiver : message.sender;
+    if (!partner) return 'Unknown';
     if (partner.firstName || partner.lastName) {
       return `${partner.firstName || ''} ${partner.lastName || ''}`.trim();
     }
-    return partner.email.split('@')[0];
+    return partner.email?.split('@')[0] || 'Unknown';
   };
 
-  const currentPartner = messages[0]
-    ? messages[0].senderId === user?.id
+  const currentPartner = messages.length > 0 && messages[0] && user
+    ? messages[0].senderId === user.id
       ? messages[0].receiver
       : messages[0].sender
     : null;
@@ -205,8 +253,12 @@ export default function ConversationPage() {
             {currentPartner?.avatar ? (
               <img
                 src={currentPartner.avatar}
-                alt={getPartnerName(messages[0])}
+                alt={getPartnerName(messages[0] || null)}
                 className="h-12 w-12 rounded-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
               />
             ) : (
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -215,11 +267,11 @@ export default function ConversationPage() {
             )}
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {currentPartner
+                {currentPartner && messages.length > 0
                   ? getPartnerName(messages[0])
                   : 'Conversation'}
               </h1>
-              {messages[0]?.vehicle && (
+              {messages.length > 0 && messages[0]?.vehicle && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                   <Car className="h-4 w-4" />
                   <Link

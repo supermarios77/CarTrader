@@ -165,6 +165,10 @@ export default function MessagesPage() {
                             src={conversation.partner.avatar}
                             alt={getPartnerName(conversation.partner)}
                             className="h-12 w-12 rounded-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
                           />
                         ) : (
                           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">

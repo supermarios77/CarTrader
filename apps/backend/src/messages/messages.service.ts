@@ -63,8 +63,16 @@ export class MessagesService {
       }
     }
 
-    // Encrypt message content
-    const encryptedContent = encryptMessage(createMessageDto.content);
+    // Encrypt message content with error handling
+    let encryptedContent: string;
+    try {
+      encryptedContent = encryptMessage(createMessageDto.content);
+    } catch (error) {
+      this.logger.error(
+        `Failed to encrypt message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to encrypt message content');
+    }
 
     // Create message
     const message = await this.prisma.message.create({
