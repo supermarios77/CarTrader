@@ -303,13 +303,14 @@ export class MessagesService {
   ): Promise<ConversationsListResponse> {
     const skip = (page - 1) * limit;
 
-    // Get all unique conversation partners
+    // Get all unique conversation partners (excluding deleted messages)
     const messages = await this.prisma.message.findMany({
       where: {
         OR: [
           { senderId: userId },
           { receiverId: userId },
         ],
+        deletedAt: null, // Only include non-deleted messages
       },
       include: {
         sender: {
@@ -424,18 +425,10 @@ export class MessagesService {
       const [unreadCount, totalMessages] = await Promise.all([
         this.prisma.message.count({
           where: {
-            OR: [
-              {
-                senderId: userId,
-                receiverId: conv.partnerId,
-              },
-              {
-                senderId: conv.partnerId,
-                receiverId: userId,
-              },
-            ],
+            senderId: conv.partnerId,
             receiverId: userId,
             status: { not: MessageStatus.READ },
+            deletedAt: null, // Only count non-deleted messages
           },
         }),
         this.prisma.message.count({
@@ -450,6 +443,7 @@ export class MessagesService {
                 receiverId: userId,
               },
             ],
+            deletedAt: null, // Only count non-deleted messages
           },
         }),
       ]);

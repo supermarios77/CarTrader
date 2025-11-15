@@ -39,6 +39,7 @@ export default function VerifyPhonePage() {
   const [countdown, setCountdown] = useState(0);
 
   const codeInputRef = useRef<HTMLInputElement>(null);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Countdown timer
   useEffect(() => {
@@ -47,6 +48,16 @@ export default function VerifyPhonePage() {
       return () => clearTimeout(timer);
     }
   }, [countdown]);
+
+  // Cleanup redirect timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Focus code input when token is received
   useEffect(() => {
@@ -110,7 +121,7 @@ export default function VerifyPhonePage() {
       await refreshUser();
       
       // Redirect to home after 2 seconds
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
         router.push('/');
         router.refresh();
       }, 2000);

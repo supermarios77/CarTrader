@@ -89,11 +89,8 @@ export default function ConversationPage() {
         setMessages(reversedMessages);
 
         // Mark as read (don't wait for it)
-        markAsRead(partnerId).catch((err) => {
-          // Ignore mark as read errors, but log in development
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Failed to mark as read:', err);
-          }
+        markAsRead(partnerId).catch(() => {
+          // Silently ignore mark as read errors - non-critical operation
         });
       } catch (err) {
         // Don't update state if request was aborted or component unmounted

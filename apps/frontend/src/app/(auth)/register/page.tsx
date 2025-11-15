@@ -4,7 +4,7 @@
  * Register Page - Production-ready registration form with shadcn/ui components
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
@@ -47,6 +47,17 @@ export default function RegisterPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup redirect timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   /**
    * Validate email format
@@ -194,7 +205,7 @@ export default function RegisterPage() {
       setShowSuccess(true);
 
       // Redirect to home page after a short delay
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
         router.push('/');
         router.refresh();
       }, 2000);

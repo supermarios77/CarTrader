@@ -5,7 +5,7 @@
  * Handles email verification via token from URL or manual entry
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api-client';
@@ -34,6 +34,7 @@ export default function VerifyEmailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [email, setEmail] = useState('');
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-verify if token is in URL
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function VerifyEmailPage() {
       setSuccess('Email verified successfully!');
       
       // Redirect to home after 2 seconds
-      setTimeout(() => {
+      redirectTimeoutRef.current = setTimeout(() => {
         router.push('/');
         router.refresh();
       }, 2000);
