@@ -5,19 +5,24 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule, {
-    logger: process.env.NODE_ENV === 'production' 
-      ? ['error', 'warn', 'log'] 
-      : ['error', 'warn', 'log', 'debug', 'verbose'],
+    logger:
+      process.env.NODE_ENV === 'production'
+        ? ['error', 'warn', 'log']
+        : ['error', 'warn', 'log', 'debug', 'verbose'],
   });
 
   // Enable CORS for frontend - stricter in production
   const frontendUrl = process.env.FRONTEND_URL;
   if (!frontendUrl && process.env.NODE_ENV === 'production') {
-    logger.warn('FRONTEND_URL not set in production - CORS may not work correctly');
+    logger.warn(
+      'FRONTEND_URL not set in production - CORS may not work correctly',
+    );
   }
-  
+
   app.enableCors({
-    origin: frontendUrl || (process.env.NODE_ENV === 'production' ? false : 'http://localhost:3000'),
+    origin:
+      frontendUrl ||
+      (process.env.NODE_ENV === 'production' ? false : 'http://localhost:3000'),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
