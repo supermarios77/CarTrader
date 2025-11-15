@@ -19,6 +19,8 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyPhoneDto } from './dto/verify-phone.dto';
+import { SendPhoneVerificationDto } from './dto/send-phone-verification.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -97,6 +99,13 @@ export class AuthController {
   }
 
   @Public()
+  @Get('verify-email/:token')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmailGet(@Param('token') token: string) {
+    return this.authService.verifyEmail(token);
+  }
+
+  @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
@@ -122,6 +131,33 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.password);
+  }
+
+  @Post('send-phone-verification')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async sendPhoneVerification(
+    @CurrentUser('id') userId: string,
+    @Body() sendPhoneVerificationDto: SendPhoneVerificationDto,
+  ) {
+    return this.authService.sendPhoneVerificationCode(userId, sendPhoneVerificationDto.phone);
+  }
+
+  @Post('verify-phone')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async verifyPhone(
+    @CurrentUser('id') userId: string,
+    @Body() verifyPhoneDto: VerifyPhoneDto,
+  ) {
+    return this.authService.verifyPhone(verifyPhoneDto.token, verifyPhoneDto.code);
+  }
+
+  @Post('resend-phone-verification')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async resendPhoneVerification(@CurrentUser('id') userId: string) {
+    return this.authService.resendPhoneVerificationCode(userId);
   }
 }
 

@@ -92,8 +92,8 @@ export class EmailService {
                 Verify Email Address
               </a>
             </div>
-            <p>Or copy and paste this link into your browser:</p>
-            <p style="word-break: break-all; color: #2563eb;">${verificationUrl}</p>
+            <p style="font-size: 12px; color: #666; margin-top: 20px;">Or copy and paste this link into your browser:</p>
+            <p style="font-size: 12px; color: #2563eb; word-break: break-all;">${verificationUrl}</p>
             <p>This link will expire in 24 hours.</p>
             <p>If you didn't create an account, you can safely ignore this email.</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">

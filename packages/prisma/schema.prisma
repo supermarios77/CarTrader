@@ -61,6 +61,7 @@ model User {
   sessions      Session[]
   emailVerificationToken EmailVerificationToken?
   passwordResetTokens PasswordResetToken[]
+  phoneVerificationTokens PhoneVerificationToken[]
   
   // Indexes
   @@index([email])
@@ -118,6 +119,28 @@ model PasswordResetToken {
   @@index([expiresAt])
   @@index([used])
   @@map("password_reset_tokens")
+}
+
+model PhoneVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String
+  phone     String
+  token     String   @unique
+  code      String   // 6-digit verification code
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([code])
+  @@index([userId])
+  @@index([phone])
+  @@index([expiresAt])
+  @@index([verified])
+  @@map("phone_verification_tokens")
 }
 
 // ============================================

@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { SmsService } from '../sms/sms.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -40,6 +41,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private emailService: EmailService,
+    private smsService: SmsService,
   ) {}
 
   /**
@@ -580,6 +582,142 @@ export class AuthService {
     ]);
 
     return { message: 'Password reset successfully' };
+  }
+
+  /**
+   * Generate a 6-digit verification code
+   */
+  private generateVerificationCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  /**
+   * Send phone verification code
+   */
+  async sendPhoneVerificationCode(userId: string, phone: string): Promise<{ message: string; token: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.phoneVerified) {
+      throw new BadRequestException('Phone number is already verified');
+    }
+
+    // Generate verification code and token
+    const code = this.generateVerificationCode();
+    const token = randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
+
+    // Delete any existing verification tokens for this user
+    await this.prisma.phoneVerificationToken.deleteMany({
+      where: { userId },
+    });
+
+    // Create new verification token
+    await this.prisma.phoneVerificationToken.create({
+      data: {
+        userId,
+        phone,
+        token,
+        code,
+        expiresAt,
+      },
+    });
+
+    // Send SMS
+    await this.smsService.sendVerificationCode(phone, code);
+
+    return {
+      message: 'Verification code sent successfully',
+      token, // Return token for frontend to use in verification
+    };
+  }
+
+  /**
+   * Verify phone number with code
+   */
+  async verifyPhone(token: string, code: string): Promise<{ message: string }> {
+    // Find verification token
+    const verificationToken = await this.prisma.phoneVerificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!verificationToken) {
+      throw new BadRequestException('Invalid or expired verification token');
+    }
+
+    // Check if already verified
+    if (verificationToken.verified) {
+      throw new BadRequestException('Phone number is already verified');
+    }
+
+    // Check if token is expired
+    if (verificationToken.expiresAt < new Date()) {
+      await this.prisma.phoneVerificationToken.delete({
+        where: { id: verificationToken.id },
+      });
+      throw new BadRequestException('Verification code has expired. Please request a new one.');
+    }
+
+    // Check attempts (max 5 attempts)
+    if (verificationToken.attempts >= 5) {
+      await this.prisma.phoneVerificationToken.delete({
+        where: { id: verificationToken.id },
+      });
+      throw new BadRequestException('Too many failed attempts. Please request a new verification code.');
+    }
+
+    // Verify code
+    if (verificationToken.code !== code) {
+      // Increment attempts
+      await this.prisma.phoneVerificationToken.update({
+        where: { id: verificationToken.id },
+        data: { attempts: verificationToken.attempts + 1 },
+      });
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Verify phone and delete token
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: verificationToken.userId },
+        data: { phoneVerified: true },
+      }),
+      this.prisma.phoneVerificationToken.delete({
+        where: { id: verificationToken.id },
+      }),
+    ]);
+
+    return { message: 'Phone number verified successfully' };
+  }
+
+  /**
+   * Resend phone verification code
+   */
+  async resendPhoneVerificationCode(userId: string): Promise<{ message: string; token: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.phone) {
+      throw new BadRequestException('No phone number associated with this account');
+    }
+
+    if (user.phoneVerified) {
+      throw new BadRequestException('Phone number is already verified');
+    }
+
+    return this.sendPhoneVerificationCode(userId, user.phone);
   }
 }
 
