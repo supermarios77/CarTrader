@@ -49,10 +49,10 @@ export class MessagesGateway
   async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
     try {
       // Extract token from handshake auth or query
-      const token =
-        client.handshake.auth?.token ||
-        client.handshake.query?.token ||
-        client.handshake.headers?.authorization?.replace('Bearer ', '');
+      const token: string | undefined =
+        (client.handshake.auth?.token as string | undefined) ||
+        (client.handshake.query?.token as string | undefined) ||
+        (client.handshake.headers?.authorization as string | undefined)?.replace('Bearer ', '');
 
       if (!token) {
         this.logger.warn(`Client ${client.id} connected without token`);
@@ -62,7 +62,7 @@ export class MessagesGateway
 
       // Verify JWT token
       const payload = this.jwtService.verify<{ sub: string; email: string }>(
-        token,
+        token as string,
         {
           secret: process.env.JWT_SECRET,
         },
