@@ -61,4 +61,6 @@ Dockerfile*
 # Scripts (keep only necessary ones)
 scripts/
 !scripts/docker-entrypoint.sh
+!scripts/docker-dev-backend.sh
+!scripts/docker-dev-frontend.sh
 

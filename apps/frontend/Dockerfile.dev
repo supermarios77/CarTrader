@@ -27,10 +27,14 @@ RUN pnpm install --frozen-lockfile
 COPY packages ./packages
 COPY apps/frontend ./apps/frontend
 
+# Copy startup script (won't be overwritten by volume mount)
+COPY scripts/docker-dev-frontend.sh /app/docker-dev-frontend.sh
+RUN chmod +x /app/docker-dev-frontend.sh
+
 # Expose port
 EXPOSE 3000
 
-# Start in development mode
-WORKDIR /app/apps/frontend
-CMD ["pnpm", "dev"]
+# Start in development mode using startup script
+WORKDIR /app
+CMD ["/app/docker-dev-frontend.sh"]
 

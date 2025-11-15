@@ -32,10 +32,14 @@ COPY apps/backend ./apps/backend
 WORKDIR /app/packages/prisma
 RUN pnpm generate
 
+# Copy startup script (won't be overwritten by volume mount)
+COPY scripts/docker-dev-backend.sh /app/docker-dev-backend.sh
+RUN chmod +x /app/docker-dev-backend.sh
+
 # Expose port
 EXPOSE 3001
 
-# Start in watch mode
-WORKDIR /app/apps/backend
-CMD ["pnpm", "dev"]
+# Start in watch mode using startup script
+WORKDIR /app
+CMD ["/app/docker-dev-backend.sh"]
 

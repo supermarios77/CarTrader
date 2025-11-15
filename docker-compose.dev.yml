@@ -31,6 +31,7 @@ services:
       - /app/node_modules
       - /app/apps/backend/node_modules
       - /app/packages/shared/node_modules
+      - /app/packages/prisma/node_modules
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://cartrader_dev:dev_password@postgres:5432/cartrader_dev?schema=public&connection_limit=5&pool_timeout=20
@@ -47,10 +48,8 @@ services:
       SMTP_HOST: ${SMTP_HOST:-postfix}
       SMTP_PORT: ${SMTP_PORT:-25}
       SMTP_FROM: ${SMTP_FROM:-noreply@cartrader.local}
-    # Override entrypoint for dev (no entrypoint script needed)
-    # This prevents using the production entrypoint script that doesn't exist in dev image
-    entrypoint: ["/bin/sh", "-c"]
-    command: "exec pnpm dev"
+    # Use the startup script from Dockerfile which ensures dependencies are installed
+    # No need to override entrypoint - the CMD from Dockerfile handles everything
     ports:
       - "3001:3001"
 
@@ -62,11 +61,14 @@ services:
       - .:/app
       - /app/node_modules
       - /app/apps/frontend/node_modules
+      - /app/packages/shared/node_modules
+      - /app/packages/prisma/node_modules
       - /app/apps/frontend/.next
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
-    command: pnpm dev
+    # Use the startup script from Dockerfile which ensures dependencies are installed
+    # No need to override entrypoint - the CMD from Dockerfile handles everything
     ports:
       - "3000:3000"
 
