@@ -216,7 +216,7 @@ export class FavoritesService {
       pagination: {
         page,
         limit,
-        total: validFavorites.length, // Only count valid favorites
+        total, // Total count of active vehicle favorites
         totalPages: Math.ceil(total / limit),
       },
     };
