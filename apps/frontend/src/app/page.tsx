@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
 import { getAccessToken } from '@/lib/api-client';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -21,6 +23,18 @@ export default function Home() {
             <p>✅ Next.js Frontend (Port 3000)</p>
             <p>✅ NestJS Backend (Port 3001)</p>
             <p>✅ Monorepo with pnpm workspaces</p>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="mt-8 flex gap-4">
+            <Link href="/vehicles">
+              <Button size="lg">Browse Vehicles</Button>
+            </Link>
+            {isAuthenticated && (
+              <Link href="/vehicles/new">
+                <Button size="lg" variant="outline">List Your Vehicle</Button>
+              </Link>
+            )}
           </div>
 
           {/* Auth State Log - For Testing */}
