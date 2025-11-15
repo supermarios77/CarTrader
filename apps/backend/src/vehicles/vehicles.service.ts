@@ -406,13 +406,23 @@ export class VehiclesService {
       throw new NotFoundException('Vehicle not found');
     }
 
-    // Increment view count (only for ACTIVE vehicles)
-    if (vehicle.status === VehicleStatus.ACTIVE) {
+    // Increment view count (only for ACTIVE vehicles and not by owner)
+    // Don't count views when the owner views their own vehicle
+    if (vehicle.status === VehicleStatus.ACTIVE && vehicle.userId !== userId) {
       await this.prisma.vehicle.update({
         where: { id: vehicleId },
         data: { views: { increment: 1 } },
       });
       vehicle.views += 1;
+    } else if (vehicle.status === VehicleStatus.ACTIVE && vehicle.userId === userId) {
+      // Owner viewing their own vehicle - don't increment, but fetch current views
+      const updatedVehicle = await this.prisma.vehicle.findUnique({
+        where: { id: vehicleId },
+        select: { views: true },
+      });
+      if (updatedVehicle) {
+        vehicle.views = updatedVehicle.views;
+      }
     }
 
     // Check if favorited
