@@ -815,37 +815,63 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    // Build update data object
+    const updateData: any = {};
+
+    // Handle firstName
+    if (updateProfileDto.firstName !== undefined) {
+      updateData.firstName = updateProfileDto.firstName?.trim() || null;
+    }
+
+    // Handle lastName
+    if (updateProfileDto.lastName !== undefined) {
+      updateData.lastName = updateProfileDto.lastName?.trim() || null;
+    }
+
+    // Handle phone - reset verification if phone is changed
+    if (updateProfileDto.phone !== undefined) {
+      const newPhone = updateProfileDto.phone?.trim() || null;
+      const currentUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { phone: true },
+      });
+
+      updateData.phone = newPhone;
+      // Reset phone verification if phone is being changed (even if set to null)
+      if (currentUser && currentUser.phone !== newPhone) {
+        updateData.phoneVerified = false;
+      }
+    }
+
+    // Handle bio
+    if (updateProfileDto.bio !== undefined) {
+      updateData.bio = updateProfileDto.bio?.trim() || null;
+    }
+
+    // Handle location
+    if (updateProfileDto.location !== undefined) {
+      updateData.location = updateProfileDto.location?.trim() || null;
+    }
+
+    // Handle city
+    if (updateProfileDto.city !== undefined) {
+      updateData.city = updateProfileDto.city?.trim() || null;
+    }
+
+    // Handle country
+    if (updateProfileDto.country !== undefined) {
+      updateData.country = updateProfileDto.country?.trim() || null;
+    }
+
+    // Handle avatar
+    if (updateProfileDto.avatar !== undefined) {
+      updateData.avatar = updateProfileDto.avatar?.trim() || null;
+    }
+
     // Update user profile
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        ...(updateProfileDto.firstName !== undefined && {
-          firstName: updateProfileDto.firstName || null,
-        }),
-        ...(updateProfileDto.lastName !== undefined && {
-          lastName: updateProfileDto.lastName || null,
-        }),
-        ...(updateProfileDto.phone !== undefined && {
-          phone: updateProfileDto.phone || null,
-          // Reset phone verification if phone is changed
-          phoneVerified: updateProfileDto.phone ? false : undefined,
-        }),
-        ...(updateProfileDto.bio !== undefined && {
-          bio: updateProfileDto.bio || null,
-        }),
-        ...(updateProfileDto.location !== undefined && {
-          location: updateProfileDto.location || null,
-        }),
-        ...(updateProfileDto.city !== undefined && {
-          city: updateProfileDto.city || null,
-        }),
-        ...(updateProfileDto.country !== undefined && {
-          country: updateProfileDto.country || null,
-        }),
-        ...(updateProfileDto.avatar !== undefined && {
-          avatar: updateProfileDto.avatar || null,
-        }),
-      },
+      data: updateData,
       select: {
         id: true,
         email: true,

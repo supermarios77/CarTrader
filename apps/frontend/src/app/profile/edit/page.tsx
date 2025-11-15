@@ -5,7 +5,7 @@
  * Allows users to update their profile information
  */
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getProfile, updateProfile, type UpdateProfileData } from '@/lib/profile-api';
@@ -87,6 +87,15 @@ export default function EditProfilePage() {
     };
   }, [isAuthenticated]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -107,18 +116,72 @@ export default function EditProfilePage() {
     setError(null);
     setSuccess(false);
 
+    // Clear previous timeout if exists
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+      successTimeoutRef.current = null;
+    }
+
     try {
-      // Only send fields that have values or are being cleared
+      // Build update data - send null for empty strings to clear fields
       const updateData: UpdateProfileData = {};
       
-      if (formData.firstName !== undefined) updateData.firstName = formData.firstName || undefined;
-      if (formData.lastName !== undefined) updateData.lastName = formData.lastName || undefined;
-      if (formData.phone !== undefined) updateData.phone = formData.phone || undefined;
-      if (formData.bio !== undefined) updateData.bio = formData.bio || undefined;
-      if (formData.location !== undefined) updateData.location = formData.location || undefined;
-      if (formData.city !== undefined) updateData.city = formData.city || undefined;
-      if (formData.country !== undefined) updateData.country = formData.country || undefined;
-      if (formData.avatar !== undefined) updateData.avatar = formData.avatar || undefined;
+      // Trim and process each field
+      const trimmedFirstName = formData.firstName?.trim();
+      if (trimmedFirstName !== undefined && trimmedFirstName !== '') {
+        updateData.firstName = trimmedFirstName;
+      } else if (trimmedFirstName === '') {
+        updateData.firstName = null;
+      }
+
+      const trimmedLastName = formData.lastName?.trim();
+      if (trimmedLastName !== undefined && trimmedLastName !== '') {
+        updateData.lastName = trimmedLastName;
+      } else if (trimmedLastName === '') {
+        updateData.lastName = null;
+      }
+
+      const trimmedPhone = formData.phone?.trim();
+      if (trimmedPhone !== undefined && trimmedPhone !== '') {
+        updateData.phone = trimmedPhone;
+      } else if (trimmedPhone === '') {
+        updateData.phone = null;
+      }
+
+      const trimmedBio = formData.bio?.trim();
+      if (trimmedBio !== undefined && trimmedBio !== '') {
+        updateData.bio = trimmedBio;
+      } else if (trimmedBio === '') {
+        updateData.bio = null;
+      }
+
+      const trimmedLocation = formData.location?.trim();
+      if (trimmedLocation !== undefined && trimmedLocation !== '') {
+        updateData.location = trimmedLocation;
+      } else if (trimmedLocation === '') {
+        updateData.location = null;
+      }
+
+      const trimmedCity = formData.city?.trim();
+      if (trimmedCity !== undefined && trimmedCity !== '') {
+        updateData.city = trimmedCity;
+      } else if (trimmedCity === '') {
+        updateData.city = null;
+      }
+
+      const trimmedCountry = formData.country?.trim();
+      if (trimmedCountry !== undefined && trimmedCountry !== '') {
+        updateData.country = trimmedCountry;
+      } else if (trimmedCountry === '') {
+        updateData.country = null;
+      }
+
+      const trimmedAvatar = formData.avatar?.trim();
+      if (trimmedAvatar !== undefined && trimmedAvatar !== '') {
+        updateData.avatar = trimmedAvatar;
+      } else if (trimmedAvatar === '') {
+        updateData.avatar = null;
+      }
 
       const updatedProfile = await updateProfile(updateData);
       
@@ -128,8 +191,9 @@ export default function EditProfilePage() {
       setSuccess(true);
       
       // Clear success message after 3 seconds
-      setTimeout(() => {
+      successTimeoutRef.current = setTimeout(() => {
         setSuccess(false);
+        successTimeoutRef.current = null;
       }, 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile');

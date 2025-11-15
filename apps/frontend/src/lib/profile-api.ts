@@ -23,14 +23,14 @@ export interface UserProfile {
 }
 
 export interface UpdateProfileData {
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  bio?: string;
-  location?: string;
-  city?: string;
-  country?: string;
-  avatar?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  city?: string | null;
+  country?: string | null;
+  avatar?: string | null;
 }
 
 /**
