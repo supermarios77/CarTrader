@@ -40,11 +40,24 @@ function getEncryptionKey(): Buffer {
  */
 export function encryptMessage(plaintext: string): string {
   try {
+    // Validate input
     if (!plaintext || typeof plaintext !== 'string') {
       throw new Error('Invalid plaintext: must be a non-empty string');
     }
 
+    // Check for maximum length to prevent DoS
+    const MAX_LENGTH = 100000; // 100KB max
+    if (plaintext.length > MAX_LENGTH) {
+      throw new Error(`Plaintext too long: maximum ${MAX_LENGTH} characters allowed`);
+    }
+
     const key = getEncryptionKey();
+    
+    // Validate key
+    if (!key || key.length !== KEY_LENGTH) {
+      throw new Error('Invalid encryption key');
+    }
+
     const iv = crypto.randomBytes(IV_LENGTH);
     const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
@@ -52,6 +65,11 @@ export function encryptMessage(plaintext: string): string {
     encrypted += cipher.final('base64');
 
     const tag = cipher.getAuthTag();
+
+    // Validate tag length
+    if (tag.length !== TAG_LENGTH) {
+      throw new Error('Invalid authentication tag length');
+    }
 
     // Combine IV + tag + encrypted data
     // Format: base64(iv)::base64(tag)::base64(encrypted)
@@ -72,8 +90,15 @@ export function encryptMessage(plaintext: string): string {
  */
 export function decryptMessage(ciphertext: string): string {
   try {
+    // Validate input
     if (!ciphertext || typeof ciphertext !== 'string') {
       throw new Error('Invalid ciphertext: must be a non-empty string');
+    }
+
+    // Check for maximum length to prevent DoS
+    const MAX_LENGTH = 200000; // 200KB max (encrypted is larger)
+    if (ciphertext.length > MAX_LENGTH) {
+      throw new Error(`Ciphertext too long: maximum ${MAX_LENGTH} characters allowed`);
     }
 
     // Split the encrypted data
@@ -84,9 +109,32 @@ export function decryptMessage(ciphertext: string): string {
 
     const [ivBase64, tagBase64, encrypted] = parts;
 
+    // Validate base64 encoding
+    try {
+      Buffer.from(ivBase64, 'base64');
+      Buffer.from(tagBase64, 'base64');
+      Buffer.from(encrypted, 'base64');
+    } catch {
+      throw new Error('Invalid base64 encoding in ciphertext');
+    }
+
     const key = getEncryptionKey();
+    
+    // Validate key
+    if (!key || key.length !== KEY_LENGTH) {
+      throw new Error('Invalid decryption key');
+    }
+
     const iv = Buffer.from(ivBase64, 'base64');
     const tag = Buffer.from(tagBase64, 'base64');
+
+    // Validate IV and tag lengths
+    if (iv.length !== IV_LENGTH) {
+      throw new Error('Invalid IV length');
+    }
+    if (tag.length !== TAG_LENGTH) {
+      throw new Error('Invalid authentication tag length');
+    }
 
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(tag);
