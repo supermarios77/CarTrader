@@ -41,7 +41,7 @@ services:
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_PUBLIC_ENDPOINT: localhost
-      MINIO_PUBLIC_PORT: 9001
+      MINIO_PUBLIC_PORT: 9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin123
       JWT_SECRET: dev_jwt_secret_change_in_production
