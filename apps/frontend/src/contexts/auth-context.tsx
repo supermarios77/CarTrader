@@ -6,7 +6,7 @@
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { api, storeTokens, clearTokens, getAccessToken } from '@/lib/api-client';
+import { api, storeTokens, clearTokens, getAccessToken, ApiClientError } from '@/lib/api-client';
 import type { User, LoginCredentials, RegisterData, AuthResponse, AuthState } from '@/types/auth';
 
 interface AuthContextType extends AuthState {
@@ -49,11 +49,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       setIsAuthenticated(true);
       setError(null);
-    } catch {
-      // Token invalid or expired
-      clearTokens();
-      setUser(null);
-      setIsAuthenticated(false);
+    } catch (err) {
+      // Only clear tokens on authentication errors (401/403)
+      // Don't clear on network errors or server errors (500, etc.)
+      // This prevents logout on page refresh when there are temporary network issues
+      const isAuthError = err instanceof ApiClientError && 
+        (err.statusCode === 401 || err.statusCode === 403);
+      
+      if (isAuthError) {
+        // Token invalid or expired - clear tokens
+        clearTokens();
+        setUser(null);
+        setIsAuthenticated(false);
+      } else {
+        // Network error or other error - keep tokens but mark as not authenticated
+        // This prevents logout on temporary network issues during page refresh
+        setUser(null);
+        setIsAuthenticated(false);
+      }
       setError(null);
     } finally {
       setIsLoading(false);

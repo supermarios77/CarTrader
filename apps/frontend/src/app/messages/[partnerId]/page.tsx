@@ -47,8 +47,15 @@ export default function ConversationPage() {
   }, []);
 
   // Redirect if not authenticated (but wait for auth to load first)
+  // Only redirect after auth loading is complete and user is definitely not authenticated
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    // Don't redirect while auth is still loading
+    if (authLoading) {
+      return;
+    }
+    
+    // Only redirect if we're certain the user is not authenticated
+    if (!isAuthenticated) {
       router.push('/login');
     }
   }, [authLoading, isAuthenticated, router]);
@@ -221,7 +228,7 @@ export default function ConversationPage() {
       : messages[0].sender
     : null;
 
-  // Wait for auth to load before showing anything
+  // Wait for auth to load before showing anything or making redirect decisions
   if (authLoading) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-black">
@@ -235,6 +242,8 @@ export default function ConversationPage() {
     );
   }
 
+  // Don't render anything if not authenticated (redirect will happen via useEffect)
+  // This prevents flash of content before redirect
   if (!isAuthenticated) {
     return null;
   }
