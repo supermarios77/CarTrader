@@ -93,7 +93,7 @@ export class VehiclesController {
   async update(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,
-    @Body() updateVehicleDto: UpdateVehicleDto,
+    @Body() body: any, // Use any to handle FormData parsing
     @UploadedFiles(
       new ParseFilePipe({
         validators: [
@@ -105,6 +105,35 @@ export class VehiclesController {
     )
     images?: Express.Multer.File[],
   ) {
+    // Parse FormData fields that are JSON strings
+    const updateVehicleDto: UpdateVehicleDto = { ...body };
+    
+    // Parse JSON fields from FormData
+    if (body.features && typeof body.features === 'string') {
+      try {
+        updateVehicleDto.features = JSON.parse(body.features);
+      } catch {
+        updateVehicleDto.features = [];
+      }
+    }
+    
+    if (body.imageIdsToDelete && typeof body.imageIdsToDelete === 'string') {
+      try {
+        updateVehicleDto.imageIdsToDelete = JSON.parse(body.imageIdsToDelete);
+      } catch {
+        updateVehicleDto.imageIdsToDelete = [];
+      }
+    }
+    
+    // Convert numeric fields
+    if (body.price) updateVehicleDto.price = Number(body.price);
+    if (body.year) updateVehicleDto.year = Number(body.year);
+    if (body.mileage !== undefined) updateVehicleDto.mileage = Number(body.mileage);
+    if (body.engineCapacity !== undefined) updateVehicleDto.engineCapacity = Number(body.engineCapacity);
+    if (body.registrationYear !== undefined) updateVehicleDto.registrationYear = Number(body.registrationYear);
+    if (body.latitude !== undefined) updateVehicleDto.latitude = Number(body.latitude);
+    if (body.longitude !== undefined) updateVehicleDto.longitude = Number(body.longitude);
+    
     return this.vehiclesService.update(id, userId, updateVehicleDto, images);
   }
 
