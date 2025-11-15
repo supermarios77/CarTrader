@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker
@@ -22,16 +21,6 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '5mb',
     },
-  },
-  // Webpack configuration to resolve modules from workspace root
-  webpack: (config, { isServer }) => {
-    // Resolve modules from workspace root (for pnpm workspaces)
-    config.resolve.modules = [
-      path.resolve(__dirname, 'node_modules'),
-      path.resolve(__dirname, '../../node_modules'),
-      'node_modules',
-    ];
-    return config;
   },
 };
 

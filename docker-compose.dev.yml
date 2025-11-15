@@ -72,11 +72,10 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
-      TURBOPACK: "0"
-    # Install dependencies on startup to ensure socket.io-client is available
+    # Simple command - dependencies are already installed in the image
     # Volume mount preserves node_modules via anonymous volumes
     entrypoint: []
-    command: ["sh", "-c", "cd /app && pnpm install --frozen-lockfile && cd apps/frontend && pnpm dev"]
+    command: ["sh", "-c", "cd /app/apps/frontend && pnpm dev"]
     ports:
       - "3000:3000"
 

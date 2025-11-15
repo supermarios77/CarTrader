@@ -4,7 +4,7 @@
   "description": "CarTrader Next.js frontend application",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -19,7 +19,6 @@
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

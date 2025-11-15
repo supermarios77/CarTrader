@@ -37,7 +37,6 @@ export default function ConversationPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
-  const socketRef = useRef<Socket | null>(null);
 
   // Track mount status
   useEffect(() => {
@@ -53,82 +52,6 @@ export default function ConversationPage() {
       router.push('/login');
     }
   }, [authLoading, isAuthenticated, router]);
-
-  // Setup WebSocket connection for real-time messaging
-  useEffect(() => {
-    if (!isAuthenticated || !partnerId) return;
-
-    const socket = getSocket();
-    if (!socket) return;
-
-    socketRef.current = socket;
-
-    // Listen for new messages
-    const handleNewMessage = (message: Message) => {
-      // Only add if it's from/to the current partner
-      if (
-        (message.senderId === partnerId || message.receiverId === partnerId) &&
-        (!vehicleId || message.vehicleId === vehicleId)
-      ) {
-        setMessages((prev) => {
-          // Check if message already exists (avoid duplicates)
-          if (prev.some((m) => m.id === message.id)) {
-            return prev;
-          }
-          return [...prev, message];
-        });
-
-        // Scroll to bottom
-        if (scrollTimeoutRef.current) {
-          clearTimeout(scrollTimeoutRef.current);
-        }
-        scrollTimeoutRef.current = setTimeout(() => {
-          if (messagesEndRef.current && isMountedRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-
-        // Mark as read if we're the receiver
-        if (message.receiverId === user?.id) {
-          markAsRead(partnerId).catch(() => {
-            // Ignore errors
-          });
-        }
-      }
-    };
-
-    // Listen for message sent confirmation
-    const handleMessageSent = (message: Message) => {
-      setMessages((prev) => {
-        // Update message if it exists, otherwise add it
-        const index = prev.findIndex((m) => m.id === message.id);
-        if (index >= 0) {
-          const updated = [...prev];
-          updated[index] = message;
-          return updated;
-        }
-        return [...prev, message];
-      });
-    };
-
-    // Listen for errors
-    const handleError = (error: { message: string }) => {
-      if (isMountedRef.current) {
-        setError(error.message);
-      }
-    };
-
-    socket.on('new_message', handleNewMessage);
-    socket.on('message_sent', handleMessageSent);
-    socket.on('error', handleError);
-
-    // Cleanup
-    return () => {
-      socket.off('new_message', handleNewMessage);
-      socket.off('message_sent', handleMessageSent);
-      socket.off('error', handleError);
-    };
-  }, [isAuthenticated, partnerId, vehicleId, user?.id]);
 
   // Fetch messages
   useEffect(() => {
@@ -220,51 +143,6 @@ export default function ConversationPage() {
     setSending(true);
     setError(null);
 
-    // Try WebSocket first (real-time), fallback to HTTP
-    const socket = socketRef.current;
-    if (socket?.connected) {
-      try {
-        socket.emit('send_message', {
-          receiverId: partnerId,
-          vehicleId: vehicleId || undefined,
-          content,
-        });
-        // Optimistically add message (will be confirmed via socket event)
-        const tempMessage: Message = {
-          id: `temp-${Date.now()}`,
-          senderId: user?.id || '',
-          receiverId: partnerId,
-          vehicleId: vehicleId || null,
-          subject: null,
-          content,
-          status: 'SENT' as const,
-          readAt: null,
-          createdAt: new Date().toISOString(),
-          sender: {
-            id: user?.id || '',
-            email: user?.email || '',
-            firstName: user?.firstName,
-            lastName: user?.lastName,
-            avatar: user?.avatar,
-          },
-          receiver: {
-            id: partnerId,
-            email: '',
-            firstName: null,
-            lastName: null,
-            avatar: null,
-          },
-          vehicle: null,
-        };
-        setMessages((prev) => [...prev, tempMessage]);
-        setSending(false);
-        return;
-      } catch (err) {
-        // Fall through to HTTP fallback
-      }
-    }
-
-    // HTTP fallback
     try {
       const newMessage = await sendMessage({
         receiverId: partnerId,
