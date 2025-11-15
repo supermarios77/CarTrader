@@ -25,7 +25,7 @@
 ### Email Verification Flow
 
 1. **User registers** → Email verification token is generated and sent
-2. **User clicks link in email** → Redirects to `/auth/verify-email?token=xxx`
+2. **User clicks link in email** → Redirects to `/verify-email?token=xxx`
 3. **Page auto-verifies** → If token is valid, email is verified
 4. **Or user enters token manually** → Can paste token from email
 
@@ -39,7 +39,7 @@
 
 ### Phone Verification Flow
 
-1. **User navigates to `/auth/verify-phone`** (must be logged in)
+1. **User navigates to `/verify-phone`** (must be logged in)
 2. **Enters phone number** → 6-digit code is generated and sent
 3. **User enters code** → Phone is verified
 4. **Can resend code** → With 60-second countdown
