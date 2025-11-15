@@ -69,18 +69,6 @@ export class MessagesController {
   }
 
   /**
-   * Get a single message
-   * GET /messages/:id
-   */
-  @Get(':id')
-  async getMessageById(
-    @Param('id', ParseUUIDPipe) messageId: string,
-    @CurrentUser('id') userId: string,
-  ) {
-    return this.messagesService.getMessageById(messageId, userId);
-  }
-
-  /**
    * Mark messages as read
    * PUT /messages/conversations/:partnerId/read
    */
@@ -96,6 +84,7 @@ export class MessagesController {
   /**
    * Update/edit a message
    * PATCH /messages/:id
+   * Must come before GET /messages/:id to avoid route conflicts
    */
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
@@ -110,6 +99,7 @@ export class MessagesController {
   /**
    * Delete a message (soft delete)
    * DELETE /messages/:id
+   * Must come before GET /messages/:id to avoid route conflicts
    */
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
@@ -118,6 +108,19 @@ export class MessagesController {
     @CurrentUser('id') userId: string,
   ) {
     return this.messagesService.deleteMessage(messageId, userId);
+  }
+
+  /**
+   * Get a single message
+   * GET /messages/:id
+   * Must come after PATCH and DELETE routes
+   */
+  @Get(':id')
+  async getMessageById(
+    @Param('id', ParseUUIDPipe) messageId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.messagesService.getMessageById(messageId, userId);
   }
 }
 
