@@ -123,6 +123,10 @@ export class CatalogService {
       throw new NotFoundException('Category not found');
     }
 
+    if (!category.isActive) {
+      throw new NotFoundException('Category is not active');
+    }
+
     return category;
   }
 
@@ -145,6 +149,10 @@ export class CatalogService {
 
     if (!make) {
       throw new NotFoundException('Make not found');
+    }
+
+    if (!make.isActive) {
+      throw new NotFoundException('Make is not active');
     }
 
     return make;

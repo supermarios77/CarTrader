@@ -75,6 +75,8 @@ export default function CreateVehiclePage() {
 
   // Load makes when category changes
   useEffect(() => {
+    const abortController = new AbortController();
+
     async function loadMakes() {
       if (!formData.categoryId) {
         setMakes([]);
@@ -86,22 +88,39 @@ export default function CreateVehiclePage() {
       try {
         setLoadingCatalog((prev) => ({ ...prev, makes: true }));
         const data = await getMakes(formData.categoryId);
-        setMakes(data);
-        // Reset make and model when category changes
-        setModels([]);
-        setFormData((prev) => ({ ...prev, makeId: '', modelId: '' }));
+        
+        // Only update state if request wasn't aborted
+        if (!abortController.signal.aborted) {
+          setMakes(data);
+          // Reset make and model when category changes
+          setModels([]);
+          setFormData((prev) => ({ ...prev, makeId: '', modelId: '' }));
+        }
       } catch (err) {
-        setError('Failed to load makes. Please try again.');
-        setMakes([]);
+        // Don't set error if request was aborted
+        if (!abortController.signal.aborted) {
+          setError('Failed to load makes. Please try again.');
+          setMakes([]);
+        }
       } finally {
-        setLoadingCatalog((prev) => ({ ...prev, makes: false }));
+        if (!abortController.signal.aborted) {
+          setLoadingCatalog((prev) => ({ ...prev, makes: false }));
+        }
       }
     }
+    
     loadMakes();
+    
+    // Cleanup: abort request if category changes or component unmounts
+    return () => {
+      abortController.abort();
+    };
   }, [formData.categoryId]);
 
   // Load models when make changes
   useEffect(() => {
+    const abortController = new AbortController();
+
     async function loadModels() {
       if (!formData.makeId) {
         setModels([]);
@@ -112,17 +131,32 @@ export default function CreateVehiclePage() {
       try {
         setLoadingCatalog((prev) => ({ ...prev, models: true }));
         const data = await getModels(formData.makeId);
-        setModels(data);
-        // Reset model when make changes
-        setFormData((prev) => ({ ...prev, modelId: '' }));
+        
+        // Only update state if request wasn't aborted
+        if (!abortController.signal.aborted) {
+          setModels(data);
+          // Reset model when make changes
+          setFormData((prev) => ({ ...prev, modelId: '' }));
+        }
       } catch (err) {
-        setError('Failed to load models. Please try again.');
-        setModels([]);
+        // Don't set error if request was aborted
+        if (!abortController.signal.aborted) {
+          setError('Failed to load models. Please try again.');
+          setModels([]);
+        }
       } finally {
-        setLoadingCatalog((prev) => ({ ...prev, models: false }));
+        if (!abortController.signal.aborted) {
+          setLoadingCatalog((prev) => ({ ...prev, models: false }));
+        }
       }
     }
+    
     loadModels();
+    
+    // Cleanup: abort request if make changes or component unmounts
+    return () => {
+      abortController.abort();
+    };
   }, [formData.makeId]);
 
   // Redirect if not authenticated

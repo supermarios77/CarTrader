@@ -37,14 +37,16 @@ export async function getCategories(): Promise<Category[]> {
  * Get makes for a specific category
  */
 export async function getMakes(categoryId: string): Promise<Make[]> {
-  return api.get<Make[]>(`/catalog/makes?categoryId=${categoryId}`);
+  const params = new URLSearchParams({ categoryId });
+  return api.get<Make[]>(`/catalog/makes?${params.toString()}`);
 }
 
 /**
  * Get models for a specific make
  */
 export async function getModels(makeId: string): Promise<Model[]> {
-  return api.get<Model[]>(`/catalog/models?makeId=${makeId}`);
+  const params = new URLSearchParams({ makeId });
+  return api.get<Model[]>(`/catalog/models?${params.toString()}`);
 }
 
 /**
