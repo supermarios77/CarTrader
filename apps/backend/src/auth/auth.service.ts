@@ -815,8 +815,18 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    // Build update data object
-    const updateData: any = {};
+    // Build update data object with proper typing
+    const updateData: {
+      firstName?: string | null;
+      lastName?: string | null;
+      phone?: string | null;
+      phoneVerified?: boolean;
+      bio?: string | null;
+      location?: string | null;
+      city?: string | null;
+      country?: string | null;
+      avatar?: string | null;
+    } = {};
 
     // Handle firstName
     if (updateProfileDto.firstName !== undefined) {
