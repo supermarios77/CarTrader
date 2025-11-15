@@ -27,10 +27,10 @@ export async function getVehicles(filters?: VehicleFilters): Promise<VehicleList
     });
   }
 
-        const queryString = params.toString();
-        const endpoint = `/vehicles${queryString ? `?${queryString}` : ''}`;
-        
-        return api.get<VehicleListResponse>(endpoint);
+  const queryString = params.toString();
+  const endpoint = `/vehicles${queryString ? `?${queryString}` : ''}`;
+  
+  return api.get<VehicleListResponse>(endpoint);
 }
 
 /**
