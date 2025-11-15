@@ -13,11 +13,10 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { JwtPayload } from '../auth/strategies/jwt.strategy';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -62,29 +61,32 @@ export class MessagesGateway
       }
 
       // Verify JWT token
-      const payload = this.jwtService.verify<JwtPayload>(token, {
-        secret: process.env.JWT_SECRET,
-      });
+      const payload = this.jwtService.verify<{ sub: string; email: string }>(
+        token,
+        {
+          secret: process.env.JWT_SECRET,
+        },
+      );
 
-      if (!payload || !payload.id) {
+      if (!payload || !payload.sub) {
         this.logger.warn(`Client ${client.id} connected with invalid token`);
         client.disconnect();
         return;
       }
 
-      // Store userId on socket
-      client.userId = payload.id;
+      // Store userId on socket (JWT uses 'sub' for user ID)
+      client.userId = payload.sub;
 
       // Track connected user
-      if (!this.connectedUsers.has(payload.id)) {
-        this.connectedUsers.set(payload.id, new Set());
+      if (!this.connectedUsers.has(payload.sub)) {
+        this.connectedUsers.set(payload.sub, new Set());
       }
-      this.connectedUsers.get(payload.id)!.add(client.id);
+      this.connectedUsers.get(payload.sub)!.add(client.id);
 
       // Join user's personal room
-      await client.join(`user:${payload.id}`);
+      await client.join(`user:${payload.sub}`);
 
-      this.logger.log(`✅ User ${payload.id} connected (socket ${client.id})`);
+      this.logger.log(`✅ User ${payload.sub} connected (socket ${client.id})`);
     } catch (error) {
       this.logger.error(
         `❌ Connection error for client ${client.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,

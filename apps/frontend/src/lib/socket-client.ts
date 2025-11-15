@@ -6,6 +6,8 @@
 import { io, Socket } from 'socket.io-client';
 import { getAccessToken } from './api-client';
 
+export type { Socket };
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 let socket: Socket | null = null;

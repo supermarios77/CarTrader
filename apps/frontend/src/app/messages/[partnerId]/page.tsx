@@ -220,6 +220,51 @@ export default function ConversationPage() {
     setSending(true);
     setError(null);
 
+    // Try WebSocket first (real-time), fallback to HTTP
+    const socket = socketRef.current;
+    if (socket?.connected) {
+      try {
+        socket.emit('send_message', {
+          receiverId: partnerId,
+          vehicleId: vehicleId || undefined,
+          content,
+        });
+        // Optimistically add message (will be confirmed via socket event)
+        const tempMessage: Message = {
+          id: `temp-${Date.now()}`,
+          senderId: user?.id || '',
+          receiverId: partnerId,
+          vehicleId: vehicleId || null,
+          subject: null,
+          content,
+          status: 'SENT' as const,
+          readAt: null,
+          createdAt: new Date().toISOString(),
+          sender: {
+            id: user?.id || '',
+            email: user?.email || '',
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            avatar: user?.avatar,
+          },
+          receiver: {
+            id: partnerId,
+            email: '',
+            firstName: null,
+            lastName: null,
+            avatar: null,
+          },
+          vehicle: null,
+        };
+        setMessages((prev) => [...prev, tempMessage]);
+        setSending(false);
+        return;
+      } catch (err) {
+        // Fall through to HTTP fallback
+      }
+    }
+
+    // HTTP fallback
     try {
       const newMessage = await sendMessage({
         receiverId: partnerId,
