@@ -186,6 +186,10 @@ export class CatalogService {
       throw new NotFoundException('Model not found');
     }
 
+    if (!model.isActive) {
+      throw new NotFoundException('Model is not active');
+    }
+
     return model;
   }
 }
