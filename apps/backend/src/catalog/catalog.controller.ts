@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Param, Query, ParseUUIDPipe, BadRequestException } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
 import { Public } from '../auth/decorators/public.decorator';
 
@@ -30,7 +30,15 @@ export class CatalogController {
    * GET /catalog/makes?categoryId=...
    */
   @Get('makes')
-  async getMakes(@Query('categoryId', ParseUUIDPipe) categoryId: string) {
+  async getMakes(@Query('categoryId') categoryId?: string) {
+    if (!categoryId) {
+      throw new BadRequestException('categoryId query parameter is required');
+    }
+    try {
+      new ParseUUIDPipe().transform(categoryId, { type: 'query', data: 'categoryId' });
+    } catch {
+      throw new BadRequestException('Invalid categoryId format. Must be a valid UUID.');
+    }
     return this.catalogService.getMakes(categoryId);
   }
 
@@ -48,7 +56,15 @@ export class CatalogController {
    * GET /catalog/models?makeId=...
    */
   @Get('models')
-  async getModels(@Query('makeId', ParseUUIDPipe) makeId: string) {
+  async getModels(@Query('makeId') makeId?: string) {
+    if (!makeId) {
+      throw new BadRequestException('makeId query parameter is required');
+    }
+    try {
+      new ParseUUIDPipe().transform(makeId, { type: 'query', data: 'makeId' });
+    } catch {
+      throw new BadRequestException('Invalid makeId format. Must be a valid UUID.');
+    }
     return this.catalogService.getModels(makeId);
   }
 
