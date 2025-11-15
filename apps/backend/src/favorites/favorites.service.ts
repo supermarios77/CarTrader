@@ -204,7 +204,6 @@ export class FavoritesService {
         features: [], // Not included in favorites list for performance
         _count: vehicle._count,
         isFavorite: true, // Always true since we're in favorites
-        favoritedAt: favorite.createdAt, // When it was favorited
       };
     });
 
