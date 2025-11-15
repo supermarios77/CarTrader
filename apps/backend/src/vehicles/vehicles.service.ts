@@ -130,6 +130,10 @@ export class VehiclesService {
     // For public (no userId): Only show ACTIVE, non-expired vehicles
     // For authenticated users: Show ACTIVE vehicles + their own DRAFT vehicles
     const now = new Date();
+    
+    // Debug logging
+    this.logger.debug(`🔍 Finding vehicles - userId: ${userId || 'none'}, filters: ${JSON.stringify(filterDto)}`);
+    
     const where: Prisma.VehicleWhereInput = userId
       ? {
           // Authenticated users: Show ACTIVE vehicles (non-expired) OR their own DRAFT vehicles
@@ -152,6 +156,8 @@ export class VehiclesService {
             { expiresAt: { gt: now } },
           ],
         };
+    
+    this.logger.debug(`📋 Where clause: ${JSON.stringify(where, null, 2)}`);
 
     // Apply filters
     if (filterDto.categoryId) {
@@ -266,6 +272,7 @@ export class VehiclesService {
     }
 
     // Execute query
+    this.logger.debug(`🔎 Executing query - skip: ${skip}, take: ${limit}`);
     const [vehicles, total] = await Promise.all([
       this.prisma.vehicle.findMany({
         where,
@@ -323,6 +330,8 @@ export class VehiclesService {
       }),
       this.prisma.vehicle.count({ where }),
     ]);
+
+    this.logger.debug(`✅ Query results - Found ${vehicles.length} vehicles, Total: ${total}`);
 
     // Check if vehicles are favorited by user
     const vehiclesWithFavorites = userId
