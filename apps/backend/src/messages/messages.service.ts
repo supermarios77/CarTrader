@@ -63,21 +63,21 @@ export class MessagesService {
       throw new BadRequestException('Cannot send message to yourself');
     }
 
-           // Validate vehicle if provided
-           if (createMessageDto.vehicleId) {
-             const vehicle = await this.prisma.vehicle.findUnique({
-               where: { id: createMessageDto.vehicleId },
-               select: { id: true, userId: true, status: true },
-             });
+    // Validate vehicle if provided
+    if (createMessageDto.vehicleId) {
+      const vehicle = await this.prisma.vehicle.findUnique({
+        where: { id: createMessageDto.vehicleId },
+        select: { id: true, userId: true, status: true },
+      });
 
-             if (!vehicle) {
-               throw new NotFoundException('Vehicle not found');
-             }
+      if (!vehicle) {
+        throw new NotFoundException('Vehicle not found');
+      }
 
-             // Allow vehicle owner to reply to messages about their vehicle
-             // Only prevent if they're trying to message themselves (sender === receiver)
-             // The vehicle owner can reply to buyers who contacted them
-           }
+      // Allow vehicle owner to reply to messages about their vehicle
+      // Only prevent if they're trying to message themselves (sender === receiver)
+      // The vehicle owner can reply to buyers who contacted them
+    }
 
     // Encrypt message content with error handling
     let encryptedContent: string;
