@@ -228,7 +228,12 @@ export class VehiclesService {
         ],
       };
       // Merge search filter with existing where clause
-      where.AND = where.AND ? [...where.AND, searchFilter] : [searchFilter];
+      if (where.AND) {
+        const existingAnd = Array.isArray(where.AND) ? where.AND : [where.AND];
+        where.AND = [...existingAnd, searchFilter];
+      } else {
+        where.AND = [searchFilter];
+      }
     }
     if (filterDto.featured !== undefined) {
       where.featured = filterDto.featured;
