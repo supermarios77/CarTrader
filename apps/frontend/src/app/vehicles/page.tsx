@@ -86,6 +86,9 @@ export default function VehiclesPage() {
           </div>
           {isAuthenticated && (
             <div className="flex gap-2">
+              <Link href="/dashboard">
+                <Button variant="outline">Dashboard</Button>
+              </Link>
               <Link href="/favorites">
                 <Button variant="outline">My Favorites</Button>
               </Link>

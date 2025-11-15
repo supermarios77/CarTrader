@@ -32,6 +32,9 @@ export default function Home() {
             </Link>
             {isAuthenticated && (
               <>
+                <Link href="/dashboard">
+                  <Button size="lg" variant="outline">Dashboard</Button>
+                </Link>
                 <Link href="/favorites">
                   <Button size="lg" variant="outline">My Favorites</Button>
                 </Link>
