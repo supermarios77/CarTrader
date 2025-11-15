@@ -463,6 +463,19 @@ export class VehiclesService {
       );
     }
 
+    // Get existing images if we need to delete any
+    let imagesToDelete: Array<{ id: string; url: string }> = [];
+    if (updateVehicleDto.imageIdsToDelete && updateVehicleDto.imageIdsToDelete.length > 0) {
+      const existingImages = await this.prisma.vehicleImage.findMany({
+        where: {
+          id: { in: updateVehicleDto.imageIdsToDelete },
+          vehicleId, // Ensure images belong to this vehicle
+        },
+        select: { id: true, url: true },
+      });
+      imagesToDelete = existingImages;
+    }
+
     // Upload new images if provided
     let newImageUrls: Array<{ url: string; key: string }> = [];
     if (images && images.length > 0) {
@@ -471,6 +484,16 @@ export class VehiclesService {
 
     // Update vehicle with transaction
     const updatedVehicle = await this.prisma.$transaction(async (tx) => {
+      // Delete images from database first
+      if (updateVehicleDto.imageIdsToDelete && updateVehicleDto.imageIdsToDelete.length > 0) {
+        await tx.vehicleImage.deleteMany({
+          where: {
+            id: { in: updateVehicleDto.imageIdsToDelete },
+            vehicleId, // Double-check ownership
+          },
+        });
+      }
+
       // Update vehicle
       const updated = await tx.vehicle.update({
         where: { id: vehicleId },
@@ -561,6 +584,33 @@ export class VehiclesService {
 
       return updated;
     });
+
+    // Delete images from storage after successful database deletion
+    if (imagesToDelete.length > 0) {
+      try {
+        const imageKeys = imagesToDelete.map((img) => {
+          try {
+            const urlObj = new URL(img.url);
+            const path = urlObj.pathname;
+            const pathWithoutSlash = path.startsWith('/') ? path.slice(1) : path;
+            if (pathWithoutSlash.startsWith('vehicles/')) {
+              return pathWithoutSlash;
+            }
+            const parts = pathWithoutSlash.split('/');
+            return parts.slice(-2).join('/');
+          } catch {
+            const urlParts = img.url.split('/');
+            return urlParts.slice(-2).join('/');
+          }
+        });
+
+        await this.storageService.deleteImages(imageKeys);
+        this.logger.log(`✅ Deleted ${imagesToDelete.length} image(s) from storage`);
+      } catch (error) {
+        // Log error but don't fail the update - images are already deleted from DB
+        this.logger.warn(`Failed to delete images from storage: ${error}`);
+      }
+    }
 
     this.logger.log(`✅ Updated vehicle: ${vehicleId} by user: ${userId}`);
 

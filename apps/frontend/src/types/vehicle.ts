@@ -171,6 +171,7 @@ export interface CreateVehicleData {
 
 export interface UpdateVehicleData extends Partial<CreateVehicleData> {
   status?: VehicleStatus;
+  imageIdsToDelete?: string[];
 }
 
 export interface VehicleFilters {

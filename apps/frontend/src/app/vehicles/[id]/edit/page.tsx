@@ -295,7 +295,11 @@ export default function EditVehiclePage() {
 
       const vehicle = await updateVehicle(
         vehicleId,
-        formData,
+        {
+          ...formData,
+          // Include image IDs to delete if any
+          imageIdsToDelete: imagesToDelete.length > 0 ? imagesToDelete : undefined,
+        },
         newImages.length > 0 ? newImages : undefined,
       );
       router.push(`/vehicles/${vehicle.id}`);

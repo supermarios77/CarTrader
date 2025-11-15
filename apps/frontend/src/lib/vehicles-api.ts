@@ -112,6 +112,9 @@ export async function updateVehicle(
     if (value !== undefined && value !== null) {
       if (key === 'features' && Array.isArray(value)) {
         formData.append(key, JSON.stringify(value));
+      } else if (key === 'imageIdsToDelete' && Array.isArray(value)) {
+        // Send image IDs to delete as JSON array
+        formData.append(key, JSON.stringify(value));
       } else if (typeof value === 'object') {
         formData.append(key, JSON.stringify(value));
       } else {
