@@ -23,10 +23,29 @@ const ITERATIONS = 100000; // PBKDF2 iterations
  * Falls back to a default key in development (NOT for production)
  */
 function getEncryptionKey(): Buffer {
-  const keyMaterial = getRequiredEnv('MESSAGE_ENCRYPTION_KEY', {
-    defaultValue: process.env.NODE_ENV === 'production' ? undefined : 'dev-key-change-in-production-32-chars!!',
-    description: 'Message encryption key (32+ characters)',
-  });
+  let keyMaterial = process.env.MESSAGE_ENCRYPTION_KEY;
+
+  // In production, require the key
+  if (!keyMaterial && process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'MESSAGE_ENCRYPTION_KEY is required in production. Please set it in your environment variables.',
+    );
+  }
+
+  // In development, use a default key if not set
+  if (!keyMaterial) {
+    keyMaterial = 'dev-key-change-in-production-32-chars!!';
+    logger.warn(
+      '⚠️  Using default MESSAGE_ENCRYPTION_KEY. Change this in production!',
+    );
+  }
+
+  // Validate key length
+  if (keyMaterial.length < 32) {
+    throw new Error(
+      'MESSAGE_ENCRYPTION_KEY must be at least 32 characters long',
+    );
+  }
 
   // Derive a consistent key using PBKDF2
   const salt = crypto.createHash('sha256').update(keyMaterial).digest();

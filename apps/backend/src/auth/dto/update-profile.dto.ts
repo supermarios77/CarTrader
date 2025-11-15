@@ -4,6 +4,7 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateProfileDto {
