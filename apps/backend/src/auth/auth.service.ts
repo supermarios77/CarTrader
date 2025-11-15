@@ -167,10 +167,10 @@ export class AuthService {
             if (retries === 0) {
               throw new ConflictException('Failed to refresh token. Please try again.');
             }
-            // Token will be different on next iteration due to timestamp variation
-            // JWT library automatically adds 'iat' (issued at) which ensures uniqueness
+            // Generate a new access token with a unique jti (JWT ID) to ensure uniqueness
             accessTokenPayload = {
               ...accessTokenPayload,
+              jti: randomUUID(), // Add unique JWT ID for retry
             };
           } else {
             throw updateError; // Re-throw if it's a different error
@@ -338,10 +338,14 @@ export class AuthService {
       },
     });
 
+    if (!user) {
+      throw new ConflictException('User not found after session creation');
+    }
+
     return {
       accessToken,
       refreshToken,
-      user: user!,
+      user,
     };
   }
 
