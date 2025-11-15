@@ -14,11 +14,11 @@ docker-compose exec backend sh -c "cd /app/packages/prisma && pnpm prisma studio
 ```
 Then open http://localhost:5555 in your browser and copy the IDs from the Category, Make, and Model tables.
 
-**Option 2: Check if database is seeded**
-Make sure you've run the seed script first:
+**Option 2: Run the seed script (if not already done)**
 ```bash
-docker-compose exec backend sh -c "cd /app && pnpm db:seed"
+pnpm db:seed
 ```
+This will create Categories, Makes, and Models (Toyota Corolla, Honda Civic, Suzuki Alto, etc.)
 
 **Option 3: Query via backend API (if endpoints exist)**
 You can also check the network tab in browser dev tools when browsing vehicles to see what IDs are being used.
