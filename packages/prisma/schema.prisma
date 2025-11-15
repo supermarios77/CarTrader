@@ -411,10 +411,10 @@ model Message {
   content       String        @db.Text
   status        MessageStatus @default(SENT)
   readAt        DateTime?
-  deletedAt     DateTime?     // When message was deleted (soft delete)
-  editedAt      DateTime?     // When message was last edited
+  deletedAt     DateTime?     @map("deleted_at") // When message was deleted (soft delete)
+  editedAt      DateTime?     @map("edited_at") // When message was last edited
   createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   sender   User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
   receiver User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
