@@ -85,9 +85,14 @@ export default function VehiclesPage() {
             </p>
           </div>
           {isAuthenticated && (
-            <Link href="/vehicles/new">
-              <Button>List Your Vehicle</Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href="/favorites">
+                <Button variant="outline">My Favorites</Button>
+              </Link>
+              <Link href="/vehicles/new">
+                <Button>List Your Vehicle</Button>
+              </Link>
+            </div>
           )}
         </div>
 
