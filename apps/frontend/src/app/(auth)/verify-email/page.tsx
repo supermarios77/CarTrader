@@ -36,11 +36,22 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState('');
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Cleanup redirect timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+        redirectTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   // Auto-verify if token is in URL
   useEffect(() => {
     if (tokenFromUrl) {
       handleVerify();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenFromUrl]);
 
   const handleVerify = async () => {
