@@ -47,7 +47,10 @@ services:
       SMTP_HOST: ${SMTP_HOST:-postfix}
       SMTP_PORT: ${SMTP_PORT:-25}
       SMTP_FROM: ${SMTP_FROM:-noreply@cartrader.local}
-    command: pnpm dev
+    # Override entrypoint for dev (no entrypoint script needed)
+    # This prevents using the production entrypoint script that doesn't exist in dev image
+    entrypoint: ["/bin/sh", "-c"]
+    command: "exec pnpm dev"
     ports:
       - "3001:3001"
 
