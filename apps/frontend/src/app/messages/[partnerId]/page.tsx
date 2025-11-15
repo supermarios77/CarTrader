@@ -12,13 +12,15 @@ import {
   getMessages,
   sendMessage,
   markAsRead,
+  updateMessage,
+  deleteMessage,
   type Message,
 } from '@/lib/messages-api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
-import { ArrowLeft, Send, User, Car } from 'lucide-react';
+import { ArrowLeft, Send, User, Car, Edit2, Trash2, X, Check } from 'lucide-react';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -33,6 +35,9 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [messageContent, setMessageContent] = useState('');
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -181,6 +186,66 @@ export default function ConversationPage() {
     } finally {
       if (isMountedRef.current) {
         setSending(false);
+      }
+    }
+  };
+
+  const handleEditMessage = (message: Message) => {
+    setEditingMessageId(message.id);
+    setEditContent(message.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditContent('');
+  };
+
+  const handleSaveEdit = async (messageId: string) => {
+    if (!editContent.trim() || !isMountedRef.current) return;
+
+    const content = editContent.trim();
+    setError(null);
+
+    try {
+      const updatedMessage = await updateMessage(messageId, content);
+      
+      if (!isMountedRef.current) return;
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === messageId ? updatedMessage : msg))
+      );
+      setEditingMessageId(null);
+      setEditContent('');
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      setError(err instanceof Error ? err.message : 'Failed to update message');
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!isMountedRef.current || deletingMessageId === messageId) return;
+
+    if (!confirm('Are you sure you want to delete this message? The other person will see that it was deleted.')) {
+      return;
+    }
+
+    setDeletingMessageId(messageId);
+    setError(null);
+
+    try {
+      const deletedMessage = await deleteMessage(messageId);
+      
+      if (!isMountedRef.current) return;
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === messageId ? deletedMessage : msg))
+      );
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      setError(err instanceof Error ? err.message : 'Failed to delete message');
+    } finally {
+      if (isMountedRef.current) {
+        setDeletingMessageId(null);
       }
     }
   };
@@ -335,30 +400,129 @@ export default function ConversationPage() {
               ) : (
                 messages.map((message) => {
                   const isOwnMessage = message.senderId === user?.id;
+                  const isDeleted = !!message.deletedAt;
+                  const isEdited = !!message.editedAt;
+                  const isEditing = editingMessageId === message.id;
+                  const isDeleting = deletingMessageId === message.id;
+
                   return (
                     <div
                       key={message.id}
-                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg p-4 ${
+                        className={`max-w-[70%] rounded-lg p-4 relative ${
                           isOwnMessage
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-foreground'
-                        }`}
+                        } ${isDeleted ? 'opacity-60' : ''}`}
                       >
-                        <p className="whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
-                        <p
-                          className={`text-xs mt-2 ${
-                            isOwnMessage
-                              ? 'text-primary-foreground/70'
-                              : 'text-muted-foreground'
-                          }`}
-                        >
-                          {formatDate(message.createdAt)}
-                        </p>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <Input
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              maxLength={5000}
+                              className="bg-background text-foreground"
+                              autoFocus
+                            />
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                                className="h-8"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => handleSaveEdit(message.id)}
+                                disabled={!editContent.trim() || editContent === message.content}
+                                className="h-8"
+                              >
+                                <Check className="h-3 w-3 mr-1" />
+                                Save
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {isDeleted ? (
+                              <p className="whitespace-pre-wrap break-words italic">
+                                This message was deleted
+                              </p>
+                            ) : (
+                              <p className="whitespace-pre-wrap break-words">
+                                {message.content}
+                              </p>
+                            )}
+                            <div className="flex items-center justify-between mt-2">
+                              <div className="flex items-center gap-2">
+                                <p
+                                  className={`text-xs ${
+                                    isOwnMessage
+                                      ? 'text-primary-foreground/70'
+                                      : 'text-muted-foreground'
+                                  }`}
+                                >
+                                  {formatDate(message.createdAt)}
+                                </p>
+                                {isEdited && (
+                                  <span
+                                    className={`text-xs ${
+                                      isOwnMessage
+                                        ? 'text-primary-foreground/70'
+                                        : 'text-muted-foreground'
+                                    }`}
+                                    title={`Edited at ${new Date(message.editedAt).toLocaleString()}`}
+                                  >
+                                    (edited)
+                                  </span>
+                                )}
+                                {isDeleted && (
+                                  <span
+                                    className={`text-xs ${
+                                      isOwnMessage
+                                        ? 'text-primary-foreground/70'
+                                        : 'text-muted-foreground'
+                                    }`}
+                                    title={`Deleted at ${new Date(message.deletedAt!).toLocaleString()}`}
+                                  >
+                                    (deleted)
+                                  </span>
+                                )}
+                              </div>
+                              {isOwnMessage && !isDeleted && (
+                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditMessage(message)}
+                                    className="h-6 w-6 p-0"
+                                    title="Edit message"
+                                  >
+                                    <Edit2 className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteMessage(message.id)}
+                                    disabled={isDeleting}
+                                    className="h-6 w-6 p-0"
+                                    title="Delete message"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   );

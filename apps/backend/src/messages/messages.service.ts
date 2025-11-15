@@ -624,6 +624,310 @@ export class MessagesService {
   }
 
   /**
+   * Update/edit a message
+   */
+  async updateMessage(
+    messageId: string,
+    userId: string,
+    updateMessageDto: { content: string },
+  ): Promise<MessageResponse> {
+    // Validate inputs
+    if (!messageId || typeof messageId !== 'string') {
+      throw new BadRequestException('Invalid message ID');
+    }
+
+    if (!updateMessageDto.content || typeof updateMessageDto.content !== 'string') {
+      throw new BadRequestException('Message content is required');
+    }
+
+    if (updateMessageDto.content.trim().length === 0) {
+      throw new BadRequestException('Message content cannot be empty');
+    }
+
+    if (updateMessageDto.content.length > 5000) {
+      throw new BadRequestException('Message content cannot exceed 5000 characters');
+    }
+
+    // Find message
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+        vehicle: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            currency: true,
+            year: true,
+            images: {
+              where: { isPrimary: true },
+              take: 1,
+              select: {
+                id: true,
+                url: true,
+                thumbnailUrl: true,
+                isPrimary: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // Check if message is deleted
+    if (message.deletedAt) {
+      throw new BadRequestException('Cannot edit a deleted message');
+    }
+
+    // Only sender can edit their message
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('You can only edit your own messages');
+    }
+
+    // Encrypt new content
+    let encryptedContent: string;
+    try {
+      encryptedContent = encryptMessage(updateMessageDto.content.trim());
+    } catch (error) {
+      this.logger.error(
+        `Failed to encrypt message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to encrypt message content');
+    }
+
+    // Update message
+    try {
+      const updatedMessage = await this.prisma.message.update({
+        where: { id: messageId },
+        data: {
+          content: encryptedContent,
+          editedAt: new Date(),
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          receiver: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          vehicle: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              currency: true,
+              year: true,
+              images: {
+                where: { isPrimary: true },
+                take: 1,
+                select: {
+                  id: true,
+                  url: true,
+                  thumbnailUrl: true,
+                  isPrimary: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Decrypt for response
+      let decryptedContent: string;
+      try {
+        decryptedContent = decryptMessage(updatedMessage.content);
+      } catch (error) {
+        this.logger.error(
+          `Failed to decrypt updated message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+        throw new BadRequestException('Failed to decrypt message content');
+      }
+
+      return this.mapToResponse(updatedMessage, decryptedContent);
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException || error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to update message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to update message');
+    }
+  }
+
+  /**
+   * Delete a message (soft delete)
+   */
+  async deleteMessage(messageId: string, userId: string): Promise<MessageResponse> {
+    // Validate inputs
+    if (!messageId || typeof messageId !== 'string') {
+      throw new BadRequestException('Invalid message ID');
+    }
+
+    // Find message
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+        vehicle: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            currency: true,
+            year: true,
+            images: {
+              where: { isPrimary: true },
+              take: 1,
+              select: {
+                id: true,
+                url: true,
+                thumbnailUrl: true,
+                isPrimary: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // Check if already deleted
+    if (message.deletedAt) {
+      throw new BadRequestException('Message is already deleted');
+    }
+
+    // Only sender can delete their message
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('You can only delete your own messages');
+    }
+
+    // Soft delete message
+    try {
+      const deletedMessage = await this.prisma.message.update({
+        where: { id: messageId },
+        data: {
+          deletedAt: new Date(),
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          receiver: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+            },
+          },
+          vehicle: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              currency: true,
+              year: true,
+              images: {
+                where: { isPrimary: true },
+                take: 1,
+                select: {
+                  id: true,
+                  url: true,
+                  thumbnailUrl: true,
+                  isPrimary: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Decrypt for response (even deleted messages should show content to receiver)
+      let decryptedContent: string;
+      try {
+        decryptedContent = decryptMessage(deletedMessage.content);
+      } catch (error) {
+        this.logger.error(
+          `Failed to decrypt deleted message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+        throw new BadRequestException('Failed to decrypt message content');
+      }
+
+      return this.mapToResponse(deletedMessage, decryptedContent);
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException || error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error(
+        `Failed to delete message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to delete message');
+    }
+  }
+
+  /**
    * Map Prisma message to response DTO
    */
   private mapToResponse(
@@ -639,6 +943,8 @@ export class MessagesService {
       content: decryptedContent,
       status: message.status,
       readAt: message.readAt?.toISOString() || null,
+      deletedAt: message.deletedAt?.toISOString() || null,
+      editedAt: message.editedAt?.toISOString() || null,
       createdAt: message.createdAt.toISOString(),
       sender: {
         id: message.sender.id,

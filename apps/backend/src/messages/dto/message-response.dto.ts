@@ -31,6 +31,8 @@ export interface MessageResponse {
   content: string; // Decrypted content
   status: MessageStatus;
   readAt: string | null;
+  deletedAt: string | null; // When message was deleted (soft delete)
+  editedAt: string | null; // When message was last edited
   createdAt: string;
   sender: MessageUser;
   receiver: MessageUser;

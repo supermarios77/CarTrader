@@ -3,6 +3,8 @@ import {
   Post,
   Get,
   Put,
+  Patch,
+  Delete,
   Param,
   Body,
   Query,
@@ -15,6 +17,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { GetMessagesDto } from './dto/get-messages.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -88,6 +91,33 @@ export class MessagesController {
     @CurrentUser('id') userId: string,
   ) {
     return this.messagesService.markAsRead(userId, partnerId);
+  }
+
+  /**
+   * Update/edit a message
+   * PATCH /messages/:id
+   */
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  async updateMessage(
+    @Param('id', ParseUUIDPipe) messageId: string,
+    @CurrentUser('id') userId: string,
+    @Body() updateMessageDto: UpdateMessageDto,
+  ) {
+    return this.messagesService.updateMessage(messageId, userId, updateMessageDto);
+  }
+
+  /**
+   * Delete a message (soft delete)
+   * DELETE /messages/:id
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deleteMessage(
+    @Param('id', ParseUUIDPipe) messageId: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.messagesService.deleteMessage(messageId, userId);
   }
 }
 

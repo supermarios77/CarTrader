@@ -41,6 +41,8 @@ export interface Message {
   content: string;
   status: MessageStatus;
   readAt: string | null;
+  deletedAt: string | null;
+  editedAt: string | null;
   createdAt: string;
   sender: MessageUser;
   receiver: MessageUser;
@@ -164,5 +166,22 @@ export async function markAsRead(
   return api.put<{ message: string; count: number }>(
     `/messages/conversations/${partnerId}/read`,
   );
+}
+
+/**
+ * Update/edit a message
+ */
+export async function updateMessage(
+  messageId: string,
+  content: string,
+): Promise<Message> {
+  return api.patch<Message>(`/messages/${messageId}`, { content });
+}
+
+/**
+ * Delete a message (soft delete)
+ */
+export async function deleteMessage(messageId: string): Promise<Message> {
+  return api.delete<Message>(`/messages/${messageId}`);
 }
 
