@@ -26,14 +26,19 @@ export default function Home() {
           </div>
 
           {/* Navigation Links */}
-          <div className="mt-8 flex gap-4">
+          <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link href="/vehicles">
               <Button size="lg">Browse Vehicles</Button>
             </Link>
             {isAuthenticated && (
-              <Link href="/vehicles/new">
-                <Button size="lg" variant="outline">List Your Vehicle</Button>
-              </Link>
+              <>
+                <Link href="/favorites">
+                  <Button size="lg" variant="outline">My Favorites</Button>
+                </Link>
+                <Link href="/vehicles/new">
+                  <Button size="lg" variant="outline">List Your Vehicle</Button>
+                </Link>
+              </>
             )}
           </div>
 

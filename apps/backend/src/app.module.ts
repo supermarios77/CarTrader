@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { CatalogModule } from './catalog/catalog.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AuthModule,
     VehiclesModule,
     CatalogModule,
+    FavoritesModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute

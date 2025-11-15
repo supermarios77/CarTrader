@@ -12,6 +12,7 @@ import { getVehicle, deleteVehicle, publishVehicle, markVehicleAsSold } from '@/
 import type { Vehicle } from '@/types/vehicle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FavoriteButton } from '@/components/favorite-button';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function VehicleDetailPage() {
@@ -150,12 +151,30 @@ export default function VehicleDetailPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Title and Favorite */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-foreground">{vehicle.title}</h1>
+                <p className="mt-2 text-muted-foreground">
+                  {vehicle.make.name} {vehicle.model.name} • {vehicle.year} • {vehicle.city}
+                </p>
+              </div>
+              <FavoriteButton
+                vehicleId={vehicle.id}
+                isFavorite={vehicle.isFavorite}
+                variant="button"
+                onToggle={(isFav) => {
+                  setVehicle((prev) => prev ? { ...prev, isFavorite: isFav } : null);
+                }}
+              />
+            </div>
+
             {/* Images */}
             <Card>
               <CardContent className="p-0">
                 {vehicle.images && vehicle.images.length > 0 ? (
                   <div className="grid grid-cols-2 gap-2 p-2">
-                    <div className="col-span-2">
+                    <div className="col-span-2 relative">
                       <img
                         src={vehicle.images[0].url}
                         alt={vehicle.images[0].alt || vehicle.title}
