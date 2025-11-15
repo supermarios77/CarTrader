@@ -18,6 +18,8 @@ import { JwtService } from '@nestjs/jwt';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
+// AuthenticatedSocket is just Socket with an additional userId property
+// All Socket methods (handshake, id, disconnect, emit, join) are inherited
 interface AuthenticatedSocket extends Socket {
   userId?: string;
 }
