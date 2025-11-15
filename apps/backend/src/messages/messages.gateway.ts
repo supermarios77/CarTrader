@@ -18,11 +18,13 @@ import { JwtService } from '@nestjs/jwt';
 import { MessagesService } from './messages.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
-// AuthenticatedSocket is just Socket with an additional userId property
-// Type assertion ensures TypeScript recognizes all Socket methods
-type AuthenticatedSocket = Socket & {
+/**
+ * AuthenticatedSocket extends Socket with userId property
+ * All Socket methods are available through inheritance
+ */
+interface AuthenticatedSocket extends Socket {
   userId?: string;
-};
+}
 
 @WebSocketGateway({
   cors: {
