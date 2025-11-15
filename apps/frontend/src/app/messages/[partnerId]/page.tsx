@@ -26,7 +26,7 @@ export default function ConversationPage() {
   const searchParams = useSearchParams();
   const partnerId = params.partnerId as string;
   const vehicleId = searchParams.get('vehicleId');
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +37,7 @@ export default function ConversationPage() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
+  const socketRef = useRef<Socket | null>(null);
 
   // Track mount status
   useEffect(() => {
@@ -46,12 +47,88 @@ export default function ConversationPage() {
     };
   }, []);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (but wait for auth to load first)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
+
+  // Setup WebSocket connection for real-time messaging
+  useEffect(() => {
+    if (!isAuthenticated || !partnerId) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    socketRef.current = socket;
+
+    // Listen for new messages
+    const handleNewMessage = (message: Message) => {
+      // Only add if it's from/to the current partner
+      if (
+        (message.senderId === partnerId || message.receiverId === partnerId) &&
+        (!vehicleId || message.vehicleId === vehicleId)
+      ) {
+        setMessages((prev) => {
+          // Check if message already exists (avoid duplicates)
+          if (prev.some((m) => m.id === message.id)) {
+            return prev;
+          }
+          return [...prev, message];
+        });
+
+        // Scroll to bottom
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+          if (messagesEndRef.current && isMountedRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+
+        // Mark as read if we're the receiver
+        if (message.receiverId === user?.id) {
+          markAsRead(partnerId).catch(() => {
+            // Ignore errors
+          });
+        }
+      }
+    };
+
+    // Listen for message sent confirmation
+    const handleMessageSent = (message: Message) => {
+      setMessages((prev) => {
+        // Update message if it exists, otherwise add it
+        const index = prev.findIndex((m) => m.id === message.id);
+        if (index >= 0) {
+          const updated = [...prev];
+          updated[index] = message;
+          return updated;
+        }
+        return [...prev, message];
+      });
+    };
+
+    // Listen for errors
+    const handleError = (error: { message: string }) => {
+      if (isMountedRef.current) {
+        setError(error.message);
+      }
+    };
+
+    socket.on('new_message', handleNewMessage);
+    socket.on('message_sent', handleMessageSent);
+    socket.on('error', handleError);
+
+    // Cleanup
+    return () => {
+      socket.off('new_message', handleNewMessage);
+      socket.off('message_sent', handleMessageSent);
+      socket.off('error', handleError);
+    };
+  }, [isAuthenticated, partnerId, vehicleId, user?.id]);
 
   // Fetch messages
   useEffect(() => {
@@ -220,6 +297,20 @@ export default function ConversationPage() {
       ? messages[0].receiver
       : messages[0].sender
     : null;
+
+  // Wait for auth to load before showing anything
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+        <div className="container mx-auto max-w-4xl px-4 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-12 bg-muted rounded-lg" />
+            <div className="h-96 bg-muted rounded-lg" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return null;

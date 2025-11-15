@@ -7,6 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api, storeTokens, clearTokens, getAccessToken } from '@/lib/api-client';
+import { updateSocketToken, disconnectSocket } from '@/lib/socket-client';
 import type { User, LoginCredentials, RegisterData, AuthResponse, AuthState } from '@/types/auth';
 
 interface AuthContextType extends AuthState {
@@ -133,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       // Clear tokens and state regardless
       clearTokens();
+      disconnectSocket();
       setUser(null);
       setIsAuthenticated(false);
       setIsLoading(false);
