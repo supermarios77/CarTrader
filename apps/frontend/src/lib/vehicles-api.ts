@@ -30,7 +30,24 @@ export async function getVehicles(filters?: VehicleFilters): Promise<VehicleList
   const queryString = params.toString();
   const endpoint = `/vehicles${queryString ? `?${queryString}` : ''}`;
   
-  return api.get<VehicleListResponse>(endpoint);
+  console.log('🌐 [DEBUG] API Request:', {
+    endpoint,
+    fullUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${endpoint}`,
+    filters,
+    queryString,
+  });
+  
+  try {
+    const response = await api.get<VehicleListResponse>(endpoint);
+    console.log('📦 [DEBUG] API Response received:', {
+      vehiclesCount: response.vehicles?.length || 0,
+      pagination: response.pagination,
+    });
+    return response;
+  } catch (error) {
+    console.error('❌ [DEBUG] API Error:', error);
+    throw error;
+  }
 }
 
 /**

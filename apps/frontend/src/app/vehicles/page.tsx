@@ -37,15 +37,35 @@ export default function VehiclesPage() {
       setLoading(true);
       setError(null);
       try {
+        console.log('🔍 [DEBUG] Fetching vehicles with filters:', {
+          ...filters,
+          search: searchQuery || undefined,
+        });
+        
         const response = await getVehicles({
           ...filters,
           search: searchQuery || undefined,
         });
+        
+        console.log('✅ [DEBUG] Vehicles API Response:', {
+          vehiclesCount: response.vehicles.length,
+          total: response.pagination.total,
+          pagination: response.pagination,
+          vehicles: response.vehicles.map(v => ({
+            id: v.id,
+            title: v.title,
+            status: v.status,
+            publishedAt: v.publishedAt,
+            expiresAt: v.expiresAt,
+            hasImages: v.images?.length > 0,
+          })),
+        });
+        
         setVehicles(response.vehicles);
         setPagination(response.pagination);
       } catch (err) {
+        console.error('❌ [DEBUG] Error fetching vehicles:', err);
         setError(err instanceof Error ? err.message : 'Failed to load vehicles');
-        console.error('Error fetching vehicles:', err);
       } finally {
         setLoading(false);
       }
@@ -82,6 +102,31 @@ export default function VehiclesPage() {
             <p className="mt-2 text-muted-foreground">
               Browse {pagination.total} vehicles
             </p>
+            {/* Debug Info */}
+            <div className="mt-4 rounded-lg border-2 border-blue-500/50 bg-blue-500/10 p-4 text-xs font-mono">
+              <div className="font-semibold text-blue-600 dark:text-blue-400 mb-2">🐛 DEBUG INFO</div>
+              <div className="space-y-1 text-blue-900 dark:text-blue-200">
+                <div>Loading: <span className={loading ? 'text-red-600' : 'text-green-600'}>{loading ? 'Yes' : 'No'}</span></div>
+                <div>Vehicles in state: <span className="text-green-600">{vehicles.length}</span></div>
+                <div>Total from API: <span className="text-green-600">{pagination.total}</span></div>
+                <div>Current page: <span className="text-green-600">{pagination.page}</span></div>
+                <div>Total pages: <span className="text-green-600">{pagination.totalPages}</span></div>
+                <div>Search query: <span className="text-green-600">"{searchQuery || 'none'}"</span></div>
+                <div>Filters: <span className="text-green-600">{JSON.stringify(filters, null, 2)}</span></div>
+                {vehicles.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-blue-500/30">
+                    <div className="font-semibold mb-1">First vehicle:</div>
+                    <div className="text-xs">
+                      ID: {vehicles[0].id}<br/>
+                      Title: {vehicles[0].title}<br/>
+                      Status: <span className={vehicles[0].status === 'ACTIVE' ? 'text-green-600' : 'text-yellow-600'}>{vehicles[0].status}</span><br/>
+                      Published: {vehicles[0].publishedAt ? new Date(vehicles[0].publishedAt).toLocaleString() : 'Not published'}<br/>
+                      Expires: {vehicles[0].expiresAt ? new Date(vehicles[0].expiresAt).toLocaleString() : 'Never'}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           {isAuthenticated && (
             <Link href="/vehicles/new">
