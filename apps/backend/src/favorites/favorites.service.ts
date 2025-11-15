@@ -92,10 +92,15 @@ export class FavoritesService {
   ) {
     const skip = (page - 1) * limit;
 
-    // Get favorites with vehicle data
+    // Get favorites with vehicle data - filter for active vehicles at the favorite level
     const [favorites, total] = await Promise.all([
       this.prisma.favorite.findMany({
-        where: { userId },
+        where: {
+          userId,
+          vehicle: {
+            status: VehicleStatus.ACTIVE, // Only include favorites for active vehicles
+          },
+        },
         include: {
           vehicle: {
             include: {
@@ -143,9 +148,6 @@ export class FavoritesService {
                 },
               },
             },
-            where: {
-              status: VehicleStatus.ACTIVE, // Only show active vehicles
-            },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -153,16 +155,18 @@ export class FavoritesService {
         take: limit,
       }),
       this.prisma.favorite.count({
-        where: { userId },
+        where: {
+          userId,
+          vehicle: {
+            status: VehicleStatus.ACTIVE,
+          },
+        },
       }),
     ]);
 
-    // Filter out favorites where vehicle was deleted or is inactive
-    const validFavorites = favorites.filter((f) => f.vehicle !== null);
-
     // Transform to vehicle response format
-    const vehicles = validFavorites.map((favorite) => {
-      const vehicle = favorite.vehicle!;
+    const vehicles = favorites.map((favorite) => {
+      const vehicle = favorite.vehicle;
       return {
         id: vehicle.id,
         userId: vehicle.userId,
