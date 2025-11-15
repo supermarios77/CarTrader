@@ -97,7 +97,10 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const url = `${API_URL}${endpoint}`;
+  // Ensure URL uses HTTP (not HTTPS) to avoid ALPN negotiation issues
+  let url = `${API_URL}${endpoint}`;
+  url = url.replace(/^https:/, 'http:');
+  
   const accessToken = getAccessToken();
 
   // Prepare headers
@@ -112,16 +115,13 @@ async function apiRequest<T>(
   }
 
   // Make request
-  // Explicitly use HTTP/1.1 to avoid ALPN negotiation issues
+  // Explicitly avoid HTTP/2 and ALPN negotiation
   let response = await fetch(url, {
     ...options,
-    headers: {
-      ...headers,
-      'Connection': 'keep-alive',
-    } as HeadersInit,
+    headers: headers as HeadersInit,
     credentials: 'include',
-    // Force HTTP/1.1 to avoid ALPN negotiation failures
     cache: 'no-cache',
+    keepalive: true,
   });
 
   // If 401 and we have a refresh token, try to refresh
