@@ -70,6 +70,8 @@ export async function createVehicle(
     });
   }
 
+  // Use api client for consistent error handling and token management
+  // Note: api.post doesn't support FormData directly, so we use fetch but with same error handling
   const token = localStorage.getItem('accessToken');
   if (!token) {
     throw new Error('Authentication required');
@@ -80,8 +82,11 @@ export async function createVehicle(
     headers: {
       Authorization: `Bearer ${token}`,
       // Don't set Content-Type - browser will set it with boundary for FormData
+      'Connection': 'keep-alive',
     },
     body: formData,
+    credentials: 'include',
+    cache: 'no-cache',
   });
 
   if (!response.ok) {
@@ -131,8 +136,11 @@ export async function updateVehicle(
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${token}`,
+      'Connection': 'keep-alive',
     },
     body: formData,
+    credentials: 'include',
+    cache: 'no-cache',
   });
 
   if (!response.ok) {

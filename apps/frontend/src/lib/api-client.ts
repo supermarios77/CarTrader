@@ -112,10 +112,16 @@ async function apiRequest<T>(
   }
 
   // Make request
+  // Explicitly use HTTP/1.1 to avoid ALPN negotiation issues
   let response = await fetch(url, {
     ...options,
-    headers: headers as HeadersInit,
+    headers: {
+      ...headers,
+      'Connection': 'keep-alive',
+    } as HeadersInit,
     credentials: 'include',
+    // Force HTTP/1.1 to avoid ALPN negotiation failures
+    cache: 'no-cache',
   });
 
   // If 401 and we have a refresh token, try to refresh

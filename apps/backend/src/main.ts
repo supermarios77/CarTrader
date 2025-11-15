@@ -38,7 +38,8 @@ async function bootstrap() {
   );
 
   const port = process.env.PORT || 3001;
-  await app.listen(port);
+  // Listen on HTTP only (no HTTPS in dev) to avoid ALPN negotiation issues
+  await app.listen(port, '0.0.0.0');
   logger.log(`🚀 Backend is running on: http://localhost:${port}`);
   logger.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
 }
