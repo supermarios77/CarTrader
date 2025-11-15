@@ -33,19 +33,18 @@ export function FavoriteButton({
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = React.useRef<AbortController | null>(null);
+  const isMountedRef = React.useRef(true);
 
   // Sync with prop changes
   useEffect(() => {
     setIsFavorite(initialIsFavorite);
   }, [initialIsFavorite]);
 
-  // Cleanup on unmount
+  // Track mount status to prevent state updates after unmount
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      isMountedRef.current = false;
     };
   }, []);
 
@@ -60,41 +59,32 @@ export function FavoriteButton({
 
     if (loading) return;
 
-    // Cancel any pending request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller for this request
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
-
     setLoading(true);
     setError(null);
 
     try {
       if (isFavorite) {
         await removeFavorite(vehicleId);
-        // Check if request was aborted
-        if (abortController.signal.aborted) return;
+        // Only update state if component is still mounted
+        if (!isMountedRef.current) return;
         setIsFavorite(false);
         onToggle?.(false);
       } else {
         await addFavorite(vehicleId);
-        // Check if request was aborted
-        if (abortController.signal.aborted) return;
+        // Only update state if component is still mounted
+        if (!isMountedRef.current) return;
         setIsFavorite(true);
         onToggle?.(true);
       }
     } catch (err) {
-      // Don't update state if request was aborted
-      if (abortController.signal.aborted) return;
+      // Only update state if component is still mounted
+      if (!isMountedRef.current) return;
       
       setError(err instanceof Error ? err.message : 'Failed to update favorite');
       // Revert state on error
       setIsFavorite(!isFavorite);
     } finally {
-      if (!abortController.signal.aborted) {
+      if (isMountedRef.current) {
         setLoading(false);
       }
     }
