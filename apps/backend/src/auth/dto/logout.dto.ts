@@ -6,4 +6,3 @@ export class LogoutDto {
   @IsUUID('4', { message: 'Session ID must be a valid UUID' })
   sessionId?: string;
 }
-
