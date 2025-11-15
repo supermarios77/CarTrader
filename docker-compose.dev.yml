@@ -48,8 +48,10 @@ services:
       SMTP_HOST: ${SMTP_HOST:-postfix}
       SMTP_PORT: ${SMTP_PORT:-25}
       SMTP_FROM: ${SMTP_FROM:-noreply@cartrader.local}
-    # Use the startup script from Dockerfile which ensures dependencies are installed
-    # No need to override entrypoint - the CMD from Dockerfile handles everything
+    # Simple command - dependencies are already installed in the image
+    # Volume mount preserves node_modules via anonymous volumes
+    entrypoint: []
+    command: ["sh", "-c", "cd /app/apps/backend && pnpm dev"]
     ports:
       - "3001:3001"
 
@@ -67,8 +69,10 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
-    # Use the startup script from Dockerfile which ensures dependencies are installed
-    # No need to override entrypoint - the CMD from Dockerfile handles everything
+    # Simple command - dependencies are already installed in the image
+    # Volume mount preserves node_modules via anonymous volumes
+    entrypoint: []
+    command: ["sh", "-c", "cd /app/apps/frontend && pnpm dev"]
     ports:
       - "3000:3000"
 
