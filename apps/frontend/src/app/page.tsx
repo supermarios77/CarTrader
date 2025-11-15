@@ -22,7 +22,7 @@ export default function Home() {
           <div className="mt-8 flex flex-col gap-4 text-sm text-zinc-500 dark:text-zinc-400">
             <p>✅ Next.js Frontend (Port 3000)</p>
             <p>✅ NestJS Backend (Port 3001)</p>
-            <p>✅ Monorepo with pnpm workspaces</p>
+            <p>✅ Monorepo with pnpm db:seedpnpm workspaces</p>
           </div>
 
           {/* Navigation Links */}

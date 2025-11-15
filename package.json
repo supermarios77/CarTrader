@@ -12,7 +12,11 @@
     "build": "pnpm --filter backend build && pnpm --filter frontend build",
     "lint": "pnpm --recursive lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "pnpm --recursive clean && rm -rf node_modules"
+    "clean": "pnpm --recursive clean && rm -rf node_modules",
+    "db:seed": "pnpm --filter @cartrader/prisma db:seed",
+    "db:studio": "pnpm --filter @cartrader/prisma studio",
+    "db:migrate": "pnpm --filter @cartrader/prisma migrate:dev",
+    "db:generate": "pnpm --filter @cartrader/prisma generate"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

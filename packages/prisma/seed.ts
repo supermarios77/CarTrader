@@ -95,6 +95,196 @@ async function main() {
 
   console.log('✅ Makes created');
 
+  // Create Models for popular car makes
+  const toyotaMake = await prisma.make.findUnique({
+    where: {
+      categoryId_slug: {
+        categoryId: carCategory.id,
+        slug: 'toyota',
+      },
+    },
+  });
+
+  const hondaMake = await prisma.make.findUnique({
+    where: {
+      categoryId_slug: {
+        categoryId: carCategory.id,
+        slug: 'honda',
+      },
+    },
+  });
+
+  const suzukiMake = await prisma.make.findUnique({
+    where: {
+      categoryId_slug: {
+        categoryId: carCategory.id,
+        slug: 'suzuki',
+      },
+    },
+  });
+
+  const nissanMake = await prisma.make.findUnique({
+    where: {
+      categoryId_slug: {
+        categoryId: carCategory.id,
+        slug: 'nissan',
+      },
+    },
+  });
+
+  // Toyota Models
+  if (toyotaMake) {
+    const toyotaModels = ['Corolla', 'Camry', 'Prius', 'Yaris', 'Vitz', 'Land Cruiser', 'Fortuner', 'Hilux'];
+    for (const modelName of toyotaModels) {
+      await prisma.model.upsert({
+        where: {
+          makeId_slug: {
+            makeId: toyotaMake.id,
+            slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          },
+        },
+        update: {},
+        create: {
+          makeId: toyotaMake.id,
+          name: modelName,
+          slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  // Honda Models
+  if (hondaMake) {
+    const hondaModels = ['Civic', 'City', 'Accord', 'CR-V', 'HR-V', 'BR-V'];
+    for (const modelName of hondaModels) {
+      await prisma.model.upsert({
+        where: {
+          makeId_slug: {
+            makeId: hondaMake.id,
+            slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          },
+        },
+        update: {},
+        create: {
+          makeId: hondaMake.id,
+          name: modelName,
+          slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  // Suzuki Models
+  if (suzukiMake) {
+    const suzukiModels = ['Alto', 'Mehran', 'Cultus', 'Swift', 'Wagon R', 'Bolan', 'Ravi'];
+    for (const modelName of suzukiModels) {
+      await prisma.model.upsert({
+        where: {
+          makeId_slug: {
+            makeId: suzukiMake.id,
+            slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          },
+        },
+        update: {},
+        create: {
+          makeId: suzukiMake.id,
+          name: modelName,
+          slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  // Nissan Models
+  if (nissanMake) {
+    const nissanModels = ['Sunny', 'Sentra', 'Altima', 'X-Trail', 'Patrol'];
+    for (const modelName of nissanModels) {
+      await prisma.model.upsert({
+        where: {
+          makeId_slug: {
+            makeId: nissanMake.id,
+            slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          },
+        },
+        update: {},
+        create: {
+          makeId: nissanMake.id,
+          name: modelName,
+          slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  // Create Models for popular bike makes
+  const hondaBikeMake = await prisma.make.findUnique({
+    where: {
+      categoryId_slug: {
+        categoryId: bikeCategory.id,
+        slug: 'honda',
+      },
+    },
+  });
+
+  const yamahaBikeMake = await prisma.make.findUnique({
+    where: {
+      categoryId_slug: {
+        categoryId: bikeCategory.id,
+        slug: 'yamaha',
+      },
+    },
+  });
+
+  // Honda Bike Models
+  if (hondaBikeMake) {
+    const hondaBikeModels = ['CB 150F', 'CB 125F', 'CG 125', 'CD 70', 'Pridor', 'Dream'];
+    for (const modelName of hondaBikeModels) {
+      await prisma.model.upsert({
+        where: {
+          makeId_slug: {
+            makeId: hondaBikeMake.id,
+            slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          },
+        },
+        update: {},
+        create: {
+          makeId: hondaBikeMake.id,
+          name: modelName,
+          slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  // Yamaha Bike Models
+  if (yamahaBikeMake) {
+    const yamahaBikeModels = ['YBR 125', 'YBR 150', 'R15', 'R1', 'FZ'];
+    for (const modelName of yamahaBikeModels) {
+      await prisma.model.upsert({
+        where: {
+          makeId_slug: {
+            makeId: yamahaBikeMake.id,
+            slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          },
+        },
+        update: {},
+        create: {
+          makeId: yamahaBikeMake.id,
+          name: modelName,
+          slug: modelName.toLowerCase().replace(/\s+/g, '-'),
+          isActive: true,
+        },
+      });
+    }
+  }
+
+  console.log('✅ Models created');
+
   // Create Admin User
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@cartrader.com' },
