@@ -142,6 +142,11 @@ async function apiRequest<T>(
     }
   }
 
+  // Handle 204 No Content (successful DELETE, etc.)
+  if (response.status === 204) {
+    return null as unknown as T;
+  }
+
   // Parse response
   const contentType = response.headers.get('content-type');
   const isJson = contentType?.includes('application/json');
