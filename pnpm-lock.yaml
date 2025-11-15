@@ -7,6 +7,16 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@types/multer':
+        specifier: ^2.0.0
+        version: 2.0.0
+      minio:
+        specifier: ^8.0.6
+        version: 8.0.6
+      multer:
+        specifier: ^2.0.2
+        version: 2.0.2
     devDependencies:
       prettier:
         specifier: ^3.2.5

@@ -19,11 +19,15 @@ export interface VehicleWithRelations extends Vehicle {
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'city'>;
   images: VehicleImage[];
   features: VehicleFeature[];
+  publishedAt: Date | null;
+  soldAt: Date | null;
+  expiresAt: Date | null;
   _count?: {
     favorites: number;
     messages: number;
     reviews: number;
   };
+  isFavorite?: boolean;
 }
 
 export class VehicleResponseDto {
