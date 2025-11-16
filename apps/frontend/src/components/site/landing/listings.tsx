@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 type Car = {
@@ -71,8 +72,9 @@ export function LandingListings({ cars }: { cars: CardItem[] }) {
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {cars.map((car) => (
-          <div
+          <Link
             key={car.id}
+            href={`/vehicles/${car.id}`}
             className="group relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-white/5 to-white/2 backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]"
           >
             {car.featured && (
@@ -101,14 +103,11 @@ export function LandingListings({ cars }: { cars: CardItem[] }) {
                 <span>{car.year}</span>
                 <span>{car.mileage}</span>
               </div>
-              <Button
-                variant="outline"
-                className="w-full rounded-lg border-white/20 bg-transparent py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-              >
+              <div className="w-full rounded-lg border border-white/20 bg-transparent py-2.5 text-center text-sm font-semibold text-white transition-colors group-hover:bg-white/10">
                 View Details
-              </Button>
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
