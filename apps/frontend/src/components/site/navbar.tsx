@@ -46,7 +46,7 @@ export function Navbar() {
         </Link>
       </div>
 
-      <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
+      <nav className="hidden md:flex flex-1 items-center justify-center space-x-8 text-sm font-medium">
         <Link href="/vehicles" className="text-gray-400 hover:text-white transition-colors">
           Buy
         </Link>
