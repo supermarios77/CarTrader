@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth-context';
 import { getAllMakes, getModels, type Make, type Model } from '@/lib/catalog-api';
 import { createVehicle } from '@/lib/vehicles-api';
-import { BodyType, FuelType, TransmissionType, VehicleStatus } from '@/types/vehicle';
+import { BodyType, FuelType, TransmissionType } from '@/types/vehicle';
 
 type Step = 'details' | 'specs' | 'media' | 'review';
 
@@ -181,7 +181,6 @@ export default function SellVehiclePage() {
           latitude: latitude ? Number(latitude) : undefined,
           longitude: longitude ? Number(longitude) : undefined,
           features: features.length ? features : undefined,
-          status: VehicleStatus.ACTIVE,
         } as any,
         images,
       );
