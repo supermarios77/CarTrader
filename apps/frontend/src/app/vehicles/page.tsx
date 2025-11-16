@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getVehicles } from '@/lib/vehicles-api';
+import { getMakeById } from '@/lib/catalog-api';
 import type { Vehicle, VehicleListResponse } from '@/types/vehicle';
 import { LandingListings } from '@/components/site/landing/listings';
 
@@ -68,6 +69,7 @@ export default function VehiclesPage() {
   const [sort, setSort] = useState<string>(searchParams.get('sort') || 'latest');
   const [limit, setLimit] = useState<number>(Number(searchParams.get('limit') || '12'));
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [makeName, setMakeName] = useState<string | null>(null);
 
   const selectedRange = useMemo(
     () => PRICE_RANGES.find((r) => r.label === priceKey) || PRICE_RANGES[0],
@@ -142,6 +144,29 @@ export default function VehiclesPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [priceKey, city, page, sort, limit]);
+
+  // Fetch brand name for chip display when makeId is present
+  useEffect(() => {
+    let aborted = false;
+    const controller = new AbortController();
+    async function fetchMake() {
+      if (!makeId) {
+        setMakeName(null);
+        return;
+      }
+      try {
+        const make = await getMakeById(makeId);
+        if (!aborted) setMakeName(make?.name || null);
+      } catch {
+        if (!aborted) setMakeName(null);
+      }
+    }
+    fetchMake();
+    return () => {
+      aborted = true;
+      controller.abort();
+    };
+  }, [makeId]);
 
   // If the user types, we won't fetch until they hit Search
   function handleSearch(e?: React.FormEvent) {
@@ -314,9 +339,22 @@ export default function VehiclesPage() {
                 {hasActiveFilters && (
                   <>
                     {makeId && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-                        Make selected
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMakeId(null);
+                          setPage(1);
+                          load();
+                        }}
+                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300 hover:bg-emerald-500/15"
+                        aria-label="Clear brand filter"
+                        title="Clear brand filter"
+                      >
+                        {makeName || 'Brand'}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                          <path fillRule="evenodd" d="M10 8.586 6.757 5.343a1 1 0 1 0-1.414 1.414L8.586 10l-3.243 3.243a1 1 0 1 0 1.414 1.414L10 11.414l3.243 3.243a1 1 0 0 0 1.414-1.414L11.414 10l3.243-3.243a1 1 0 0 0-1.414-1.414L10 8.586Z" clipRule="evenodd" />
+                        </svg>
+                      </button>
                     )}
                     {query.trim() && (
                       <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
