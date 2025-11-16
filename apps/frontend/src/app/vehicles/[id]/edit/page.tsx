@@ -521,6 +521,28 @@ export default function EditVehiclePage() {
 
           </div>
         </form>
+        {/* Sticky save bar for quick actions */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/80 px-6 py-3 backdrop-blur">
+          <div className="mx-auto flex max-w-5xl items-center justify-between">
+            <span className="text-xs text-gray-400">Review your updates, then save.</span>
+            <div className="flex items-center gap-2">
+              <Link href={`/vehicles/${vehicleId}`} className="text-sm text-gray-400 hover:text-white">
+                Cancel
+              </Link>
+              <Button
+                type="button"
+                className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
+                onClick={() => {
+                  const form = document.querySelector('form');
+                  form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                }}
+                disabled={saving}
+              >
+                {saving ? 'Saving…' : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
