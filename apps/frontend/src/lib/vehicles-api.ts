@@ -1,4 +1,4 @@
-import { api } from './api-client';
+import { api, ApiClientError } from './api-client';
 import type {
   Vehicle,
   VehicleListResponse,
@@ -14,7 +14,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
  */
 export async function getVehicles(filters?: VehicleFilters): Promise<VehicleListResponse> {
   const params = new URLSearchParams();
-  
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
@@ -22,18 +21,32 @@ export async function getVehicles(filters?: VehicleFilters): Promise<VehicleList
       }
     });
   }
-
   const queryString = params.toString();
-  const endpoint = `/vehicles${queryString ? `?${queryString}` : ''}`;
-  
-  return api.get<VehicleListResponse>(endpoint);
+  const path = `/vehicles${queryString ? `?${queryString}` : ''}`;
+
+  try {
+    return await api.get<VehicleListResponse>(path);
+  } catch (e) {
+    // Some deployments expose a global /api prefix - retry transparently
+    if (e instanceof ApiClientError && e.statusCode === 404) {
+      return await api.get<VehicleListResponse>(`/api${path}`);
+    }
+    throw e;
+  }
 }
 
 /**
  * Get single vehicle by ID
  */
 export async function getVehicle(id: string): Promise<Vehicle> {
-  return api.get<Vehicle>(`/vehicles/${id}`);
+  try {
+    return await api.get<Vehicle>(`/vehicles/${id}`);
+  } catch (e) {
+    if (e instanceof ApiClientError && e.statusCode === 404) {
+      return await api.get<Vehicle>(`/api/vehicles/${id}`);
+    }
+    throw e;
+  }
 }
 
 /**
@@ -154,28 +167,58 @@ export async function updateVehicle(
  * Delete a vehicle
  */
 export async function deleteVehicle(id: string): Promise<void> {
-  return api.delete(`/vehicles/${id}`);
+  try {
+    return await api.delete(`/vehicles/${id}`);
+  } catch (e) {
+    if (e instanceof ApiClientError && e.statusCode === 404) {
+      return await api.delete(`/api/vehicles/${id}`);
+    }
+    throw e;
+  }
 }
 
 /**
  * Publish a draft vehicle
  */
 export async function publishVehicle(id: string): Promise<Vehicle> {
-  return api.post<Vehicle>(`/vehicles/${id}/publish`);
+  try {
+    return await api.post<Vehicle>(`/vehicles/${id}/publish`);
+  } catch (e) {
+    if (e instanceof ApiClientError && e.statusCode === 404) {
+      return await api.post<Vehicle>(`/api/vehicles/${id}/publish`);
+    }
+    throw e;
+  }
 }
 
 /**
  * Mark vehicle as sold
  */
 export async function markVehicleAsSold(id: string, notes?: string): Promise<Vehicle> {
-  return api.post<Vehicle>(`/vehicles/${id}/sold`, { notes });
+  try {
+    return await api.post<Vehicle>(`/vehicles/${id}/sold`, { notes });
+  } catch (e) {
+    if (e instanceof ApiClientError && e.statusCode === 404) {
+      return await api.post<Vehicle>(`/api/vehicles/${id}/sold`, { notes });
+    }
+    throw e;
+  }
 }
 
 /**
  * Convenience: get featured vehicles list (defaults to 8)
  */
 export async function getFeaturedVehicles(limit = 8): Promise<Vehicle[]> {
-  const resp = await getVehicles({ featured: true, limit, status: undefined });
-  return resp.vehicles;
+  // Try standard path, then /api prefix if needed
+  try {
+    const resp = await getVehicles({ featured: true, limit });
+    return Array.isArray((resp as any).vehicles) ? resp.vehicles : [];
+  } catch (e) {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('getFeaturedVehicles error:', e);
+    }
+    throw e;
+  }
 }
 
