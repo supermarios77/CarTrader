@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth-context';
-import { getAllMakes, getModels, type Make, type Model } from '@/lib/catalog-api';
+import { getAllMakes, getModels, getCategories, type Make, type Model } from '@/lib/catalog-api';
 import { createVehicle } from '@/lib/vehicles-api';
 import { BodyType, FuelType, TransmissionType } from '@/types/vehicle';
 
@@ -23,11 +23,14 @@ export default function SellVehiclePage() {
   // Data
   const [makes, setMakes] = useState<Make[]>([]);
   const [models, setModels] = useState<Model[]>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [makesLoading, setMakesLoading] = useState(true);
   const [modelsLoading, setModelsLoading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
 
   // Form state
+  const [categoryId, setCategoryId] = useState<string>('');
   const [makeId, setMakeId] = useState<string>('');
   const [modelId, setModelId] = useState<string>('');
   const [title, setTitle] = useState('');
@@ -63,24 +66,40 @@ export default function SellVehiclePage() {
       // Reset state when logged out; avoid fetching
       setMakes([]);
       setModels([]);
+      setCategories([]);
       setMakesLoading(false);
       setModelsLoading(false);
+      setCategoriesLoading(false);
       return;
     }
     setMakesLoading(true);
+    setCategoriesLoading(true);
     setCatalogError(null);
     makesAbortRef.current?.abort();
     const ac = new AbortController();
     makesAbortRef.current = ac;
-    getAllMakes()
+    Promise.all([getAllMakes(), getCategories()])
       .then((list) => {
-        if (!ac.signal.aborted) setMakes(list);
+        if (ac.signal.aborted) return;
+        const [makesList, categoriesList] = list as unknown as [Make[], Array<{ id: string; name: string }>];
+        setMakes(makesList);
+        setCategories(categoriesList);
+        // Preselect a likely car category if found
+        const defaultCat =
+          categoriesList.find((c) => c.name.toLowerCase().includes('car'))?.id ||
+          categoriesList[0]?.id ||
+          '';
+        setCategoryId(defaultCat);
       })
       .catch((e) => {
-        if (!ac.signal.aborted) setCatalogError(e instanceof Error ? e.message : 'Failed to load makes');
+        if (!ac.signal.aborted)
+          setCatalogError(e instanceof Error ? e.message : 'Failed to load catalog');
       })
       .finally(() => {
-        if (!ac.signal.aborted) setMakesLoading(false);
+        if (!ac.signal.aborted) {
+          setMakesLoading(false);
+          setCategoriesLoading(false);
+        }
       });
     return () => ac.abort();
   }, [isAuthenticated]);
@@ -110,6 +129,7 @@ export default function SellVehiclePage() {
 
   const canContinueDetails =
     title.trim().length >= 6 &&
+    categoryId &&
     makeId &&
     modelId &&
     year &&
@@ -158,7 +178,7 @@ export default function SellVehiclePage() {
     try {
       const vehicle = await createVehicle(
         {
-          categoryId: 'car', // backend can infer or we can extend UI later
+          categoryId,
           makeId,
           modelId,
           title: title.trim(),
@@ -241,6 +261,22 @@ export default function SellVehiclePage() {
             <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
               <h2 className="mb-4 text-xl font-bold">Basic Details</h2>
               <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm text-gray-300">Category</label>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
+                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3 disabled:opacity-60"
+                    disabled={categoriesLoading}
+                  >
+                    <option value="">{categoriesLoading ? 'Loading…' : 'Select category'}</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="md:col-span-2">
                   <label className="mb-1 block text-sm text-gray-300">Title</label>
                   <Input
