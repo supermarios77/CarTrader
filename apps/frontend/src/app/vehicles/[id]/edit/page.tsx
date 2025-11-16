@@ -1,5 +1,454 @@
 'use client';
 
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/contexts/auth-context';
+import { getVehicle, updateVehicle } from '@/lib/vehicles-api';
+import { getAllMakes, getModels, getCategories, type Make, type Model } from '@/lib/catalog-api';
+import type { Vehicle } from '@/types/vehicle';
+import { BodyType, FuelType, TransmissionType } from '@/types/vehicle';
+
+export default function EditVehiclePage() {
+  const params = useParams();
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  const vehicleId = params.id as string;
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+
+  // Catalog
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [makes, setMakes] = useState<Make[]>([]);
+  const [models, setModels] = useState<Model[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const pendingModelByIdRef = useRef<string | null>(null);
+
+  // Form
+  const [categoryId, setCategoryId] = useState('');
+  const [makeId, setMakeId] = useState('');
+  const [modelId, setModelId] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState<string>('');
+  const [currency, setCurrency] = useState('PKR');
+  const [year, setYear] = useState<string>('');
+  const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
+  const [address, setAddress] = useState('');
+  const [registrationCity, setRegistrationCity] = useState('');
+  const [registrationYear, setRegistrationYear] = useState<string>('');
+  const [engineCapacity, setEngineCapacity] = useState<string>('');
+  const [color, setColor] = useState('');
+  const [mileage, setMileage] = useState<string>('');
+  const [mileageUnit] = useState('km');
+  const [transmission, setTransmission] = useState<TransmissionType>(TransmissionType.MANUAL);
+  const [fuelType, setFuelType] = useState<FuelType>(FuelType.PETROL);
+  const [bodyType, setBodyType] = useState<BodyType>(BodyType.SEDAN);
+  const [imagesToUpload, setImagesToUpload] = useState<File[]>([]);
+  const [imageIdsToDelete, setImageIdsToDelete] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const v = await getVehicle(vehicleId);
+        setVehicle(v);
+        setCategoryId(v.categoryId);
+        setMakeId(v.makeId);
+        setModelId(v.modelId);
+        pendingModelByIdRef.current = v.modelId;
+        setTitle(v.title);
+        setDescription(v.description || '');
+        setPrice(String(v.price));
+        setCurrency(v.currency || 'PKR');
+        setYear(String(v.year));
+        setCity(v.city || '');
+        setProvince(v.province || '');
+        setAddress(v.address || '');
+        setRegistrationCity(v.registrationCity || '');
+        setRegistrationYear(v.registrationYear ? String(v.registrationYear) : '');
+        setEngineCapacity(v.engineCapacity ? String(v.engineCapacity) : '');
+        setColor(v.color || '');
+        setMileage(String(v.mileage || ''));
+        setTransmission(v.transmission);
+        setFuelType(v.fuelType);
+        setBodyType(v.bodyType);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load vehicle');
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (vehicleId) load();
+  }, [vehicleId]);
+
+  // Load catalog
+  useEffect(() => {
+    async function loadCatalog() {
+      try {
+        setCatalogLoading(true);
+        const [cats, mk] = await Promise.all([getCategories(), getAllMakes()]);
+        setCategories(cats);
+        setMakes(mk);
+      } catch {
+        // ignore minor catalog errors
+      } finally {
+        setCatalogLoading(false);
+      }
+    }
+    loadCatalog();
+  }, []);
+
+  // Load models when make changes
+  useEffect(() => {
+    async function loadModels() {
+      if (!makeId) {
+        setModels([]);
+        return;
+      }
+      try {
+        const list = await getModels(makeId);
+        setModels(list);
+        const desired = pendingModelByIdRef.current;
+        if (desired) {
+          const found = list.find((m) => m.id === desired);
+          if (found) setModelId(found.id);
+          pendingModelByIdRef.current = null;
+        }
+      } catch {
+        setModels([]);
+      }
+    }
+    loadModels();
+  }, [makeId]);
+
+  const years = useMemo(() => {
+    const max = new Date().getFullYear() + 1;
+    const arr: number[] = [];
+    for (let y = max; y >= 1990; y--) arr.push(y);
+    return arr;
+  }, []);
+
+  const isOwner = vehicle && user && vehicle.userId === user.id;
+
+  function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const next = [...imagesToUpload];
+    Array.from(files).forEach((f) => {
+      if (!f.type.startsWith('image/')) return;
+      if (f.size > 10 * 1024 * 1024) return;
+      next.push(f);
+    });
+    setImagesToUpload(next.slice(0, 12));
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!vehicle) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const updated = await updateVehicle(
+        vehicle.id,
+        {
+          categoryId,
+          makeId,
+          modelId,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          price: Number(price),
+          currency,
+          year: Number(year),
+          mileage: Number(mileage),
+          mileageUnit,
+          transmission,
+          fuelType,
+          bodyType,
+          city: city.trim(),
+          province: province.trim() || undefined,
+          address: address.trim() || undefined,
+          registrationCity: registrationCity.trim() || undefined,
+          registrationYear: registrationYear ? Number(registrationYear) : undefined,
+          engineCapacity: engineCapacity ? Number(engineCapacity) : undefined,
+          color: color.trim() || undefined,
+          imageIdsToDelete: imageIdsToDelete.length ? imageIdsToDelete : undefined,
+        } as any,
+        imagesToUpload,
+      );
+      router.replace(`/vehicles/${updated.id}`);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to save vehicle');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-10 text-white">
+        <h1 className="mb-4 text-3xl font-black">Edit Listing</h1>
+        <p className="mb-6 text-gray-400">Please sign in to edit your listing.</p>
+        <a href="/login">
+          <Button className="bg-white text-black hover:bg-gray-100">Sign In</Button>
+        </a>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-10 text-white">
+        <div className="h-8 w-40 animate-pulse rounded bg-white/10" />
+        <div className="mt-4 h-96 animate-pulse rounded-xl border border-white/10 bg-white/5" />
+      </div>
+    );
+  }
+
+  if (error || !vehicle) {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-10 text-white">
+        <p className="mb-4 text-red-300">{error || 'Vehicle not found'}</p>
+        <Link href="/vehicles">
+          <Button variant="outline">Back to Listings</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  if (!isOwner) {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-10 text-white">
+        <h1 className="mb-2 text-3xl font-black">Edit Listing</h1>
+        <p className="text-gray-400">You do not have permission to edit this listing.</p>
+        <Link href={`/vehicles/${vehicle.id}`}>
+          <Button className="mt-6" variant="outline">
+            Back to Listing
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-12">
+        <div className="mb-4">
+          <Link href={`/vehicles/${vehicle.id}`} className="text-sm text-gray-400 hover:text-white">
+            ← Back to Listing
+          </Link>
+        </div>
+        <h1 className="mb-2 text-3xl font-black">Edit Listing</h1>
+        <p className="mb-6 text-gray-400">Update details, photos, and pricing.</p>
+
+        {saveError && (
+          <div className="mb-6 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+            {saveError}
+          </div>
+        )}
+
+        <form onSubmit={handleSave} className="space-y-8">
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h2 className="mb-4 text-xl font-bold">Basic Details</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Category</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                >
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm text-gray-300">Title</label>
+                <Input value={title} onChange={(e) => setTitle(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Make</label>
+                <select
+                  value={makeId}
+                  onChange={(e) => setMakeId(e.target.value)}
+                  className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                >
+                  {makes.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Model</label>
+                <select
+                  value={modelId}
+                  onChange={(e) => setModelId(e.target.value)}
+                  className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                >
+                  {models.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Year</label>
+                <select value={year} onChange={(e) => setYear(e.target.value)} className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3">
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Price</label>
+                <Input type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">City</label>
+                <Input value={city} onChange={(e) => setCity(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Province</label>
+                <Input value={province} onChange={(e) => setProvince(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm text-gray-300">Address</label>
+                <Input value={address} onChange={(e) => setAddress(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Registration City</label>
+                <Input value={registrationCity} onChange={(e) => setRegistrationCity(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Registration Year</label>
+                <select value={registrationYear} onChange={(e) => setRegistrationYear(e.target.value)} className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3">
+                  <option value="">—</option>
+                  {years.map((y) => (
+                    <option key={`reg-${y}`} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm text-gray-300">Description</label>
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[120px] bg-black/30 text-white" />
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h2 className="mb-4 text-xl font-bold">Specifications</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Mileage</label>
+                <Input type="number" min="0" value={mileage} onChange={(e) => setMileage(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Engine Capacity (cc)</label>
+                <Input type="number" min="0" value={engineCapacity} onChange={(e) => setEngineCapacity(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Transmission</label>
+                <select value={transmission} onChange={(e) => setTransmission(e.target.value as TransmissionType)} className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3">
+                  {Object.values(TransmissionType).map((t) => (
+                    <option key={t} value={t}>
+                      {t.toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Fuel Type</label>
+                <select value={fuelType} onChange={(e) => setFuelType(e.target.value as FuelType)} className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3">
+                  {Object.values(FuelType).map((t) => (
+                    <option key={t} value={t}>
+                      {t.toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Body Type</label>
+                <select value={bodyType} onChange={(e) => setBodyType(e.target.value as BodyType)} className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3">
+                  {Object.values(BodyType).map((t) => (
+                    <option key={t} value={t}>
+                      {t.toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-gray-300">Color</label>
+                <Input value={color} onChange={(e) => setColor(e.target.value)} className="bg-black/30 text-white" />
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h2 className="mb-4 text-xl font-bold">Photos</h2>
+            <div className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+              {vehicle.images.map((img) => {
+                const marked = imageIdsToDelete.includes(img.id);
+                return (
+                  <div key={img.id} className={`relative overflow-hidden rounded-xl border ${marked ? 'border-red-500/40' : 'border-white/10'}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt={img.alt || vehicle.title} className="h-36 w-full object-cover opacity-100" />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImageIdsToDelete((prev) =>
+                          prev.includes(img.id) ? prev.filter((id) => id !== img.id) : [...prev, img.id],
+                        )
+                      }
+                      className={`absolute right-2 top-2 rounded-md px-2 py-1 text-xs ${
+                        marked ? 'bg-red-600 text-white' : 'bg-black/70 text-white'
+                      }`}
+                    >
+                      {marked ? 'Undo' : 'Remove'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="rounded-lg border border-white/10 bg-black/30 p-4">
+              <input id="images" type="file" accept="image/*" multiple onChange={(e) => handleFiles(e.target.files)} />
+              <p className="mt-2 text-xs text-gray-400">Add more images (max 12, 10MB each).</p>
+            </div>
+          </section>
+
+          <div className="flex items-center justify-between">
+            <Link href={`/vehicles/${vehicle.id}`} className="text-sm text-gray-400 hover:text-white">
+              Cancel
+            </Link>
+            <Button type="submit" disabled={saving} className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+              {saving ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+'use client';
+
 /**
  * Edit Vehicle Page
  * Form to edit an existing vehicle listing

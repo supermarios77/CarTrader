@@ -436,7 +436,7 @@ export default function VehicleDetailPage() {
                     </Button>
                   )}
                   <Link href={`/vehicles/${vehicle.id}/edit`}>
-                    <Button variant="outline" className="w-full mb-2">
+                    <Button variant="outline" className="w-full mb-4">
                       Edit Listing
                     </Button>
                   </Link>
