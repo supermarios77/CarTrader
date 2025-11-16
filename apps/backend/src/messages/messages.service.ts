@@ -16,12 +16,13 @@ import {
 } from './dto/message-response.dto';
 import { MessageStatus } from '@prisma/client';
 import { encryptMessage, decryptMessage, isEncrypted } from './utils/encryption.util';
+import { MessagesGateway } from './messages.gateway';
 
 @Injectable()
 export class MessagesService {
   private readonly logger = new Logger(MessagesService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private gateway: MessagesGateway) {}
 
   /**
    * Send a message
@@ -165,7 +166,21 @@ export class MessagesService {
       `✅ Message sent from ${senderId} to ${createMessageDto.receiverId}`,
     );
 
-    return this.mapToResponse(message, decryptedContent);
+    const response = this.mapToResponse(message, decryptedContent);
+    // Emit realtime event
+    try {
+      this.gateway.emitMessageCreated({
+        id: response.id,
+        senderId: response.senderId,
+        receiverId: response.receiverId,
+        payload: response,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Failed to emit messages:new event: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
+    }
+    return response;
   }
 
   /**
@@ -512,10 +527,22 @@ export class MessagesService {
         `✅ Marked ${result.count} messages as read for user ${userId}`,
       );
 
-      return {
+      const resultPayload = {
         message: 'Messages marked as read',
         count: result.count,
       };
+      // Emit realtime read event (fire-and-forget)
+      try {
+        this.gateway.emitConversationRead({
+          readerId: userId,
+          partnerId: conversationPartnerId,
+        });
+      } catch (err) {
+        this.logger.warn(
+          `Failed to emit messages:read event: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
+      }
+      return resultPayload;
     } catch (error) {
       this.logger.error(
         `Failed to mark messages as read: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -771,7 +798,21 @@ export class MessagesService {
         throw new BadRequestException('Failed to decrypt message content');
       }
 
-      return this.mapToResponse(updatedMessage, decryptedContent);
+      const response = this.mapToResponse(updatedMessage, decryptedContent);
+      // Emit realtime event
+      try {
+        this.gateway.emitMessageUpdated({
+          id: response.id,
+          senderId: response.senderId,
+          receiverId: response.receiverId,
+          payload: response,
+        });
+      } catch (err) {
+        this.logger.warn(
+          `Failed to emit messages:updated event: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException || error instanceof BadRequestException) {
         throw error;
@@ -909,7 +950,21 @@ export class MessagesService {
         throw new BadRequestException('Failed to decrypt message content');
       }
 
-      return this.mapToResponse(deletedMessage, decryptedContent);
+      const response = this.mapToResponse(deletedMessage, decryptedContent);
+      // Emit realtime event
+      try {
+        this.gateway.emitMessageDeleted({
+          id: response.id,
+          senderId: response.senderId,
+          receiverId: response.receiverId,
+          payload: response,
+        });
+      } catch (err) {
+        this.logger.warn(
+          `Failed to emit messages:deleted event: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
+      }
+      return response;
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException || error instanceof BadRequestException) {
         throw error;

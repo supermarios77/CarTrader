@@ -21,6 +21,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 import { ArrowLeft, Send, User, Car, Edit2, Trash2, X, Check } from 'lucide-react';
+import { onSocket } from '@/lib/socket-client';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -111,6 +112,45 @@ export default function ConversationPage() {
       abortController.abort();
     };
   }, [isAuthenticated, partnerId, vehicleId]);
+
+  // Realtime updates
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    // New or updated messages
+    const offNew = onSocket<Message>('messages:new', (msg) => {
+      if (!isMountedRef.current) return;
+      // Only append if this message belongs to this conversation (by partner)
+      const otherId = msg.senderId === user?.id ? msg.receiverId : msg.senderId;
+      if (otherId !== partnerId) return;
+      setMessages((prev) => {
+        // Prevent duplicates
+        if (prev.find((m) => m.id === msg.id)) return prev.map((m) => (m.id === msg.id ? msg : m));
+        return [...prev, msg];
+      });
+    });
+    const offUpdated = onSocket<Message>('messages:updated', (msg) => {
+      if (!isMountedRef.current) return;
+      const otherId = msg.senderId === user?.id ? msg.receiverId : msg.senderId;
+      if (otherId !== partnerId) return;
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+    });
+    const offDeleted = onSocket<Message>('messages:deleted', (msg) => {
+      if (!isMountedRef.current) return;
+      const otherId = msg.senderId === user?.id ? msg.receiverId : msg.senderId;
+      if (otherId !== partnerId) return;
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+    });
+    // Read receipts can be used to optimistically update UI if needed
+    const offRead = onSocket<{ readerId: string; partnerId: string }>('messages:read', () => {
+      // No-op here; we already mark as read on fetch
+    });
+    return () => {
+      offNew();
+      offUpdated();
+      offDeleted();
+      offRead();
+    };
+  }, [isAuthenticated, partnerId, user?.id]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
