@@ -1,5 +1,4 @@
 'use client';
-/* eslint-disable @next/next/no-img-element */
 
 /**
  * Vehicle Detail Page
@@ -7,6 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getVehicle, deleteVehicle, publishVehicle, markVehicleAsSold } from '@/lib/vehicles-api';
@@ -194,27 +194,32 @@ export default function VehicleDetailPage() {
                   const n = imgs.length;
                   if (n === 1) {
                     return (
-                      <img
-                        src={imgs[0].url}
-                        alt={imgs[0].alt || vehicle.title}
-                        className="h-[480px] w-full rounded-xl object-cover"
-                        loading="eager"
-                        decoding="async"
-                      />
+                      <div className="relative h-[480px] w-full overflow-hidden rounded-xl">
+                        <Image
+                          src={imgs[0].url}
+                          alt={imgs[0].alt || vehicle.title}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 800px"
+                          className="object-cover"
+                          priority
+                        />
+                      </div>
                     );
                   }
                   if (n === 2) {
                     return (
                       <div className="grid grid-cols-2 gap-2">
                         {imgs.slice(0, 2).map((img) => (
-                          <img
-                            key={img.id}
-                            src={img.url}
-                            alt={img.alt || vehicle.title}
-                            className="h-[420px] w-full rounded-xl object-cover"
-                            loading="eager"
-                            decoding="async"
-                          />
+                          <div key={img.id} className="relative h-[420px] w-full overflow-hidden rounded-xl">
+                            <Image
+                              src={img.url}
+                              alt={img.alt || vehicle.title}
+                              fill
+                              sizes="(max-width: 1024px) 50vw, 600px"
+                              className="object-cover"
+                              priority
+                            />
+                          </div>
                         ))}
                       </div>
                     );
@@ -223,24 +228,28 @@ export default function VehicleDetailPage() {
                     return (
                       <div className="grid grid-cols-3 gap-2">
                         <div className="col-span-2">
-                          <img
-                            src={imgs[0].url}
-                            alt={imgs[0].alt || vehicle.title}
-                            className="h-[420px] w-full rounded-xl object-cover"
-                            loading="eager"
-                            decoding="async"
-                          />
+                          <div className="relative h-[420px] w-full overflow-hidden rounded-xl">
+                            <Image
+                              src={imgs[0].url}
+                              alt={imgs[0].alt || vehicle.title}
+                              fill
+                              sizes="(max-width: 1024px) 66vw, 800px"
+                              className="object-cover"
+                              priority
+                            />
+                          </div>
                         </div>
                         <div className="col-span-1 grid grid-rows-2 gap-2">
                           {imgs.slice(1, 3).map((img) => (
-                            <img
-                              key={img.id}
-                              src={img.url}
-                              alt={img.alt || vehicle.title}
-                              className="h-[206px] w-full rounded-xl object-cover"
-                              loading="lazy"
-                              decoding="async"
-                            />
+                            <div key={img.id} className="relative h-[206px] w-full overflow-hidden rounded-xl">
+                              <Image
+                                src={img.url}
+                                alt={img.alt || vehicle.title}
+                                fill
+                                sizes="(max-width: 1024px) 33vw, 400px"
+                                className="object-cover"
+                              />
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -250,24 +259,28 @@ export default function VehicleDetailPage() {
                   return (
                     <div className="grid grid-cols-4 gap-2">
                       <div className="col-span-4 md:col-span-3">
-                        <img
-                          src={imgs[0].url}
-                          alt={imgs[0].alt || vehicle.title}
-                          className="h-[420px] w-full rounded-xl object-cover"
-                          loading="eager"
-                          decoding="async"
-                        />
+                        <div className="relative h-[420px] w-full overflow-hidden rounded-xl">
+                          <Image
+                            src={imgs[0].url}
+                            alt={imgs[0].alt || vehicle.title}
+                            fill
+                            sizes="(max-width: 1024px) 75vw, 900px"
+                            className="object-cover"
+                            priority
+                          />
+                        </div>
                       </div>
                       <div className="col-span-4 grid grid-cols-4 gap-2 md:col-span-1 md:grid-cols-1">
                         {imgs.slice(1, 5).map((img) => (
-                          <img
-                            key={img.id}
-                            src={img.url}
-                            alt={img.alt || vehicle.title}
-                            className="h-24 w-full rounded-lg object-cover"
-                            loading="lazy"
-                            decoding="async"
-                          />
+                          <div key={img.id} className="relative h-24 w-full overflow-hidden rounded-lg">
+                            <Image
+                              src={img.url}
+                              alt={img.alt || vehicle.title}
+                              fill
+                              sizes="200px"
+                              className="object-cover"
+                            />
+                          </div>
                         ))}
                       </div>
                     </div>
