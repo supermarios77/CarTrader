@@ -142,12 +142,27 @@ export default function VehicleDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Link href="/vehicles" className="mb-6 inline-block">
-          <Button variant="ghost">← Back to Listings</Button>
-        </Link>
+    <div className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-7xl px-6 py-8 lg:px-12">
+        {/* Breadcrumb / Back */}
+        <div className="mb-6 flex items-center justify-between">
+          <Link href="/vehicles" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white">
+            ← Back to Listings
+          </Link>
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(window.location.href);
+              } catch {
+                // ignore
+              }
+            }}
+            className="rounded-md border border-white/10 px-3 py-1 text-xs text-gray-300 hover:bg-white/5"
+            aria-label="Copy link"
+          >
+            Copy Link
+          </button>
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
@@ -171,45 +186,98 @@ export default function VehicleDetailPage() {
             </div>
 
             {/* Images */}
-            <Card>
-              <CardContent className="p-0">
-                {vehicle.images && vehicle.images.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2 p-2">
-                    <div className="col-span-2 relative">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-2">
+              {vehicle.images && vehicle.images.length > 0 ? (
+                (() => {
+                  const imgs = vehicle.images;
+                  const n = imgs.length;
+                  if (n === 1) {
+                    return (
                       <img
-                        src={vehicle.images[0].url}
-                        alt={vehicle.images[0].alt || vehicle.title}
-                        className="h-96 w-full rounded-lg object-cover"
+                        src={imgs[0].url}
+                        alt={imgs[0].alt || vehicle.title}
+                        className="h-[480px] w-full rounded-xl object-cover"
                         loading="eager"
                         decoding="async"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23ddd" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="20" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EImage not available%3C/text%3E%3C/svg%3E';
-                        }}
                       />
+                    );
+                  }
+                  if (n === 2) {
+                    return (
+                      <div className="grid grid-cols-2 gap-2">
+                        {imgs.slice(0, 2).map((img) => (
+                          <img
+                            key={img.id}
+                            src={img.url}
+                            alt={img.alt || vehicle.title}
+                            className="h-[420px] w-full rounded-xl object-cover"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        ))}
+                      </div>
+                    );
+                  }
+                  if (n === 3) {
+                    return (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-2">
+                          <img
+                            src={imgs[0].url}
+                            alt={imgs[0].alt || vehicle.title}
+                            className="h-[420px] w-full rounded-xl object-cover"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        </div>
+                        <div className="col-span-1 grid grid-rows-2 gap-2">
+                          {imgs.slice(1, 3).map((img) => (
+                            <img
+                              key={img.id}
+                              src={img.url}
+                              alt={img.alt || vehicle.title}
+                              className="h-[206px] w-full rounded-xl object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  // 4 or more
+                  return (
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="col-span-4 md:col-span-3">
+                        <img
+                          src={imgs[0].url}
+                          alt={imgs[0].alt || vehicle.title}
+                          className="h-[420px] w-full rounded-xl object-cover"
+                          loading="eager"
+                          decoding="async"
+                        />
+                      </div>
+                      <div className="col-span-4 grid grid-cols-4 gap-2 md:col-span-1 md:grid-cols-1">
+                        {imgs.slice(1, 5).map((img) => (
+                          <img
+                            key={img.id}
+                            src={img.url}
+                            alt={img.alt || vehicle.title}
+                            className="h-24 w-full rounded-lg object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ))}
+                      </div>
                     </div>
-                    {vehicle.images.slice(1, 5).map((image) => (
-                      <img
-                        key={image.id}
-                        src={image.url}
-                        alt={image.alt || vehicle.title}
-                        className="h-48 w-full rounded-lg object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23ddd" width="200" height="150"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" dy="10.5" font-weight="bold" x="50%25" y="50%25" text-anchor="middle"%3EN/A%3C/text%3E%3C/svg%3E';
-                        }}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex h-96 items-center justify-center bg-muted text-muted-foreground">
-                    No Images Available
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  );
+                })()
+              ) : (
+                <div className="flex h-[420px] items-center justify-center text-gray-400">
+                  No Images Available
+                </div>
+              )}
+            </div>
 
             {/* Description */}
             <Card>
@@ -244,7 +312,7 @@ export default function VehicleDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-6 lg:sticky lg:top-20">
             {/* Price & Info Card */}
             <Card>
               <CardHeader>
