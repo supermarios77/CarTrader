@@ -26,7 +26,10 @@ import {
 export default function EditVehiclePage() {
   const params = useParams();
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const authCtx = useAuth() as any;
+  const user = authCtx?.user;
+  const isAuthenticated = Boolean(authCtx?.isAuthenticated);
+  const authLoading = Boolean(authCtx?.authLoading ?? authCtx?.loading);
   const vehicleId = params.id as string;
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
@@ -214,10 +217,31 @@ export default function EditVehiclePage() {
     };
   }, [formData.makeId, vehicle]);
 
-  // Redirect if not authenticated
+  // Wait for auth to resolve first to avoid redirect/jitter on refresh
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-5xl px-6 py-10">
+          <div className="h-8 w-40 animate-pulse rounded bg-white/10" />
+          <div className="mt-4 h-96 animate-pulse rounded-xl border border-white/10 bg-white/5" />
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated after loading → show CTA instead of redirect to prevent loops
   if (!isAuthenticated) {
-    router.push('/login');
-    return null;
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-5xl px-6 py-10">
+          <h1 className="mb-2 text-3xl font-black">Edit Listing</h1>
+          <p className="mb-6 text-gray-400">Please sign in to edit your listing.</p>
+          <a href={`/login?redirect=/vehicles/${vehicleId}/edit`}>
+            <Button className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">Sign In</Button>
+          </a>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
