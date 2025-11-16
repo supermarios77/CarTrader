@@ -337,8 +337,8 @@ export default function EditVehiclePage() {
   const existingImages = vehicle?.images?.filter(img => !imagesToDelete.includes(img.id)) || [];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto max-w-5xl px-6 py-12">
         {/* Header */}
         <div className="mb-8">
           <Link href={`/vehicles/${vehicleId}`}>
@@ -352,7 +352,7 @@ export default function EditVehiclePage() {
 
         {/* Error Message */}
         {error && (
-          <Card className="mb-6 border-destructive/50 bg-destructive/10">
+          <Card className="mb-8 border-destructive/50 bg-destructive/10" role="status" aria-live="polite">
             <CardContent className="pt-6">
               <p className="text-destructive">{error}</p>
             </CardContent>
@@ -361,13 +361,13 @@ export default function EditVehiclePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Basic Information */}
             <Card>
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div>
                   <Label htmlFor="title">Title *</Label>
                   <Input
@@ -394,7 +394,7 @@ export default function EditVehiclePage() {
                   />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="price">Price (PKR) *</Label>
                     <Input
@@ -423,7 +423,7 @@ export default function EditVehiclePage() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="mileage">Mileage *</Label>
                     <Input
@@ -459,8 +459,8 @@ export default function EditVehiclePage() {
               <CardHeader>
                 <CardTitle>Specifications</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
+              <CardContent className="space-y-6">
+                <div className="grid gap-5 sm:grid-cols-3">
                   <div>
                     <Label htmlFor="transmission">Transmission *</Label>
                     <select
@@ -516,7 +516,7 @@ export default function EditVehiclePage() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="engineCapacity">Engine Capacity (CC)</Label>
                     <Input
