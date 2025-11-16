@@ -47,6 +47,18 @@ export function getSocket(): Socket {
       console.log('[socket] connect_error:', err.message);
     });
   }
+  // Always refresh token before reconnect attempts
+  type MutableAuthSocket = Socket & { auth: { token?: string } };
+  socket.on('reconnect_attempt', () => {
+    try {
+      const fresh = getAccessToken();
+      // mutate auth payload so server sees latest token
+      // socket.io reads this object on each connect attempt
+      (socket as MutableAuthSocket).auth = { token: fresh };
+    } catch {
+      // ignore
+    }
+  });
 
   return socket;
 }

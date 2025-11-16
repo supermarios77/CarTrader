@@ -199,21 +199,11 @@ export default function ConversationPage() {
         content,
       });
 
-      // Only update state if component is still mounted
+        // Only update state if component is still mounted
       if (!isMountedRef.current) return;
 
-      // Add to messages list
-      setMessages((prev) => [...prev, newMessage]);
-
-      // Scroll to bottom
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-      scrollTimeoutRef.current = setTimeout(() => {
-        if (messagesEndRef.current && isMountedRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+        // Do not append here to avoid duplicates; the realtime 'messages:new'
+        // event will deliver the created message to both participants promptly.
     } catch (err) {
       // Only update state if component is still mounted
       if (!isMountedRef.current) return;
