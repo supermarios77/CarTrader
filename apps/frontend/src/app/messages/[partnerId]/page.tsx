@@ -323,7 +323,7 @@ export default function ConversationPage() {
   // Wait for auth to load before showing anything or making redirect decisions
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+      <div className="min-h-screen bg-black">
         <div className="container mx-auto max-w-4xl px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-12 bg-muted rounded-lg" />
@@ -342,7 +342,7 @@ export default function ConversationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+      <div className="min-h-screen bg-black">
         <div className="container mx-auto max-w-4xl px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-12 bg-muted rounded-lg" />
@@ -354,7 +354,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
+    <div className="min-h-screen bg-black">
       <div className="container mx-auto max-w-5xl px-6 py-8">
         {/* Header */}
         <div className="mb-6">
@@ -413,10 +413,7 @@ export default function ConversationPage() {
         {/* Messages */}
         <Card className="mb-4 border-white/10 bg-white/5">
           <CardContent className="p-0">
-            <div
-              ref={messagesContainerRef}
-              className="h-[620px] overflow-y-auto p-6 space-y-5"
-            >
+            <div ref={messagesContainerRef} className="h[620px] overflow-y-auto p-6 space-y-5">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
@@ -425,18 +422,36 @@ export default function ConversationPage() {
                   </div>
                 </div>
               ) : (
-                messages.map((message) => {
+                messages.map((message, idx) => {
                   const isOwnMessage = message.senderId === user?.id;
                   const isDeleted = !!message.deletedAt;
                   const isEdited = !!message.editedAt;
                   const isEditing = editingMessageId === message.id;
                   const isDeleting = deletingMessageId === message.id;
+                  // Date divider
+                  let showDateDivider = false;
+                  if (idx === 0) {
+                    showDateDivider = true;
+                  } else {
+                    const prev = messages[idx - 1];
+                    const d1 = new Date(prev.createdAt);
+                    const d2 = new Date(message.createdAt);
+                    showDateDivider =
+                      d1.getFullYear() !== d2.getFullYear() ||
+                      d1.getMonth() !== d2.getMonth() ||
+                      d1.getDate() !== d2.getDate();
+                  }
 
                   return (
-                    <div
-                      key={message.id}
-                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end gap-2 group`}
-                    >
+                    <div key={message.id}>
+                      {showDateDivider && (
+                        <div className="my-2 flex items-center justify-center">
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-0.5 text-xs text-gray-300">
+                            {new Date(message.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      <div className={`mt-1 flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end gap-2 group`}>
                       {!isOwnMessage && (
                         <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xs text-gray-300">
                           {getPartnerName(message).slice(0, 2).toUpperCase()}
@@ -561,6 +576,7 @@ export default function ConversationPage() {
                           You
                         </div>
                       )}
+                      </div>
                     </div>
                   );
                 })

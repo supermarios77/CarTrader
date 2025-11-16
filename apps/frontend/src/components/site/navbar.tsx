@@ -43,7 +43,6 @@ export function Navbar() {
     () => [
       { href: '/vehicles', label: 'Buy' },
       { href: '/post', label: 'Sell' },
-      { href: '/compare', label: 'Compare' },
       { href: '/reviews', label: 'Reviews' },
     ],
     [],
