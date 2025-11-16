@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 type Car = {
@@ -12,6 +13,41 @@ type Car = {
 };
 
 export function LandingListings({ cars }: { cars: Car[] }) {
+  function ImageWithSkeleton({
+    src,
+    alt,
+    className,
+  }: {
+    src: string;
+    alt: string;
+    className?: string;
+  }) {
+    const [loaded, setLoaded] = useState(false);
+    const [error, setError] = useState(false);
+    const displaySrc = !error && src ? src : '/placeholder.svg';
+    return (
+      <div className={`relative ${className || ''}`}>
+        {/* Skeleton */}
+        {!loaded && (
+          <div className="absolute inset-0 animate-pulse bg-white/10" aria-hidden="true" />
+        )}
+        {/* Image */}
+        <img
+          src={displaySrc}
+          alt={alt}
+          className={`h-full w-full object-cover transition-opacity duration-300 ${
+            loaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            setError(true);
+            setLoaded(true);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <section className="mb-16">
       <div className="mb-6 flex items-center justify-between">
@@ -34,25 +70,30 @@ export function LandingListings({ cars }: { cars: Car[] }) {
                 FEATURED
               </div>
             )}
-            <div className="relative h-40 overflow-hidden">
-              <img
+            {/* Image takes more vertical space; subtle gradient overlay for text legibility */}
+            <div className="relative overflow-hidden aspect-[16/10] md:aspect-[16/9]">
+              <ImageWithSkeleton
                 src={car.image || '/placeholder.svg'}
                 alt={car.name}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="h-full w-full"
               />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0" />
+              {/* Price badge on image */}
+              <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-cyan-300 ring-1 ring-white/10 backdrop-blur">
+                {car.price}
+              </div>
             </div>
-            <div className="p-6">
-              <h3 className="mb-2 text-lg font-bold transition-colors group-hover:text-cyan-400">
+            <div className="p-5">
+              <h3 className="mb-1 line-clamp-1 text-base font-semibold transition-colors group-hover:text-cyan-400">
                 {car.name}
               </h3>
-              <div className="mb-4 text-2xl font-black text-cyan-400">{car.price}</div>
-              <div className="mb-4 flex justify-between text-sm text-gray-400">
+              <div className="mb-3 flex justify-between text-xs text-gray-400">
                 <span>{car.year}</span>
                 <span>{car.mileage}</span>
               </div>
               <Button
                 variant="outline"
-                className="w-full rounded-lg border-white/20 bg-transparent py-3 font-semibold text-white hover:bg-white/10"
+                className="w-full rounded-lg border-white/20 bg-transparent py-2.5 text-sm font-semibold text-white hover:bg-white/10"
               >
                 View Details
               </Button>

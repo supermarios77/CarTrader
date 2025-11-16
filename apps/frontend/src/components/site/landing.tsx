@@ -8,6 +8,7 @@ import { LandingBrands } from './landing/brands';
 import { LandingCta } from './landing/cta';
 import { getFeaturedVehicles } from '@/lib/vehicles-api';
 import type { Vehicle } from '@/types/vehicle';
+import { getAllMakes, type Make } from '@/lib/catalog-api';
 
 // Local card view model used only when mapping API data
 type Car = {
@@ -20,26 +21,13 @@ type Car = {
   featured: boolean;
 };
 
-const BRANDS = [
-  'Honda',
-  'Toyota',
-  'Suzuki',
-  'Hyundai',
-  'KIA',
-  'Daihatsu',
-  'BMW',
-  'Mercedes',
-  'Audi',
-  'Lexus',
-  'Subaru',
-  'Volkswagen',
-];
-
 export function Landing() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [featured, setFeatured] = useState<Vehicle[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [brands, setBrands] = useState<Make[] | null>(null);
+  const [brandsError, setBrandsError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -56,6 +44,18 @@ export function Landing() {
         setFeatured(null);
       } finally {
         if (active) setLoading(false);
+      }
+    })();
+    // Load makes (brands)
+    (async () => {
+      try {
+        setBrandsError(null);
+        const list = await getAllMakes();
+        if (!active) return;
+        setBrands(list);
+      } catch (e) {
+        if (!active) return;
+        setBrandsError(e instanceof Error ? e.message : 'Failed to load brands');
       }
     })();
     return () => {
@@ -122,7 +122,18 @@ export function Landing() {
         )}
 
         {/* Brands */}
-        <LandingBrands brands={BRANDS} selected={selectedBrand} onSelect={setSelectedBrand} />
+        {brandsError && (
+          <div className="mb-6 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-300">
+            Failed to load brands. {brandsError}
+          </div>
+        )}
+        {brands && brands.length > 0 && (
+          <LandingBrands
+            brands={brands.map((m) => ({ id: m.id, name: m.name }))}
+            selected={selectedBrand}
+            onSelect={setSelectedBrand}
+          />
+        )}
 
         {/* CTA */}
         <LandingCta />

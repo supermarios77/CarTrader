@@ -42,6 +42,51 @@ export async function getMakes(categoryId: string): Promise<Make[]> {
 }
 
 /**
+ * Get all makes across categories (robust helper)
+ * - Tries /catalog/makes with no params (if backend supports it)
+ * - Falls back to fetching categories and aggregating makes per category
+ */
+export async function getAllMakes(): Promise<Make[]> {
+  try {
+    const direct = await api.get<Make[]>('/catalog/makes');
+    if (Array.isArray(direct) && direct.length) {
+      // Deduplicate by slug/name in case API returns overlaps
+      const byKey = new Map<string, Make>();
+      for (const m of direct) {
+        const key = (m.slug || m.name || '').trim().toLowerCase();
+        if (!key) continue;
+        if (!byKey.has(key)) byKey.set(key, m);
+      }
+      // Sort alphabetically by name
+      return Array.from(byKey.values()).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
+    }
+  } catch {
+    // ignore; try by categories
+  }
+  const categories = await getCategories();
+  const results: Make[] = [];
+  for (const cat of categories) {
+    try {
+      const makes = await getMakes(cat.id);
+      results.push(...makes);
+    } catch {
+      // ignore a single category failure
+    }
+  }
+  // Deduplicate by slug/name (ids may differ across categories)
+  const byKey = new Map<string, Make>();
+  for (const m of results) {
+    const key = (m.slug || m.name || '').trim().toLowerCase();
+    if (!key) continue;
+    if (!byKey.has(key)) byKey.set(key, m);
+  }
+  // Stable alphabetical sort
+  return Array.from(byKey.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
  * Get models for a specific make
  */
 export async function getModels(makeId: string): Promise<Model[]> {
