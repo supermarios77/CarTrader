@@ -214,7 +214,8 @@ export default function SellVehiclePage() {
           color: color.trim() || undefined,
           latitude: latitude ? Number(latitude) : undefined,
           longitude: longitude ? Number(longitude) : undefined,
-          features,
+          // Do not include features when empty to avoid backend coercion issues
+          ...(features.length > 0 ? { features } : {}),
         } as any,
         images,
       );

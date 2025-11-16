@@ -60,14 +60,23 @@ export async function createVehicle(
   const formData = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (key === 'features' && Array.isArray(value)) {
-        formData.append(key, JSON.stringify(value));
-      } else if (typeof value === 'object') {
-        formData.append(key, JSON.stringify(value));
-      } else {
-        formData.append(key, String(value));
-      }
+    if (value === undefined || value === null) return;
+    if (key === 'features' && Array.isArray(value)) {
+      // Append as bracketed fields so backend validators see an array, not a JSON string
+      if (value.length === 0) return; // omit when empty
+      value.forEach((feat: any, idx: number) => {
+        if (!feat || typeof feat !== 'object') return;
+        if (typeof feat.name === 'string' && feat.name.trim().length > 0) {
+          formData.append(`features[${idx}][name]`, feat.name);
+        }
+        if (typeof feat.value === 'string' && feat.value.trim().length > 0) {
+          formData.append(`features[${idx}][value]`, feat.value);
+        }
+      });
+    } else if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, String(value));
     }
   });
 
@@ -90,16 +99,25 @@ export async function updateVehicle(
   const formData = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (key === 'features' && Array.isArray(value)) {
-        formData.append(key, JSON.stringify(value));
-      } else if (key === 'imageIdsToDelete' && Array.isArray(value)) {
-        formData.append(key, JSON.stringify(value));
-      } else if (typeof value === 'object') {
-        formData.append(key, JSON.stringify(value));
-      } else {
-        formData.append(key, String(value));
+    if (value === undefined || value === null) return;
+    if (key === 'features' && Array.isArray(value)) {
+      if (value.length > 0) {
+        value.forEach((feat: any, idx: number) => {
+          if (!feat || typeof feat !== 'object') return;
+          if (typeof feat.name === 'string' && feat.name.trim().length > 0) {
+            formData.append(`features[${idx}][name]`, feat.name);
+          }
+          if (typeof feat.value === 'string' && feat.value.trim().length > 0) {
+            formData.append(`features[${idx}][value]`, feat.value);
+          }
+        });
       }
+    } else if (key === 'imageIdsToDelete' && Array.isArray(value)) {
+      formData.append(key, JSON.stringify(value));
+    } else if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, String(value));
     }
   });
 
