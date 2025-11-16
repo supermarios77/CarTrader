@@ -10,6 +10,7 @@ import { LandingListings } from '@/components/site/landing/listings';
 type Filters = {
   search?: string;
   city?: string;
+  makeId?: string;
   minPrice?: number;
   maxPrice?: number;
   page?: number;
@@ -52,6 +53,7 @@ export default function VehiclesPage() {
 
   // Local UI state mirrors query params
   const [query, setQuery] = useState<string>(searchParams.get('search') || '');
+  const [makeId, setMakeId] = useState<string | null>(searchParams.get('makeId'));
   const [city, setCity] = useState<string>(searchParams.get('city') || CITIES[0]);
   const [priceKey, setPriceKey] = useState<string>(() => {
     const min = searchParams.get('minPrice');
@@ -75,6 +77,7 @@ export default function VehiclesPage() {
   function toFilters(): Filters {
     const f: Filters = { page, limit };
     if (query.trim()) f.search = query.trim();
+    if (makeId) f.makeId = makeId;
     if (city && city !== 'All Cities') f.city = city;
     if (selectedRange.min !== undefined) f.minPrice = selectedRange.min;
     if (selectedRange.max !== undefined) f.maxPrice = selectedRange.max;
@@ -108,6 +111,7 @@ export default function VehiclesPage() {
   function pushUrl(f: Filters) {
     const params = new URLSearchParams();
     if (f.search) params.set('search', f.search);
+    if (f.makeId) params.set('makeId', f.makeId);
     if (f.city) params.set('city', f.city);
     if (f.minPrice !== undefined) params.set('minPrice', String(f.minPrice));
     if (f.maxPrice !== undefined) params.set('maxPrice', String(f.maxPrice));
@@ -150,12 +154,14 @@ export default function VehiclesPage() {
   const totalResults = data?.pagination?.total || 0;
   const hasActiveFilters =
     (query && query.trim().length > 0) ||
+    Boolean(makeId) ||
     (city && city !== 'All Cities') ||
     (PRICE_RANGES.find((r) => r.label === priceKey) !== PRICE_RANGES[0]) ||
     (sort && sort !== 'latest');
 
   function clearFilters() {
     setQuery('');
+    setMakeId(null);
     setCity(CITIES[0]);
     setPriceKey(PRICE_RANGES[0].label);
     setSort('latest');
@@ -307,6 +313,11 @@ export default function VehiclesPage() {
               <div className="flex flex-wrap gap-2">
                 {hasActiveFilters && (
                   <>
+                    {makeId && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
+                        Make selected
+                      </span>
+                    )}
                     {query.trim() && (
                       <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
                         {query}

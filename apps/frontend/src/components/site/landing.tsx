@@ -120,9 +120,7 @@ export function Landing() {
         )}
         {brands && brands.length > 0 && (
           <LandingBrands
-            brands={brands.map((m) => ({ id: m.id, name: m.name }))}
-            selected={selectedBrand}
-            onSelect={setSelectedBrand}
+            brands={brands.map((m) => ({ id: m.id, name: m.name, slug: (m as any).slug, logo: (m as any).logo }))}
           />
         )}
 
