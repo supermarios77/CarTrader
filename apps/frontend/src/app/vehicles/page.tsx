@@ -420,7 +420,7 @@ export default function VehiclesPage() {
             {view === 'grid' ? (
               <LandingListings
                 cars={data.vehicles.map((v: Vehicle) => ({
-                  id: Number.isNaN(Number(v.id)) ? iHash(v.id) : (Number(v.id) as number),
+                  id: String(v.id),
                   name: v.title,
                   price: `${v.currency} ${Number(v.price).toLocaleString()}`,
                   year: String(v.year),

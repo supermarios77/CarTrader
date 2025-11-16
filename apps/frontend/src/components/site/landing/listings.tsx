@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 type Car = {
-  id: number;
+  id: string;
   name: string;
   price: string;
   year: string;
@@ -14,7 +14,7 @@ type Car = {
 };
 
 type CardItem = {
-  id: number;
+  id: string;
   name: string;
   price: string;
   year: string;

@@ -92,7 +92,7 @@ export function Landing() {
         ) : featured && featured.length > 0 ? (
           <LandingListings
             cars={featured.map((v) => ({
-              id: Number.isNaN(Number(v.id)) ? Math.random() : Number((v.id as unknown) as number) || iHash(v.id),
+              id: String(v.id),
               name: v.title,
               price: `${v.currency} ${Number(v.price).toLocaleString()}`,
               year: String(v.year),
