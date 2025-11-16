@@ -1,7 +1,3 @@
-/**
- * Vehicles API - Client functions for vehicle endpoints
- */
-
 import { api } from './api-client';
 import type {
   Vehicle,
@@ -173,5 +169,13 @@ export async function publishVehicle(id: string): Promise<Vehicle> {
  */
 export async function markVehicleAsSold(id: string, notes?: string): Promise<Vehicle> {
   return api.post<Vehicle>(`/vehicles/${id}/sold`, { notes });
+}
+
+/**
+ * Convenience: get featured vehicles list (defaults to 8)
+ */
+export async function getFeaturedVehicles(limit = 8): Promise<Vehicle[]> {
+  const resp = await getVehicles({ featured: true, limit, status: undefined });
+  return resp.vehicles;
 }
 

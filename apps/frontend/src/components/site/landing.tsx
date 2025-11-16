@@ -6,7 +6,10 @@ import { LandingFeatures } from './landing/features';
 import { LandingListings } from './landing/listings';
 import { LandingBrands } from './landing/brands';
 import { LandingCta } from './landing/cta';
+import { getFeaturedVehicles } from '@/lib/vehicles-api';
+import type { Vehicle } from '@/types/vehicle';
 
+// Local card view model used only when mapping API data
 type Car = {
   id: number;
   name: string;
@@ -16,45 +19,6 @@ type Car = {
   image: string;
   featured: boolean;
 };
-
-const POPULAR_CARS: Car[] = [
-  {
-    id: 1,
-    name: 'Honda City 2024',
-    price: 'PKR 2,850,000',
-    year: '2024',
-    mileage: 'Brand New',
-    image: '/honda-city-silver.jpg',
-    featured: true,
-  },
-  {
-    id: 2,
-    name: 'Toyota Corolla 2023',
-    price: 'PKR 2,450,000',
-    year: '2023',
-    mileage: '5,000 km',
-    image: '/toyota-corolla-white.jpg',
-    featured: false,
-  },
-  {
-    id: 3,
-    name: 'Suzuki Cultus 2022',
-    price: 'PKR 1,850,000',
-    year: '2022',
-    mileage: '25,000 km',
-    image: '/suzuki-cultus-red.jpg',
-    featured: false,
-  },
-  {
-    id: 4,
-    name: 'Hyundai Elantra 2024',
-    price: 'PKR 3,200,000',
-    year: '2024',
-    mileage: '8,000 km',
-    image: '/hyundai-elantra-black.jpg',
-    featured: true,
-  },
-];
 
 const BRANDS = [
   'Honda',
@@ -71,19 +35,47 @@ const BRANDS = [
   'Volkswagen',
 ];
 
-const FEATURES = [
-  { icon: '✓', title: 'Verified Sellers', desc: 'All dealers verified' },
-  { icon: '🔒', title: 'Secure Payments', desc: 'Safe transaction' },
-  { icon: '📋', title: 'Complete History', desc: 'Full vehicle report' },
-  { icon: '🚗', title: '5000+ Cars', desc: 'Browse inventory' },
-];
-
 export function Landing() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [featured, setFeatured] = useState<Vehicle[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getFeaturedVehicles(8);
+        if (!active) return;
+        setFeatured(data);
+      } catch (e) {
+        if (!active) return;
+        setError(e instanceof Error ? e.message : 'Failed to load featured vehicles');
+        setFeatured(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Simple hash for stable numeric id fallback
+  function iHash(s: string): number {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) {
+      h = (h << 5) - h + s.charCodeAt(i);
+      h |= 0;
+    }
+    return Math.abs(h);
+  }
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-black to-black" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-cyan-900/20 via-black to-black" />
 
       {/* Header lives in layout via Navbar; keeping this section empty intentionally */}
 
@@ -91,8 +83,43 @@ export function Landing() {
         <LandingHero />
         <LandingFeatures />
 
-        {/* Featured listings */}
-        <LandingListings cars={POPULAR_CARS} />
+        {/* Featured listings - use real data when available, fallback to static */}
+        {error && (
+          <div className="mb-6 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+            {error}
+          </div>
+        )}
+        {loading ? (
+          <section className="mb-16">
+            <div className="mb-6 h-7 w-48 rounded bg-white/10" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-64 animate-pulse rounded-2xl border border-white/10 bg-white/5" />
+              ))}
+            </div>
+          </section>
+        ) : featured && featured.length > 0 ? (
+          <LandingListings
+            cars={featured.map((v) => ({
+              id: Number.isNaN(Number(v.id)) ? Math.random() : Number((v.id as unknown) as number) || iHash(v.id),
+              name: v.title,
+              price: `${v.currency} ${Number(v.price).toLocaleString()}`,
+              year: String(v.year),
+              mileage: v.mileage ? `${v.mileage.toLocaleString()} km` : '—',
+              image: v.images?.[0]?.url || '/placeholder.svg',
+              featured: Boolean(v.featured),
+            }))}
+          />
+        ) : (
+          <section className="mb-16">
+            <div className="mb-6">
+              <h2 className="text-2xl font-black sm:text-3xl">Featured Listings</h2>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-sm text-gray-400">
+              There are currently no featured vehicles. Check back soon.
+            </div>
+          </section>
+        )}
 
         {/* Brands */}
         <LandingBrands brands={BRANDS} selected={selectedBrand} onSelect={setSelectedBrand} />
