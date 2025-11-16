@@ -55,35 +55,36 @@ export function Navbar() {
   }
 
   return (
-    <header className="relative z-10 grid w-full grid-cols-[auto_1fr_auto] items-center px-6 lg:px-12 py-4 border-b border-white/5 bg-black">
+    <header className="relative z-10 grid w-full grid-cols-[auto_1fr_auto] items-center px-6 lg:px-12 py-4 border-b border-white/10 bg-black/80 backdrop-blur-md">
       <div className="flex items-center space-x-3">
         <Link href="/" className="flex items-center space-x-3" aria-label="Home">
-          <div className="w-10 h-10 rounded-lg bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-xl text-white">
+          <div className="h-9 w-9 rounded-md bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-base text-white ring-1 ring-white/10">
             PW
           </div>
-          <h1 className="text-xl font-bold md:text-2xl">PakWheels</h1>
+          <h1 className="text-lg font-semibold tracking-tight md:text-xl text-white">PakWheels</h1>
         </Link>
       </div>
 
-      <nav className="hidden md:flex items-center justify-center justify-self-center gap-6 text-sm font-medium">
+      <nav className="hidden md:flex items-center justify-center justify-self-center gap-7 text-sm font-medium">
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`relative px-1 transition-colors ${isActive(item.href) ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`group relative px-1 text-[0.95rem] transition-colors ${isActive(item.href) ? 'text-white' : 'text-gray-300 hover:text-white'}`}
             aria-current={isActive(item.href) ? 'page' : undefined}
           >
             {item.label}
             {isActive(item.href) && (
               <span className="pointer-events-none absolute -bottom-2 left-0 right-0 mx-auto h-[2px] w-6 rounded-full bg-emerald-500" />
             )}
+            <span className="pointer-events-none absolute -bottom-2 left-1/2 h-[2px] w-0 -translate-x-1/2 rounded-full bg-white/40 transition-all duration-300 group-hover:w-6" />
           </Link>
         ))}
       </nav>
 
       <div className="flex items-center gap-3 justify-self-end">
         <button
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 ring-white/10 hover:ring-white/20 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md ring-1 ring-white/10 hover:ring-white/20 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
           aria-label="Toggle menu"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
@@ -100,7 +101,7 @@ export function Navbar() {
           <AvatarCircle user={user} />
         ) : (
           <Link href="/login" className="hidden md:inline-block">
-            <Button className="bg-white text-black hover:bg-gray-100 font-semibold px-6 rounded-lg">
+            <Button className="bg-white text-black hover:bg-gray-100 font-semibold px-5 rounded-lg h-10">
               Sign In
             </Button>
           </Link>
@@ -114,16 +115,16 @@ export function Navbar() {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="fixed inset-x-0 top-0 z-50 rounded-b-2xl border-b border-white/10 bg-black p-4 shadow-2xl">
+          <div className="fixed inset-x-0 top-0 z-50 rounded-b-2xl border-b border-white/10 bg-black/90 backdrop-blur-md p-4 shadow-2xl">
             <div className="mb-2 flex items-center justify-between">
               <Link href="/" className="flex items-center space-x-3" onClick={() => setOpen(false)}>
-                <div className="w-9 h-9 rounded-lg bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-lg text-white">
+                <div className="h-9 w-9 rounded-md bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-lg text-white ring-1 ring-white/10">
                   PW
                 </div>
                 <span className="text-lg font-semibold">PakWheels</span>
               </Link>
               <button
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md ring-1 ring-white/10 hover:ring-white/20"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md ring-1 ring-white/10 hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
               >
