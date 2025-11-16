@@ -61,7 +61,7 @@ export function Navbar() {
           <div className="h-9 w-9 rounded-md bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-base text-white ring-1 ring-white/10">
             PW
           </div>
-          <h1 className="text-lg font-semibold tracking-tight md:text-xl text-white">PakWheels</h1>
+          <h1 className="text-lg font-semibold tracking-tight md:text-xl text-white">CarTrader</h1>
         </Link>
       </div>
 
@@ -121,7 +121,7 @@ export function Navbar() {
                 <div className="h-9 w-9 rounded-md bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-lg text-white ring-1 ring-white/10">
                   PW
                 </div>
-                <span className="text-lg font-semibold">PakWheels</span>
+                <span className="text-lg font-semibold">CarTrader</span>
               </Link>
               <button
                 className="inline-flex h-9 w-9 items-center justify-center rounded-md ring-1 ring-white/10 hover:ring-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60"
