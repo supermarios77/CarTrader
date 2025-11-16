@@ -355,7 +355,7 @@ export default function ConversationPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="container mx-auto max-w-5xl px-6 py-8">
         {/* Header */}
         <div className="mb-6">
           <Link href="/messages">
@@ -411,11 +411,11 @@ export default function ConversationPage() {
         )}
 
         {/* Messages */}
-        <Card className="mb-4">
+        <Card className="mb-4 border-white/10 bg-white/5">
           <CardContent className="p-0">
             <div
               ref={messagesContainerRef}
-              className="h-[600px] overflow-y-auto p-6 space-y-4"
+              className="h-[620px] overflow-y-auto p-6 space-y-5"
             >
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -435,13 +435,18 @@ export default function ConversationPage() {
                   return (
                     <div
                       key={message.id}
-                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} group`}
+                      className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end gap-2 group`}
                     >
+                      {!isOwnMessage && (
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xs text-gray-300">
+                          {getPartnerName(message).slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                       <div
-                        className={`max-w-[70%] rounded-lg p-4 relative ${
+                        className={`max-w-[70%] rounded-2xl p-4 relative shadow-sm ring-1 ${
                           isOwnMessage
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-foreground'
+                            ? 'bg-emerald-600/20 text-emerald-100 ring-emerald-500/20'
+                            : 'bg-white/5 text-white ring-white/10'
                         } ${isDeleted ? 'opacity-60' : ''}`}
                       >
                         {isEditing ? (
@@ -482,17 +487,17 @@ export default function ConversationPage() {
                                 This message was deleted
                               </p>
                             ) : (
-                              <p className="whitespace-pre-wrap wrap-break-word">
+                              <p className="whitespace-pre-wrap wrap-break-word leading-relaxed">
                                 {message.content}
                               </p>
                             )}
-                            <div className="flex items-center justify-between mt-2">
+                            <div className="mt-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <p
                                   className={`text-xs ${
                                     isOwnMessage
-                                      ? 'text-primary-foreground/70'
-                                      : 'text-muted-foreground'
+                                      ? 'text-emerald-200/70'
+                                      : 'text-gray-400'
                                   }`}
                                 >
                                   {formatDate(message.createdAt)}
@@ -501,8 +506,8 @@ export default function ConversationPage() {
                                   <span
                                     className={`text-xs ${
                                       isOwnMessage
-                                        ? 'text-primary-foreground/70'
-                                        : 'text-muted-foreground'
+                                        ? 'text-emerald-200/70'
+                                        : 'text-gray-400'
                                     }`}
                                     title={`Edited at ${new Date(message.editedAt).toLocaleString()}`}
                                   >
@@ -513,8 +518,8 @@ export default function ConversationPage() {
                                   <span
                                     className={`text-xs ${
                                       isOwnMessage
-                                        ? 'text-primary-foreground/70'
-                                        : 'text-muted-foreground'
+                                        ? 'text-emerald-200/70'
+                                        : 'text-gray-400'
                                     }`}
                                     title={`Deleted at ${new Date(message.deletedAt!).toLocaleString()}`}
                                   >
@@ -551,6 +556,11 @@ export default function ConversationPage() {
                           </>
                         )}
                       </div>
+                      {isOwnMessage && (
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs text-emerald-200">
+                          You
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -561,19 +571,23 @@ export default function ConversationPage() {
         </Card>
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage}>
-          <div className="flex gap-2">
+        <form onSubmit={handleSendMessage} aria-label="Send a message">
+          <div className="flex gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
             <Input
               value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
               placeholder="Type your message..."
               maxLength={5000}
               disabled={sending}
-              className="flex-1"
+              className="flex-1 bg-black/30 text-white placeholder:text-gray-400"
             />
-            <Button type="submit" disabled={!messageContent.trim() || sending}>
-              <Send className="h-4 w-4 mr-2" />
-              {sending ? 'Sending...' : 'Send'}
+            <Button
+              type="submit"
+              disabled={!messageContent.trim() || sending}
+              className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
+              aria-label="Send"
+            >
+              <Send className="h-4 w-4" />
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">

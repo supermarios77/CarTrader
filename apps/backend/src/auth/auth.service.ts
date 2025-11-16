@@ -176,7 +176,7 @@ export class AuthService {
 
       let accessToken: string | null = null;
       let retries = 3;
-
+      
       while (retries > 0) {
         accessToken = this.jwtService.sign(accessTokenPayload, {
           secret: getRequiredEnv('JWT_SECRET'),
@@ -234,18 +234,18 @@ export class AuthService {
     sessionId?: string,
   ): Promise<{ message: string }> {
     if (sessionId) {
-      // Verify session belongs to user
-      const session = await this.prisma.session.findFirst({
-        where: { id: sessionId, userId },
-      });
+    // Verify session belongs to user
+    const session = await this.prisma.session.findFirst({
+      where: { id: sessionId, userId },
+    });
 
-      if (!session) {
-        throw new BadRequestException('Session not found');
-      }
+    if (!session) {
+      throw new BadRequestException('Session not found');
+    }
 
-      await this.prisma.session.delete({
-        where: { id: sessionId },
-      });
+    await this.prisma.session.delete({
+      where: { id: sessionId },
+    });
 
       this.logger.log(`✅ User ${userId} logged out (session ${sessionId})`);
     } else {
