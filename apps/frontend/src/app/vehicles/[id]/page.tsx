@@ -399,7 +399,7 @@ export default function VehicleDetailPage() {
                 <CardHeader>
                   <CardTitle>Manage Listing</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5">
                   {vehicle.status === 'DRAFT' && (
                     <Button
                       onClick={handlePublish}

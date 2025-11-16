@@ -59,7 +59,7 @@ export function Navbar() {
       <div className="flex items-center space-x-3">
         <Link href="/" className="flex items-center space-x-3" aria-label="Home">
           <div className="h-9 w-9 rounded-md bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-base text-white ring-1 ring-white/10">
-            PW
+            CT
           </div>
           <h1 className="text-lg font-semibold tracking-tight md:text-xl text-white">CarTrader</h1>
         </Link>
@@ -119,7 +119,7 @@ export function Navbar() {
             <div className="mb-2 flex items-center justify-between">
               <Link href="/" className="flex items-center space-x-3" onClick={() => setOpen(false)}>
                 <div className="h-9 w-9 rounded-md bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-lg text-white ring-1 ring-white/10">
-                  PW
+                  CT
                 </div>
                 <span className="text-lg font-semibold">CarTrader</span>
               </Link>
