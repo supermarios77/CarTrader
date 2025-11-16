@@ -16,17 +16,17 @@ import { MessageSquare, User, Car } from 'lucide-react';
 
 export default function MessagesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const authCtx = useAuth() as any;
+  const isAuthenticated = Boolean(authCtx?.isAuthenticated);
+  const authLoading = Boolean(authCtx?.authLoading ?? authCtx?.loading ?? authCtx?.isLoading);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect if not authenticated
+  // Wait for auth before fetching or showing CTA
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
+    // no-op; we rely on authLoading below
+  }, [authLoading]);
 
   // Fetch conversations
   useEffect(() => {
@@ -56,13 +56,15 @@ export default function MessagesPage() {
       }
     }
 
-    fetchConversations();
+    if (!authLoading) {
+      fetchConversations();
+    }
 
     // Cleanup: abort request if component unmounts
     return () => {
       abortController.abort();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -94,8 +96,35 @@ export default function MessagesPage() {
     return partner.email.split('@')[0];
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+        <div className="container mx-auto max-w-4xl px-4 py-8">
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 bg-muted rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
-    return null;
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-black">
+        <div className="container mx-auto max-w-4xl px-4 py-8">
+          <Card className="mb-6">
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground mb-4">Please sign in to view your messages.</p>
+              <Link href="/login?redirect=/messages">
+                <Button>Sign In</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
