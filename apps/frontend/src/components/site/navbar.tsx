@@ -36,7 +36,7 @@ export function Navbar() {
   const { isAuthenticated, user } = useAuth();
 
   return (
-    <header className="relative z-10 flex items-center justify-between px-6 lg:px-12 py-6 max-w-7xl mx-auto border-b border-white/5 bg-black">
+    <header className="relative z-10 flex w-full items-center justify-between px-6 lg:px-12 py-6 border-b border-white/5 bg-black">
       <div className="flex items-center space-x-3">
         <Link href="/" className="flex items-center space-x-3" aria-label="Home">
           <div className="w-10 h-10 rounded-lg bg-linear-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-xl text-white">
