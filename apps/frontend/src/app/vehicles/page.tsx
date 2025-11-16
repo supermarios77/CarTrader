@@ -199,14 +199,14 @@ export default function VehiclesPage() {
           </div>
           <form
             onSubmit={handleSearch}
-            className="rounded-xl border border-white/10 bg-white/5 p-3 shadow-sm backdrop-blur"
+            className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm backdrop-blur"
           >
-            <div className="grid gap-2 md:grid-cols-6">
+            <div className="grid gap-3 md:grid-cols-6">
               <div className="md:col-span-2">
                 <label htmlFor="q" className="sr-only">
                   Make or Model
                 </label>
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2">
+                <div className="flex h-11 items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-gray-400" aria-hidden>
                     <path d="M10 4a6 6 0 0 1 4.472 9.995l4.266 4.267a1 1 0 0 1-1.415 1.415l-4.267-4.266A6 6 0 1 1 10 4m0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8" />
                   </svg>
@@ -216,7 +216,7 @@ export default function VehiclesPage() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search make or model (e.g., Corolla, Civic, Cultus)"
-                    className="w-full bg-transparent text-white placeholder:text-gray-500 outline-none"
+                    className="h-full w-full bg-transparent text-white placeholder:text-gray-500 outline-none"
                     autoComplete="off"
                     maxLength={80}
                   />
@@ -233,7 +233,7 @@ export default function VehiclesPage() {
                     setCity(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
+                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
                 >
                   {CITIES.map((c) => (
                     <option key={c} value={c === 'All Cities' ? '' : c}>
@@ -253,7 +253,7 @@ export default function VehiclesPage() {
                     setPriceKey(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
+                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
                 >
                   {PRICE_RANGES.map((r) => (
                     <option key={r.label} value={r.label}>
@@ -273,7 +273,7 @@ export default function VehiclesPage() {
                     setSort(e.target.value);
                     setPage(1);
                   }}
-                  className="w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
+                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
                 >
                   <option value="latest">Latest</option>
                   <option value="priceAsc">Price: Low to High</option>
@@ -293,7 +293,7 @@ export default function VehiclesPage() {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
+                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
                 >
                   {[12, 24, 36, 48].map((n) => (
                     <option key={n} value={n}>
@@ -335,13 +335,13 @@ export default function VehiclesPage() {
                   type="button"
                   variant="outline"
                   onClick={clearFilters}
-                  className="border-white/20 bg-transparent text-white hover:bg-white/10"
+                  className="h-11 border-white/20 bg-transparent text-white hover:bg-white/10"
                 >
                   Reset
                 </Button>
                 <Button
                   type="submit"
-                  className="rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-700 px-6 py-2.5 font-semibold text-white hover:opacity-90"
+                  className="h-11 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-700 px-5 font-semibold text-white hover:opacity-90"
                 >
                   Apply Filters
                 </Button>
@@ -351,7 +351,7 @@ export default function VehiclesPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-12 lg:px-12">
+      <section className="mx-auto max-w-7xl px-6 pt-6 pb-12 lg:px-12">
         {error && (
           <div className="mb-6 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
             {error}
