@@ -59,11 +59,9 @@ export async function createVehicle(
 ): Promise<Vehicle> {
   const formData = new FormData();
 
-  // Add all vehicle data fields
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (key === 'features' && Array.isArray(value)) {
-        // Features need to be sent as JSON
         formData.append(key, JSON.stringify(value));
       } else if (typeof value === 'object') {
         formData.append(key, JSON.stringify(value));
@@ -73,38 +71,12 @@ export async function createVehicle(
     }
   });
 
-  // Add images
   if (images && images.length > 0) {
-    images.forEach((image) => {
-      formData.append('images', image);
-    });
+    images.forEach((image) => formData.append('images', image));
   }
 
-  // Use api client for consistent error handling and token management
-  // Note: api.post doesn't support FormData directly, so we use fetch but with same error handling
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const response = await fetch(`${API_URL}/vehicles`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      // Don't set Content-Type - browser will set it with boundary for FormData
-      'Connection': 'keep-alive',
-    },
-    body: formData,
-    credentials: 'include',
-    cache: 'no-cache',
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Failed to create vehicle' }));
-    throw new Error(error.message || 'Failed to create vehicle');
-  }
-
-  return response.json();
+  // Use api.upload to leverage auth and refresh handling
+  return api.upload<Vehicle>('/vehicles', formData, 'POST');
 }
 
 /**
@@ -117,13 +89,11 @@ export async function updateVehicle(
 ): Promise<Vehicle> {
   const formData = new FormData();
 
-  // Add all vehicle data fields
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (key === 'features' && Array.isArray(value)) {
         formData.append(key, JSON.stringify(value));
       } else if (key === 'imageIdsToDelete' && Array.isArray(value)) {
-        // Send image IDs to delete as JSON array
         formData.append(key, JSON.stringify(value));
       } else if (typeof value === 'object') {
         formData.append(key, JSON.stringify(value));
@@ -133,35 +103,11 @@ export async function updateVehicle(
     }
   });
 
-  // Add images
   if (images && images.length > 0) {
-    images.forEach((image) => {
-      formData.append('images', image);
-    });
+    images.forEach((image) => formData.append('images', image));
   }
 
-  const token = localStorage.getItem('accessToken');
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const response = await fetch(`${API_URL}/vehicles/${id}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Connection': 'keep-alive',
-    },
-    body: formData,
-    credentials: 'include',
-    cache: 'no-cache',
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Failed to update vehicle' }));
-    throw new Error(error.message || 'Failed to update vehicle');
-  }
-
-  return response.json();
+  return api.upload<Vehicle>(`/vehicles/${id}`, formData, 'PUT');
 }
 
 /**

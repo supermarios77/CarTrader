@@ -105,9 +105,13 @@ async function apiRequest<T>(
 
   // Prepare headers
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
+  // Only set JSON content-type when body is not FormData
+  const isFormData = typeof window !== 'undefined' && options.body instanceof FormData;
+  if (!isFormData) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
 
   // Add auth token if available
   if (accessToken) {
@@ -230,6 +234,17 @@ export const api = {
    */
   delete: <T>(endpoint: string, options?: RequestInit): Promise<T> => {
     return apiRequest<T>(endpoint, { ...options, method: 'DELETE' });
+  },
+
+  /**
+   * Upload with FormData (POST/PUT)
+   */
+  upload: async <T>(endpoint: string, formData: FormData, method: 'POST' | 'PUT' = 'POST'): Promise<T> => {
+    return apiRequest<T>(endpoint, {
+      method,
+      body: formData,
+      // Do not set Content-Type; browser will set boundary
+    });
   },
 };
 
