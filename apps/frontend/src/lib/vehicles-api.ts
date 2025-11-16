@@ -6,6 +6,7 @@ import type {
   UpdateVehicleData,
   VehicleFilters,
 } from '@/types/vehicle';
+import { VehicleStatus } from '@/types/vehicle';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -209,16 +210,27 @@ export async function markVehicleAsSold(id: string, notes?: string): Promise<Veh
  * Convenience: get featured vehicles list (defaults to 8)
  */
 export async function getFeaturedVehicles(limit = 8): Promise<Vehicle[]> {
-  // Try standard path, then /api prefix if needed
+  // Attempt 1: ask backend for featured vehicles
   try {
     const resp = await getVehicles({ featured: true, limit });
     return Array.isArray((resp as any).vehicles) ? resp.vehicles : [];
   } catch (e) {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.error('getFeaturedVehicles error:', e);
+    // Attempt 2: some backends may not support "featured" filter. Fallback to latest ACTIVE.
+    try {
+      const fallback = await getVehicles({
+        status: VehicleStatus.ACTIVE,
+        limit,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
+      return Array.isArray(fallback.vehicles) ? fallback.vehicles.slice(0, limit) : [];
+    } catch (e2) {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('getFeaturedVehicles fatal:', e, e2);
+      }
+      throw e2 instanceof Error ? e2 : (e as Error);
     }
-    throw e;
   }
 }
 

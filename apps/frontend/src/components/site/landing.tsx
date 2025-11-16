@@ -86,7 +86,7 @@ export function Landing() {
         {/* Featured listings - use real data when available, fallback to static */}
         {error && (
           <div className="mb-6 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-            {error}
+            Failed to load featured vehicles. {error}
           </div>
         )}
         {loading ? (
