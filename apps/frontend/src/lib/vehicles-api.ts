@@ -174,27 +174,16 @@ export async function markVehicleAsSold(id: string, notes?: string): Promise<Veh
  * Convenience: get featured vehicles list (defaults to 8)
  */
 export async function getFeaturedVehicles(limit = 8): Promise<Vehicle[]> {
-  // Attempt 1: ask backend for featured vehicles
+  // Strict: only return truly featured vehicles; if none or request fails, return []
   try {
     const resp = await getVehicles({ featured: true, limit });
     return Array.isArray((resp as any).vehicles) ? resp.vehicles : [];
   } catch (e) {
-    // Attempt 2: some backends may not support "featured" filter. Fallback to latest ACTIVE.
-    try {
-      const fallback = await getVehicles({
-        status: VehicleStatus.ACTIVE,
-        limit,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      });
-      return Array.isArray(fallback.vehicles) ? fallback.vehicles.slice(0, limit) : [];
-    } catch (e2) {
-      if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
-        console.error('getFeaturedVehicles fatal:', e, e2);
-      }
-      throw e2 instanceof Error ? e2 : (e as Error);
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('getFeaturedVehicles failed (strict):', e);
     }
+    return [];
   }
 }
 
