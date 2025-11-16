@@ -46,21 +46,16 @@ export default function SellVehiclePage() {
   const makesAbortRef = useRef<AbortController | null>(null);
   const modelsAbortRef = useRef<AbortController | null>(null);
 
-  // Auth gating
-  if (!isAuthenticated) {
-    return (
-      <div className="mx-auto max-w-3xl px-6 py-16 text-white">
-        <h1 className="mb-4 text-3xl font-black">Sell Your Car</h1>
-        <p className="mb-6 text-gray-400">Please sign in to list your vehicle.</p>
-        <a href="/login">
-          <Button className="bg-white text-black hover:bg-gray-100">Sign In</Button>
-        </a>
-      </div>
-    );
-  }
-
   // Load makes once
   useEffect(() => {
+    if (!isAuthenticated) {
+      // Reset state when logged out; avoid fetching
+      setMakes([]);
+      setModels([]);
+      setMakesLoading(false);
+      setModelsLoading(false);
+      return;
+    }
     setMakesLoading(true);
     setCatalogError(null);
     makesAbortRef.current?.abort();
@@ -77,13 +72,13 @@ export default function SellVehiclePage() {
         if (!ac.signal.aborted) setMakesLoading(false);
       });
     return () => ac.abort();
-  }, []);
+  }, [isAuthenticated]);
 
   // Load models when make changes
   useEffect(() => {
     setModels([]);
     setModelId('');
-    if (!makeId) return;
+    if (!isAuthenticated || !makeId) return;
     setModelsLoading(true);
     setCatalogError(null);
     modelsAbortRef.current?.abort();
@@ -177,6 +172,16 @@ export default function SellVehiclePage() {
       <div className="mx-auto max-w-5xl px-6 py-10 lg:px-12">
         <h1 className="mb-2 text-3xl font-black">Sell Your Car</h1>
         <p className="mb-8 text-gray-400">Create a beautiful listing in a few simple steps.</p>
+
+        {!isAuthenticated ? (
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
+            <p className="mb-6 text-gray-300">Please sign in to list your vehicle.</p>
+            <a href="/login">
+              <Button className="bg-white text-black hover:bg-gray-100">Sign In</Button>
+            </a>
+          </div>
+        ) : (
+          <>
 
         {/* Stepper */}
         <div className="mb-6 grid grid-cols-4 gap-2 text-sm">
@@ -458,6 +463,8 @@ export default function SellVehiclePage() {
             </section>
           )}
         </form>
+          </>
+        )}
       </div>
     </div>
   );
