@@ -59,6 +59,7 @@ export default function SellVehiclePage() {
 
   const makesAbortRef = useRef<AbortController | null>(null);
   const modelsAbortRef = useRef<AbortController | null>(null);
+  const pendingModelByNameRef = useRef<string | null>(null);
 
   // Load makes once
   useEffect(() => {
@@ -116,7 +117,20 @@ export default function SellVehiclePage() {
     modelsAbortRef.current = ac;
     getModels(makeId)
       .then((list) => {
-        if (!ac.signal.aborted) setModels(list);
+        if (!ac.signal.aborted) {
+          setModels(list);
+          // If we requested a model by name (from mock fill), select it when available
+          const desired = pendingModelByNameRef.current;
+          if (desired && !modelId) {
+            const found = list.find((m) =>
+              m.name.toLowerCase().includes(desired.toLowerCase()),
+            );
+            if (found) {
+              setModelId(found.id);
+              pendingModelByNameRef.current = null;
+            }
+          }
+        }
       })
       .catch((e) => {
         if (!ac.signal.aborted) setCatalogError(e instanceof Error ? e.message : 'Failed to load models');
@@ -236,7 +250,7 @@ export default function SellVehiclePage() {
           <>
 
         {/* Stepper */}
-        <div className="mb-6 grid grid-cols-4 gap-2 text-sm">
+        <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
           {(['details', 'specs', 'media', 'review'] as Step[]).map((s, i) => (
             <div
               key={s}
@@ -248,6 +262,55 @@ export default function SellVehiclePage() {
             </div>
           ))}
         </div>
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="mb-6">
+            <Button
+              type="button"
+              onClick={() => {
+                // Pick category likely to be Cars
+                const cat =
+                  categories.find((c) => c.name.toLowerCase().includes('car'))?.id ||
+                  categories[0]?.id ||
+                  '';
+                setCategoryId(cat || categoryId);
+                // Fill details
+                setTitle('2021 Suzuki Alto VXR 660cc Manual');
+                setDescription(
+                  'Brand new condition Suzuki Alto VXR. Low mileage, perfect for city driving. Excellent fuel economy. All features working. Single owner, garage kept. No accidents, original paint. Service book available.',
+                );
+                setPrice('1850000');
+                setYear('2021');
+                setCity('Islamabad');
+                setProvince('Islamabad Capital Territory');
+                setAddress('F-7 Markaz');
+                setRegistrationCity('Islamabad');
+                setRegistrationYear('2021');
+                setMileage('25000');
+                setTransmission(TransmissionType.MANUAL);
+                setFuelType(FuelType.PETROL);
+                setBodyType(BodyType.HATCHBACK);
+                setEngineCapacity('660');
+                setColor('Silver');
+                // Choose make/model by name where possible
+                const suzuki = makes.find((m) => m.name.toLowerCase().includes('suzuki'));
+                if (suzuki) {
+                  setMakeId(suzuki.id);
+                  // Ask for model "Alto" when models arrive
+                  pendingModelByNameRef.current = 'Alto';
+                }
+                // Preload some features
+                setFeatures([
+                  { name: 'Power Steering' },
+                  { name: 'Air Conditioning' },
+                  { name: 'ABS' },
+                ]);
+              }}
+              className="bg-white text-black hover:bg-gray-100"
+            >
+              Fill with mock data (dev only)
+            </Button>
+          </div>
+        )}
 
         {catalogError && (
           <div className="mb-6 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-300">
