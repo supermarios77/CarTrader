@@ -166,7 +166,7 @@ export default function VehiclesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <section className="sticky top-0 z-40 border-b border-white/10 bg-black/70 backdrop-blur">
+      <section className="relative z-10 border-b border-white/10 bg-black">
         <div className="mx-auto max-w-7xl px-6 py-5 lg:px-12">
           <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <h1 className="text-2xl font-black md:text-3xl">Browse Vehicles</h1>
