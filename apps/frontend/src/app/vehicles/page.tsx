@@ -390,7 +390,7 @@ export default function VehiclesPage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="h-11 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-700 px-5 font-semibold text-white hover:opacity-90"
+                  className="h-11 rounded-lg bg-linear-to-r from-emerald-500 to-emerald-700 px-5 font-semibold text-white hover:opacity-90"
                 >
                   Apply Filters
                 </Button>

@@ -13,7 +13,7 @@ import { getAllMakes, type Make } from '@/lib/catalog-api';
 // no local Card type; data is mapped inline for the listings component
 
 export function Landing() {
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  // Selected brand is currently not used for navigation; linking handled in component
   const [featured, setFeatured] = useState<Vehicle[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +120,7 @@ export function Landing() {
         )}
         {brands && brands.length > 0 && (
           <LandingBrands
-            brands={brands.map((m) => ({ id: m.id, name: m.name, slug: (m as any).slug, logo: (m as any).logo }))}
+            brands={brands.map((m) => ({ id: m.id, name: m.name, slug: m.slug, logo: m.logo }))}
           />
         )}
 

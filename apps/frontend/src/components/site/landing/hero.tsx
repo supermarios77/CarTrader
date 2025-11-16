@@ -29,8 +29,7 @@ const PRICE_RANGES: PriceRange[] = [
 ];
 
 export function LandingHero() {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => setVisible(true), []);
+  const [visible] = useState(true);
 
   const [query, setQuery] = useState('');
   const [city, setCity] = useState(CITIES[0]);
@@ -60,7 +59,7 @@ export function LandingHero() {
       <h1 className="mb-6 text-5xl font-black leading-tight tracking-tight sm:text-6xl md:text-7xl">
         Find Your Perfect
         <br />
-        <span className="bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
+        <span className="bg-linear-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
           Car Today
         </span>
       </h1>
@@ -70,7 +69,7 @@ export function LandingHero() {
 
       <form
         onSubmit={handleSearch}
-        className="mx-auto mb-12 max-w-4xl rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur-lg sm:p-8"
+        className="mx-auto mb-12 max-w-4xl rounded-3xl border border-white/20 bg-linear-to-br from-white/10 to-white/5 p-6 backdrop-blur-lg sm:p-8"
         aria-label="Vehicle search"
       >
         <div className="grid gap-4 md:grid-cols-3">
@@ -130,7 +129,7 @@ export function LandingHero() {
           </div>
         </div>
         <div className="mt-4 flex justify-end">
-          <Button type="submit" className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 px-8 py-3 font-semibold text-white hover:opacity-90">
+          <Button type="submit" className="rounded-xl bg-linear-to-r from-emerald-500 to-emerald-700 px-8 py-3 font-semibold text-white hover:opacity-90">
             Search Cars
           </Button>
         </div>

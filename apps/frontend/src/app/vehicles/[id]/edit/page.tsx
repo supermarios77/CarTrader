@@ -437,7 +437,7 @@ export default function EditVehiclePage() {
             <Link href={`/vehicles/${vehicle.id}`} className="text-sm text-gray-400 hover:text-white">
               Cancel
             </Link>
-            <Button type="submit" disabled={saving} className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+            <Button type="submit" disabled={saving} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
               {saving ? 'Saving…' : 'Save Changes'}
             </Button>
           </div>

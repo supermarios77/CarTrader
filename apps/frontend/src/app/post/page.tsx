@@ -476,7 +476,7 @@ export default function SellVehiclePage() {
                   type="button"
                   onClick={() => setStep('specs')}
                   disabled={!canContinueDetails}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+                  className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
                 >
                   Continue
                 </Button>
@@ -604,7 +604,7 @@ export default function SellVehiclePage() {
                     placeholder="Optional value (e.g., panoramic)"
                     className="bg-black/30 text-white"
                   />
-                  <Button type="button" onClick={addFeature} className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+                  <Button type="button" onClick={addFeature} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
                     Add
                   </Button>
                 </div>
@@ -631,7 +631,7 @@ export default function SellVehiclePage() {
                 <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setStep('details')}>
                   Back
                 </Button>
-                <Button type="button" onClick={() => setStep('media')} className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+                <Button type="button" onClick={() => setStep('media')} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
                   Continue
                 </Button>
               </div>
@@ -677,7 +677,7 @@ export default function SellVehiclePage() {
                 <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setStep('specs')}>
                   Back
                 </Button>
-                <Button type="button" onClick={() => setStep('review')} className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+                <Button type="button" onClick={() => setStep('review')} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
                   Continue
                 </Button>
               </div>
@@ -731,7 +731,7 @@ export default function SellVehiclePage() {
                 <Button
                   type="submit"
                   disabled={!canSubmit || submitting}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+                  className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
                 >
                   {submitting ? 'Publishing…' : 'Publish Listing'}
                 </Button>

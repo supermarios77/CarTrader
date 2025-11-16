@@ -478,11 +478,11 @@ export default function ConversationPage() {
                         ) : (
                           <>
                             {isDeleted ? (
-                              <p className="whitespace-pre-wrap break-words italic">
+                              <p className="whitespace-pre-wrap wrap-break-word italic">
                                 This message was deleted
                               </p>
                             ) : (
-                              <p className="whitespace-pre-wrap break-words">
+                              <p className="whitespace-pre-wrap wrap-break-word">
                                 {message.content}
                               </p>
                             )}

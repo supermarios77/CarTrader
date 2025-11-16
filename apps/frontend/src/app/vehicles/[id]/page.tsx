@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 /**
  * Vehicle Detail Page
@@ -14,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useAuth } from '@/contexts/auth-context';
-import { MessageSquare } from 'lucide-react';
+// import { MessageSquare } from 'lucide-react';
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -396,7 +397,7 @@ export default function VehicleDetailPage() {
             {/* Contact Seller CTA under Seller Info */}
             {!isOwner && isAuthenticated && (
               <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`}>
-                <Button className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+                    <Button className="w-full bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
                   Contact Seller
                 </Button>
               </Link>
