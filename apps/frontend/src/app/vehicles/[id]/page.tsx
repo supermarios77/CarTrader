@@ -393,6 +393,22 @@ export default function VehicleDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Contact Seller CTA under Seller Info */}
+            {!isOwner && isAuthenticated && (
+              <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`}>
+                <Button className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white">
+                  Contact Seller
+                </Button>
+              </Link>
+            )}
+            {!isOwner && !isAuthenticated && (
+              <Link href={`/login?redirect=/vehicles/${vehicle.id}`}>
+                <Button className="w-full" variant="outline">
+                  Sign in to Contact
+                </Button>
+              </Link>
+            )}
+
             {/* Owner Actions */}
             {isOwner && (
               <Card>
@@ -420,7 +436,7 @@ export default function VehicleDetailPage() {
                     </Button>
                   )}
                   <Link href={`/vehicles/${vehicle.id}/edit`}>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full mb-2">
                       Edit Listing
                     </Button>
                   </Link>
