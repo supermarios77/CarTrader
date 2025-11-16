@@ -12,7 +12,17 @@ type Car = {
   featured: boolean;
 };
 
-export function LandingListings({ cars }: { cars: Car[] }) {
+type CardItem = {
+  id: number;
+  name: string;
+  price: string;
+  year: string;
+  mileage: string;
+  image: string;
+  featured: boolean;
+};
+
+export function LandingListings({ cars }: { cars: CardItem[] }) {
   function ImageWithSkeleton({
     src,
     alt,
@@ -63,7 +73,7 @@ export function LandingListings({ cars }: { cars: Car[] }) {
         {cars.map((car) => (
           <div
             key={car.id}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-white/5 to-white/2 backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]"
           >
             {car.featured && (
               <div className="absolute left-4 top-4 z-20 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
@@ -71,15 +81,15 @@ export function LandingListings({ cars }: { cars: Car[] }) {
               </div>
             )}
             {/* Image takes more vertical space; subtle gradient overlay for text legibility */}
-            <div className="relative overflow-hidden aspect-[16/10] md:aspect-[16/9]">
+            <div className="relative overflow-hidden aspect-16/10 md:aspect-video">
               <ImageWithSkeleton
                 src={car.image || '/placeholder.svg'}
                 alt={car.name}
                 className="h-full w-full"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/0" />
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 via-black/0 to-black/0" />
               {/* Price badge on image */}
-              <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-cyan-300 ring-1 ring-white/10 backdrop-blur">
+              <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-emerald-300 ring-1 ring-white/10 backdrop-blur">
                 {car.price}
               </div>
             </div>

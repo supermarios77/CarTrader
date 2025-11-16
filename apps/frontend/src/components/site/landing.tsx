@@ -10,16 +10,7 @@ import { getFeaturedVehicles } from '@/lib/vehicles-api';
 import type { Vehicle } from '@/types/vehicle';
 import { getAllMakes, type Make } from '@/lib/catalog-api';
 
-// Local card view model used only when mapping API data
-type Car = {
-  id: number;
-  name: string;
-  price: string;
-  year: string;
-  mileage: string;
-  image: string;
-  featured: boolean;
-};
+// no local Card type; data is mapped inline for the listings component
 
 export function Landing() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
@@ -75,7 +66,7 @@ export function Landing() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-cyan-900/20 via-black to-black" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-emerald-900/20 via-black to-black" />
 
       {/* Header lives in layout via Navbar; keeping this section empty intentionally */}
 
