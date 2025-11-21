@@ -45,6 +45,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**", pathname: "/**" },
       { protocol: "http", hostname: "**", pathname: "/**" },
     ],
+    unoptimized: process.env.NODE_ENV !== "production",
   },
   // Environment variables
   env: {
