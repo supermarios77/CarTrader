@@ -1,9 +1,5 @@
 'use client';
 
-/**
- * Login Page - Production-ready login form with shadcn/ui components
- */
-
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -12,25 +8,17 @@ import { ApiClientError } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading, error, clearError } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  
+
   const [validationErrors, setValidationErrors] = useState<{
     email?: string;
     password?: string;
@@ -38,17 +26,11 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  /**
-   * Validate email format
-   */
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  /**
-   * Validate form
-   */
   const validateForm = (): boolean => {
     const errors: { email?: string; password?: string } = {};
 
@@ -68,14 +50,10 @@ export default function LoginPage() {
     return Object.keys(errors).length === 0;
   };
 
-  /**
-   * Handle input change
-   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Clear validation error for this field
+
     if (validationErrors[name as keyof typeof validationErrors]) {
       setValidationErrors((prev) => {
         const newErrors = { ...prev };
@@ -83,24 +61,18 @@ export default function LoginPage() {
         return newErrors;
       });
     }
-    
-    // Clear API error when user starts typing
+
     if (error) {
       clearError();
     }
   };
 
-  /**
-   * Handle form submission
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Clear previous errors
+
     clearError();
     setValidationErrors({});
 
-    // Validate form
     if (!validateForm()) {
       return;
     }
@@ -113,15 +85,11 @@ export default function LoginPage() {
         password: formData.password,
       });
 
-      // Redirect to home page on success
       router.push('/');
       router.refresh();
     } catch (err) {
-      // Error is handled by auth context
-      // In production, consider sending to error tracking service
       if (process.env.NODE_ENV === 'development' && err instanceof ApiClientError) {
-        // Only log in development for debugging
-        // Error is handled by setError below
+        // Error handled by auth context
       }
     } finally {
       setIsSubmitting(false);
@@ -131,34 +99,34 @@ export default function LoginPage() {
   const isFormDisabled = isLoading || isSubmitting;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-16">
-      <div className="w-full max-w-md space-y-10">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] flex items-center justify-center px-4 py-16">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative w-full max-w-md space-y-8">
         {/* Logo/Header */}
         <div className="text-center space-y-3">
           <Link href="/" className="inline-block">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground">
-              🚗 CarTrader
+            <h1 className="font-[var(--font-space-grotesk)] text-5xl font-bold tracking-tight">
+              Car<span className="text-[#10b981]">Trader</span>
             </h1>
           </Link>
-          <p className="text-base text-muted-foreground">
-            Sign in to your account to continue
-          </p>
+          <p className="text-base text-[#666]">Sign in to your account to continue</p>
         </div>
 
         {/* Login Card */}
-        <Card className="border-2 rounded-3xl shadow-xl dark:shadow-2xl border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="space-y-2 px-8 pt-10 pb-6">
-            <CardTitle className="text-3xl font-bold">Welcome back</CardTitle>
-            <CardDescription className="text-base">
-              Enter your email and password to sign in to your account
-            </CardDescription>
-          </CardHeader>
+        <div className="bg-white rounded-[40px] border border-[#e5e5e5] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.1)]">
+          <div className="space-y-2 mb-6">
+            <h2 className="font-[var(--font-space-grotesk)] text-3xl font-semibold">Welcome back</h2>
+            <p className="text-base text-[#666]">Enter your email and password to sign in</p>
+          </div>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6 px-8">
+            <div className="space-y-6">
               {/* API Error Message */}
               {error && (
                 <div
-                  className="flex items-center gap-3 rounded-2xl border-2 border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20 p-4 text-sm text-red-700 dark:text-red-400"
+                  className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
                   role="alert"
                 >
                   <AlertCircle className="h-5 w-5 shrink-0" />
@@ -167,8 +135,10 @@ export default function LoginPage() {
               )}
 
               {/* Email Field */}
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-base font-medium">Email Address</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-base font-medium">
+                  Email Address
+                </Label>
                 <Input
                   id="email"
                   name="email"
@@ -179,28 +149,28 @@ export default function LoginPage() {
                   onChange={handleChange}
                   disabled={isFormDisabled}
                   placeholder="you@example.com"
-                  className={`h-12 rounded-xl text-base ${validationErrors.email ? 'border-2 border-red-500 focus-visible:ring-2 focus-visible:ring-red-500' : 'border-2 focus-visible:ring-2 focus-visible:ring-blue-500'}`}
+                  className={`h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] ${
+                    validationErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                  }`}
                   aria-invalid={validationErrors.email ? 'true' : 'false'}
                   aria-describedby={validationErrors.email ? 'email-error' : undefined}
                 />
                 {validationErrors.email && (
-                  <p
-                    id="email-error"
-                    className="text-sm font-medium text-red-600 dark:text-red-400"
-                    role="alert"
-                  >
+                  <p id="email-error" className="text-sm font-medium text-red-600" role="alert">
                     {validationErrors.email}
                   </p>
                 )}
               </div>
 
               {/* Password Field */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-base font-medium">Password</Label>
+                  <Label htmlFor="password" className="text-base font-medium">
+                    Password
+                  </Label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                    className="text-sm font-semibold text-[#10b981] hover:text-[#059669] transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -216,40 +186,33 @@ export default function LoginPage() {
                     onChange={handleChange}
                     disabled={isFormDisabled}
                     placeholder="Enter your password"
-                    className={`h-12 rounded-xl text-base pr-10 ${validationErrors.password ? 'border-2 border-red-500 focus-visible:ring-2 focus-visible:ring-red-500' : 'border-2 focus-visible:ring-2 focus-visible:ring-blue-500'}`}
+                    className={`h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base pr-10 focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] ${
+                      validationErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
                     aria-invalid={validationErrors.password ? 'true' : 'false'}
                     aria-describedby={validationErrors.password ? 'password-error' : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#888] hover:text-black transition-colors focus:outline-none rounded-md p-1"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
                 {validationErrors.password && (
-                  <p
-                    id="password-error"
-                    className="text-sm font-medium text-red-600 dark:text-red-400"
-                    role="alert"
-                  >
+                  <p id="password-error" className="text-sm font-medium text-red-600" role="alert">
                     {validationErrors.password}
                   </p>
                 )}
               </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-5 px-8 pb-10">
+
               <Button
                 type="submit"
                 disabled={isFormDisabled}
-                className="w-full h-12 rounded-xl text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="w-full h-12 rounded-full bg-[#111] text-white hover:bg-[#222] text-base font-semibold shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all"
               >
                 {isSubmitting ? (
                   <>
@@ -260,28 +223,19 @@ export default function LoginPage() {
                   'Sign in'
                 )}
               </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{' '}
-                <Link
-                  href="/register"
-                  className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                >
-                  Sign up
-                </Link>
-              </div>
-            </CardFooter>
+            </div>
           </form>
-        </Card>
 
-        {/* Debug Info (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="rounded-2xl border-2 border-border/50 bg-muted/30 p-5 text-xs text-muted-foreground backdrop-blur-sm">
-            <p className="font-semibold mb-2">Debug Info:</p>
-            <p>API URL: {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}</p>
-            <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
-            <p>Submitting: {isSubmitting ? 'Yes' : 'No'}</p>
+          <div className="mt-6 text-center text-sm text-[#666]">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register"
+              className="font-semibold text-[#10b981] hover:text-[#059669] transition-colors"
+            >
+              Sign up
+            </Link>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

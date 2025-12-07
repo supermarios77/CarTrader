@@ -63,9 +63,6 @@ export function LandingHero() {
           Car Today
         </span>
       </h1>
-      <p className="mx-auto mb-10 max-w-2xl text-lg font-medium text-gray-400 sm:text-xl">
-        Browse 5000+ verified listings from trusted sellers across Pakistan
-      </p>
 
       <form
         onSubmit={handleSearch}

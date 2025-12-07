@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Vehicle Detail Page
- * Shows full details of a single vehicle
- */
-
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -12,10 +7,9 @@ import Link from 'next/link';
 import { getVehicle, deleteVehicle, publishVehicle, markVehicleAsSold } from '@/lib/vehicles-api';
 import type { Vehicle } from '@/types/vehicle';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useAuth } from '@/contexts/auth-context';
-// import { MessageSquare } from 'lucide-react';
+import { ArrowLeft, Copy, MessageCircle } from 'lucide-react';
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -28,7 +22,6 @@ export default function VehicleDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Fetch vehicle
   useEffect(() => {
     async function fetchVehicle() {
       setLoading(true);
@@ -113,12 +106,12 @@ export default function VehicleDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black">
-        <div className="container mx-auto px-4 py-8">
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-96 bg-muted rounded-xl" />
-            <div className="h-8 w-3/4 bg-muted" />
-            <div className="h-4 w-1/2 bg-muted" />
+            <div className="h-96 bg-white rounded-[20px] border border-[#e5e5e5]" />
+            <div className="h-8 w-3/4 bg-white rounded-[20px] border border-[#e5e5e5]" />
+            <div className="h-4 w-1/2 bg-white rounded-[20px] border border-[#e5e5e5]" />
           </div>
         </div>
       </div>
@@ -127,40 +120,50 @@ export default function VehicleDetailPage() {
 
   if (error || !vehicle) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black">
-        <div className="container mx-auto px-4 py-8">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-destructive mb-4">{error || 'Vehicle not found'}</p>
-              <Link href="/vehicles">
-                <Button variant="outline">Back to Listings</Button>
-              </Link>
-            </CardContent>
-          </Card>
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
+          <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-12 text-center">
+            <p className="text-red-600 mb-4">{error || 'Vehicle not found'}</p>
+            <Link href="/vehicles">
+              <Button className="bg-[#111] text-white hover:bg-[#222]">
+                Back to Listings
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-7xl px-6 py-8 lg:px-12">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8">
         {/* Breadcrumb / Back */}
         <div className="mb-6 flex items-center justify-between">
-          <Link href="/vehicles" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white">
-            ← Back to Listings
+          <Link
+            href="/vehicles"
+            className="inline-flex items-center gap-2 text-sm text-[#666] hover:text-black transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Listings
           </Link>
           <button
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
               } catch {
                 // ignore
               }
             }}
-            className="rounded-md border border-white/10 px-3 py-1 text-xs text-gray-300 hover:bg-white/5"
+            className="rounded-full border border-[#e5e5e5] bg-white px-4 py-2 text-xs text-[#666] hover:bg-[#fafafa] transition-colors flex items-center gap-2"
             aria-label="Copy link"
           >
+            <Copy className="w-3 h-3" />
             Copy Link
           </button>
         </div>
@@ -171,8 +174,8 @@ export default function VehicleDetailPage() {
             {/* Title and Favorite */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-foreground">{vehicle.title}</h1>
-                <p className="mt-2 text-muted-foreground">
+                <h1 className="font-[var(--font-space-grotesk)] text-4xl font-semibold mb-2">{vehicle.title}</h1>
+                <p className="text-[#666]">
                   {vehicle.make.name} {vehicle.model.name} • {vehicle.year} • {vehicle.city}
                 </p>
               </div>
@@ -181,13 +184,13 @@ export default function VehicleDetailPage() {
                 isFavorite={vehicle.isFavorite}
                 variant="button"
                 onToggle={(isFav) => {
-                  setVehicle((prev) => prev ? { ...prev, isFavorite: isFav } : null);
+                  setVehicle((prev) => (prev ? { ...prev, isFavorite: isFav } : null));
                 }}
               />
             </div>
 
             {/* Images */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-2">
+            <div className="rounded-[20px] border border-[#e5e5e5] bg-white p-2 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
               {vehicle.images && vehicle.images.length > 0 ? (
                 (() => {
                   const imgs = vehicle.images;
@@ -287,154 +290,129 @@ export default function VehicleDetailPage() {
                   );
                 })()
               ) : (
-                <div className="flex h-[420px] items-center justify-center text-gray-400">
+                <div className="flex h-[420px] items-center justify-center text-[#888] bg-[#fafafa] rounded-xl">
                   No Images Available
                 </div>
               )}
             </div>
 
             {/* Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {vehicle.description || 'No description provided.'}
-                </p>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] text-xl font-semibold mb-4">Description</h2>
+              <p className="text-[#666] whitespace-pre-wrap leading-relaxed">
+                {vehicle.description || 'No description provided.'}
+              </p>
+            </div>
 
             {/* Features */}
             {vehicle.features && vehicle.features.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {vehicle.features.map((feature) => (
-                      <div key={feature.id} className="flex items-center gap-2">
-                        <span className="font-semibold">{feature.name}:</span>
-                        <span className="text-muted-foreground">{feature.value || 'Yes'}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+                <h2 className="font-[var(--font-space-grotesk)] text-xl font-semibold mb-4">Features</h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {vehicle.features.map((feature) => (
+                    <div key={feature.id} className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{feature.name}:</span>
+                      <span className="text-[#666] text-sm">{feature.value || 'Yes'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6 lg:sticky lg:top-20">
             {/* Price & Info Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-3xl">{formatPrice(vehicle.price, vehicle.currency)}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Year:</span>
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <div className="mb-6">
+                <div className="font-[var(--font-space-grotesk)] text-3xl font-bold text-[#10b981] mb-6">
+                  {formatPrice(vehicle.price, vehicle.currency)}
+                </div>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                    <span className="text-[#666]">Year:</span>
                     <span className="font-semibold">{vehicle.year}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Mileage:</span>
+                  <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                    <span className="text-[#666]">Mileage:</span>
                     <span className="font-semibold">{formatMileage(vehicle.mileage, vehicle.mileageUnit)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Transmission:</span>
+                  <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                    <span className="text-[#666]">Transmission:</span>
                     <span className="font-semibold capitalize">{vehicle.transmission.toLowerCase()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Fuel Type:</span>
+                  <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                    <span className="text-[#666]">Fuel Type:</span>
                     <span className="font-semibold capitalize">{vehicle.fuelType.toLowerCase()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Body Type:</span>
+                  <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                    <span className="text-[#666]">Body Type:</span>
                     <span className="font-semibold capitalize">{vehicle.bodyType.toLowerCase()}</span>
                   </div>
                   {vehicle.engineCapacity && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Engine:</span>
+                    <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                      <span className="text-[#666]">Engine:</span>
                       <span className="font-semibold">{vehicle.engineCapacity} CC</span>
                     </div>
                   )}
                   {vehicle.color && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Color:</span>
+                    <div className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                      <span className="text-[#666]">Color:</span>
                       <span className="font-semibold capitalize">{vehicle.color}</span>
                     </div>
                   )}
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Location:</span>
-                      <span className="font-semibold">{vehicle.city}</span>
-                    </div>
-                    {vehicle.province && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Province:</span>
-                        <span className="font-semibold">{vehicle.province}</span>
-                      </div>
-                    )}
+                  <div className="flex justify-between py-2">
+                    <span className="text-[#666]">Location:</span>
+                    <span className="font-semibold">{vehicle.city}</span>
                   </div>
+                  {vehicle.province && (
+                    <div className="flex justify-between py-2">
+                      <span className="text-[#666]">Province:</span>
+                      <span className="font-semibold">{vehicle.province}</span>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Seller Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h3 className="font-[var(--font-space-grotesk)] font-semibold mb-4">Seller Information</h3>
+              <div className="space-y-3">
+                <div>
                   <p className="font-semibold">
                     {vehicle.user.firstName} {vehicle.user.lastName}
                   </p>
-                  <p className="text-sm text-muted-foreground">{vehicle.user.city || 'Location not specified'}</p>
+                  <p className="text-sm text-[#666]">{vehicle.user.city || 'Location not specified'}</p>
                 </div>
                 {!isOwner && isAuthenticated && (
-                  <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`}>
-                    <Button className="w-full">
+                  <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`} className="block">
+                    <Button className="w-full bg-[#111] text-white hover:bg-[#222] flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4" />
                       Contact Seller
                     </Button>
                   </Link>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Contact Seller CTA under Seller Info */}
-            {!isOwner && isAuthenticated && (
-              <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`}>
-                    <Button className="w-full bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
-                  Contact Seller
-                </Button>
-              </Link>
-            )}
-            {!isOwner && !isAuthenticated && (
-              <Link href={`/login?redirect=/vehicles/${vehicle.id}`}>
-                <Button className="w-full" variant="outline">
-                  Sign in to Contact
-                </Button>
-              </Link>
-            )}
+                {!isOwner && !isAuthenticated && (
+                  <Link href={`/login?redirect=/vehicles/${vehicle.id}`} className="block">
+                    <Button variant="outline" className="w-full">
+                      Sign in to Contact
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
 
             {/* Owner Actions */}
             {isOwner && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Manage Listing</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
+              <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+                <h3 className="font-[var(--font-space-grotesk)] font-semibold mb-4">Manage Listing</h3>
+                <div className="space-y-3">
                   {vehicle.status === 'DRAFT' && (
                     <Button
                       onClick={handlePublish}
                       disabled={actionLoading}
-                      className="w-full"
+                      className="w-full bg-[#10b981] text-white hover:bg-[#059669]"
                     >
                       Publish Vehicle
                     </Button>
@@ -449,8 +427,8 @@ export default function VehicleDetailPage() {
                       Mark as Sold
                     </Button>
                   )}
-                  <Link href={`/vehicles/${vehicle.id}/edit`}>
-                    <Button variant="outline" className="w-full mb-4">
+                  <Link href={`/vehicles/${vehicle.id}/edit`} className="block">
+                    <Button variant="outline" className="w-full">
                       Edit Listing
                     </Button>
                   </Link>
@@ -462,8 +440,8 @@ export default function VehicleDetailPage() {
                   >
                     Delete Listing
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -471,4 +449,3 @@ export default function VehicleDetailPage() {
     </div>
   );
 }
-

@@ -35,7 +35,7 @@ export class StorageService implements OnModuleInit {
   }
 
   /**
-   * Initialize bucket if it doesn't exist
+   * Initialize bucket if it doesn't exist and set public read policy
    */
   private async initializeBucket(): Promise<void> {
     try {
@@ -44,6 +44,26 @@ export class StorageService implements OnModuleInit {
         await this.minioClient.makeBucket(this.bucketName, 'us-east-1');
         this.logger.log(`✅ Created bucket: ${this.bucketName}`);
       }
+      
+      // Set bucket policy to allow public read access
+      // This allows images to be accessed directly from the browser
+      const publicReadPolicy = {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: { AWS: ['*'] },
+            Action: ['s3:GetObject'],
+            Resource: [`arn:aws:s3:::${this.bucketName}/*`],
+          },
+        ],
+      };
+      
+      await this.minioClient.setBucketPolicy(
+        this.bucketName,
+        JSON.stringify(publicReadPolicy),
+      );
+      this.logger.log(`✅ Set public read policy for bucket: ${this.bucketName}`);
     } catch (error) {
       this.logger.error(`Failed to initialize bucket: ${error}`);
       // Don't throw - allow service to start even if bucket creation fails

@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { getVehicles } from '@/lib/vehicles-api';
 import { getMakeById } from '@/lib/catalog-api';
 import type { Vehicle, VehicleListResponse } from '@/types/vehicle';
-import { LandingListings } from '@/components/site/landing/listings';
+import { Search, Grid3x3, List, X } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 type Filters = {
   search?: string;
@@ -169,8 +171,8 @@ export default function VehiclesPage() {
   }, [makeId]);
 
   // If the user types, we won't fetch until they hit Search
-  function handleSearch(e?: React.FormEvent) {
-    if (e) e.preventDefault();
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
     setPage(1);
     load();
   }
@@ -195,334 +197,336 @@ export default function VehiclesPage() {
     load();
   }
 
+  const formatPrice = (price: number, currency: string = 'PKR') => {
+    return new Intl.NumberFormat('en-PK', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      <section className="relative z-10 border-b border-white/10 bg-black">
-        <div className="mx-auto max-w-7xl px-6 py-5 lg:px-12">
-          <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <h1 className="text-2xl font-black md:text-3xl">Browse Vehicles</h1>
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-400">
-                {loading
-                  ? 'Loading…'
-                  : `${totalResults} listing${(totalResults || 0) === 1 ? '' : 's'}`}
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="font-[var(--font-space-grotesk)] text-4xl font-semibold mb-2">Browse Vehicles</h1>
+            <p className="text-[#666]">
+              {loading
+                ? 'Loading…'
+                : `${totalResults} listing${(totalResults || 0) === 1 ? '' : 's'} available`}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setView('grid')}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                view === 'grid'
+                  ? 'bg-[#111] text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)]'
+                  : 'bg-white border border-[#e5e5e5] text-[#444] hover:border-black'
+              }`}
+            >
+              <Grid3x3 className="w-4 h-4" />
+              Grid
+            </button>
+            <button
+              type="button"
+              onClick={() => setView('list')}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                view === 'list'
+                  ? 'bg-[#111] text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)]'
+                  : 'bg-white border border-[#e5e5e5] text-[#444] hover:border-black'
+              }`}
+            >
+              <List className="w-4 h-4" />
+              List
+            </button>
+          </div>
+        </div>
+
+        {/* Search Form */}
+        <form
+          onSubmit={handleSearch}
+          className="mb-8 rounded-[20px] border border-[#e5e5e5] bg-white p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
+        >
+          <div className="grid gap-4 md:grid-cols-5">
+            <div className="md:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#888]" />
+                <input
+                  id="q"
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search make or model"
+                  className="w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-12 py-3 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
+                  autoComplete="off"
+                  maxLength={80}
+                />
               </div>
-              <div className="hidden h-5 w-px bg-white/10 md:block" />
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setView('grid')}
-                  className={`rounded-md px-2 py-1 text-sm ${view === 'grid' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
-                  aria-pressed={view === 'grid'}
-                >
-                  Grid
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView('list')}
-                  className={`rounded-md px-2 py-1 text-sm ${view === 'list' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'}`}
-                  aria-pressed={view === 'list'}
-                >
-                  List
-                </button>
-              </div>
+            </div>
+            <div>
+              <select
+                id="city"
+                value={city}
+                onChange={(e) => {
+                  setCity(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all appearance-none"
+              >
+                {CITIES.map((c) => (
+                  <option key={c} value={c === 'All Cities' ? '' : c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                id="price"
+                value={priceKey}
+                onChange={(e) => {
+                  setPriceKey(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all appearance-none"
+              >
+                {PRICE_RANGES.map((r) => (
+                  <option key={r.label} value={r.label}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <select
+                id="sort"
+                value={sort}
+                onChange={(e) => {
+                  setSort(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all appearance-none"
+              >
+                <option value="latest">Latest</option>
+                <option value="priceAsc">Price: Low to High</option>
+                <option value="priceDesc">Price: High to Low</option>
+                <option value="yearDesc">Year: New to Old</option>
+                <option value="yearAsc">Year: Old to New</option>
+              </select>
             </div>
           </div>
-          <form
-            onSubmit={handleSearch}
-            className="rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm backdrop-blur"
-          >
-            <div className="grid gap-3 md:grid-cols-6">
-              <div className="md:col-span-2">
-                <label htmlFor="q" className="sr-only">
-                  Make or Model
-                </label>
-                <div className="flex h-11 items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-gray-400" aria-hidden>
-                    <path d="M10 4a6 6 0 0 1 4.472 9.995l4.266 4.267a1 1 0 0 1-1.415 1.415l-4.267-4.266A6 6 0 1 1 10 4m0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8" />
-                  </svg>
-                  <input
-                    id="q"
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search make or model (e.g., Corolla, Civic, Cultus)"
-                    className="h-full w-full bg-transparent text-white placeholder:text-gray-500 outline-none"
-                    autoComplete="off"
-                    maxLength={80}
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="city" className="sr-only">
-                  City
-                </label>
-                <select
-                  id="city"
-                  value={city}
-                  onChange={(e) => {
-                    setCity(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
-                >
-                  {CITIES.map((c) => (
-                    <option key={c} value={c === 'All Cities' ? '' : c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="price" className="sr-only">
-                  Price Range
-                </label>
-                <select
-                  id="price"
-                  value={priceKey}
-                  onChange={(e) => {
-                    setPriceKey(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
-                >
-                  {PRICE_RANGES.map((r) => (
-                    <option key={r.label} value={r.label}>
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="sort" className="sr-only">
-                  Sort
-                </label>
-                <select
-                  id="sort"
-                  value={sort}
-                  onChange={(e) => {
-                    setSort(e.target.value);
-                    setPage(1);
-                  }}
-                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
-                >
-                  <option value="latest">Latest</option>
-                  <option value="priceAsc">Price: Low to High</option>
-                  <option value="priceDesc">Price: High to Low</option>
-                  <option value="yearDesc">Year: New to Old</option>
-                  <option value="yearAsc">Year: Old to New</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="limit" className="sr-only">
-                  Per page
-                </label>
-                <select
-                  id="limit"
-                  value={String(limit)}
-                  onChange={(e) => {
-                    setLimit(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-black/30 px-3 text-left font-medium text-white outline-none transition-all focus:border-emerald-500/50"
-                >
-                  {[12, 24, 36, 48].map((n) => (
-                    <option key={n} value={n}>
-                      {n} / page
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex flex-wrap gap-2">
-                {hasActiveFilters && (
-                  <>
-                    {makeId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMakeId(null);
-                          setPage(1);
-                          load();
-                        }}
-                        className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300 hover:bg-emerald-500/15"
-                        aria-label="Clear brand filter"
-                        title="Clear brand filter"
-                      >
-                        {makeName || 'Brand'}
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                          <path fillRule="evenodd" d="M10 8.586 6.757 5.343a1 1 0 1 0-1.414 1.414L8.586 10l-3.243 3.243a1 1 0 1 0 1.414 1.414L10 11.414l3.243 3.243a1 1 0 0 0 1.414-1.414L11.414 10l3.243-3.243a1 1 0 0 0-1.414-1.414L10 8.586Z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    )}
-                    {query.trim() && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-                        {query}
-                      </span>
-                    )}
-                    {city && city !== 'All Cities' && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-                        {city}
-                      </span>
-                    )}
-                    {(PRICE_RANGES.find((r) => r.label === priceKey) !== PRICE_RANGES[0]) && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-                        {priceKey}
-                      </span>
-                    )}
-                    {sort !== 'latest' && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-                        {sort}
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="h-11 border-white/20 bg-transparent text-white hover:bg-white/10"
-                >
-                  Reset
-                </Button>
-                <Button
-                  type="submit"
-                  className="h-11 rounded-lg bg-linear-to-r from-emerald-500 to-emerald-700 px-5 font-semibold text-white hover:opacity-90"
-                >
-                  Apply Filters
-                </Button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-7xl px-6 pt-6 pb-12 lg:px-12">
+          {/* Active Filters */}
+          {hasActiveFilters && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {makeId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMakeId(null);
+                    setPage(1);
+                    load();
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1.5 text-xs font-medium text-[#10b981] hover:bg-[#dcfce7] transition-colors"
+                >
+                  {makeName || 'Brand'}
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              {query.trim() && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1.5 text-xs font-medium text-[#10b981]">
+                  {query}
+                </span>
+              )}
+              {city && city !== 'All Cities' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1.5 text-xs font-medium text-[#10b981]">
+                  {city}
+                </span>
+              )}
+              {(PRICE_RANGES.find((r) => r.label === priceKey) !== PRICE_RANGES[0]) && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1.5 text-xs font-medium text-[#10b981]">
+                  {priceKey}
+                </span>
+              )}
+              {sort !== 'latest' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1.5 text-xs font-medium text-[#10b981]">
+                  {sort}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="ml-auto text-sm font-medium text-[#666] hover:text-black transition-colors"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+        </form>
+
+        {/* Results */}
         {error && (
-          <div className="mb-6 rounded-md border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mb-6 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-600">
             {error}
           </div>
         )}
+
         {loading ? (
           <div className={`${view === 'grid' ? 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'space-y-4'}`}>
             {Array.from({ length: 12 }).map((_, i) => (
               <div
                 key={i}
-                className={`${view === 'grid' ? 'h-64' : 'h-40'} animate-pulse rounded-2xl border border-white/10 bg-white/5`}
+                className={`${view === 'grid' ? 'h-80' : 'h-32'} animate-pulse rounded-[20px] bg-white border border-[#e5e5e5]`}
               />
             ))}
           </div>
         ) : data && data.vehicles.length > 0 ? (
           <>
             {view === 'grid' ? (
-              <LandingListings
-                cars={data.vehicles.map((v: Vehicle) => ({
-                  id: String(v.id),
-                  name: v.title,
-                  price: `${v.currency} ${Number(v.price).toLocaleString()}`,
-                  year: String(v.year),
-                  mileage: v.mileage ? `${v.mileage.toLocaleString()} km` : '—',
-                  image: v.images?.[0]?.url || '/placeholder.svg',
-                  featured: Boolean(v.featured),
-                }))}
-              />
-            ) : (
-              <div className="divide-y divide-white/10 rounded-2xl border border-white/10 bg-white/5">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {data.vehicles.map((v: Vehicle) => (
-                  <a
+                  <Link
                     key={v.id}
                     href={`/vehicles/${v.id}`}
-                    className="flex gap-4 p-4 transition-colors hover:bg-white/5"
+                    className="group bg-white rounded-[20px] p-6 transition-all duration-300 cursor-pointer border border-transparent hover:translate-y-[-10px] hover:border-[#eee] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={v.images?.[0]?.url || '/placeholder.svg'}
-                      alt={v.title}
-                      className="h-28 w-40 rounded-lg object-cover"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="truncate text-lg font-semibold">{v.title}</h3>
-                        <div className="shrink-0 rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-emerald-300 ring-1 ring-white/10">
-                          {v.currency} {Number(v.price).toLocaleString()}
+                    <div className="w-full h-60 rounded-xl overflow-hidden mb-5 bg-[#f5f5f5] relative">
+                      {v.images?.[0]?.url ? (
+                        <Image
+                          src={v.images[0].url}
+                          alt={v.title}
+                          width={300}
+                          height={240}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center">
+                          <span className="text-white text-4xl">🚗</span>
+                        </div>
+                      )}
+                      {v.featured && (
+                        <div className="absolute top-3 left-3 bg-[#10b981] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          FEATURED
+                        </div>
+                      )}
+                      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold text-[#10b981]">
+                        {formatPrice(Number(v.price), v.currency)}
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-semibold text-base block mb-1">{v.title}</span>
+                        <span className="text-xs text-[#888]">
+                          {v.year} • {v.mileage?.toLocaleString()} km
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {data.vehicles.map((v: Vehicle) => (
+                  <Link
+                    key={v.id}
+                    href={`/vehicles/${v.id}`}
+                    className="group flex gap-4 bg-white rounded-[20px] p-6 border border-[#e5e5e5] transition-all hover:shadow-[0_10px_30px_rgba(0,0,0,0.05)] hover:border-[#10b981]/20"
+                  >
+                    <div className="relative w-40 h-32 rounded-xl overflow-hidden bg-[#f5f5f5] shrink-0">
+                      {v.images?.[0]?.url ? (
+                        <Image
+                          src={v.images[0].url}
+                          alt={v.title}
+                          width={160}
+                          height={128}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center">
+                          <span className="text-white text-3xl">🚗</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h3 className="text-lg font-semibold line-clamp-1">{v.title}</h3>
+                        <div className="text-lg font-bold text-[#10b981] shrink-0">
+                          {formatPrice(Number(v.price), v.currency)}
                         </div>
                       </div>
-                      <div className="mt-1 line-clamp-2 text-sm text-gray-400">
-                        {v.make?.name} {v.model?.name} • {v.year} •{' '}
-                        {v.mileage ? `${v.mileage.toLocaleString()} km` : '—'} • {v.city}
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-400">
-                        <span className="rounded-md border border-white/10 px-2 py-1">
+                      <p className="text-sm text-[#666] mb-3">
+                        {v.make?.name} {v.model?.name} • {v.year} • {v.mileage?.toLocaleString()} km • {v.city}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full border border-[#e5e5e5] bg-[#fafafa] px-3 py-1 text-xs text-[#666]">
                           {v.transmission.toLowerCase()}
                         </span>
-                        <span className="rounded-md border border-white/10 px-2 py-1">
+                        <span className="rounded-full border border-[#e5e5e5] bg-[#fafafa] px-3 py-1 text-xs text-[#666]">
                           {v.fuelType.toLowerCase()}
                         </span>
-                        <span className="rounded-md border border-white/10 px-2 py-1">
+                        <span className="rounded-full border border-[#e5e5e5] bg-[#fafafa] px-3 py-1 text-xs text-[#666]">
                           {v.bodyType.toLowerCase()}
                         </span>
                         {v.featured && (
-                          <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-300">
+                          <span className="rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1 text-xs text-[#10b981] font-medium">
                             Featured
                           </span>
                         )}
                       </div>
                     </div>
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}
-            <div className="mt-6 text-center text-sm text-gray-400">
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-4">
+                <Button
+                  variant="outline"
+                  className="border-[#e5e5e5] bg-white hover:bg-[#fafafa]"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-[#666]">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  className="border-[#e5e5e5] bg-white hover:bg-[#fafafa]"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+
+            <div className="mt-6 text-center text-sm text-[#666]">
               Showing {Math.min((page - 1) * limit + 1, totalResults)}–
-              {Math.min(page * limit, totalResults)} of {totalResults}
+              {Math.min(page * limit, totalResults)} of {totalResults} vehicles
             </div>
           </>
         ) : (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center text-sm text-gray-400">
-            No vehicles found. Adjust filters and try again.
-          </div>
-        )}
-
-        {/* Pagination */}
-        {data && totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              className="border-white/20 bg-transparent text-white hover:bg-white/10"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-gray-300">
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              className="border-white/20 bg-transparent text-white hover:bg-white/10"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-            >
-              Next
+          <div className="rounded-[20px] border border-[#e5e5e5] bg-white p-12 text-center">
+            <p className="text-[#666] mb-4">No vehicles found. Adjust filters and try again.</p>
+            <Button onClick={clearFilters} className="bg-[#111] text-white hover:bg-[#222]">
+              Clear Filters
             </Button>
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }
-
-function iHash(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = (h << 5) - h + s.charCodeAt(i);
-    h |= 0;
-  }
-  return Math.abs(h);
-}
-
