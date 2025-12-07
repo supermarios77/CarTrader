@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Search, Menu, X, ArrowUp, ArrowRight, Car, Shield, FileText, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { getFeaturedVehicles } from '@/lib/vehicles-api';
+import { getFeaturedVehicles, getVehicles } from '@/lib/vehicles-api';
 import type { Vehicle } from '@/types/vehicle';
+import { VehicleStatus } from '@/types/vehicle';
 import { getAllMakes, type Make } from '@/lib/catalog-api';
 import { useAuth } from '@/contexts/auth-context';
 import Image from 'next/image';
@@ -61,12 +62,27 @@ export function Landing() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getFeaturedVehicles(8);
+        // First try to get featured vehicles
+        const featuredData = await getFeaturedVehicles(8);
         if (!active) return;
-        setFeatured(data);
+        
+        // If we have featured vehicles, use them
+        if (featuredData && featuredData.length > 0) {
+          setFeatured(featuredData);
+        } else {
+          // Fallback: get recent active vehicles if no featured vehicles
+          const recentData = await getVehicles({ 
+            status: VehicleStatus.ACTIVE, 
+            limit: 8,
+            sortBy: 'createdAt',
+            sortOrder: 'desc'
+          });
+          if (!active) return;
+          setFeatured(Array.isArray(recentData.vehicles) ? recentData.vehicles : []);
+        }
       } catch (e) {
         if (!active) return;
-        setError(e instanceof Error ? e.message : 'Failed to load featured vehicles');
+        setError(e instanceof Error ? e.message : 'Failed to load vehicles');
         setFeatured(null);
       } finally {
         if (active) setLoading(false);
@@ -492,7 +508,7 @@ export function Landing() {
           </div>
         ) : (
           <div className="rounded-[20px] border border-[#eee] bg-white p-8 text-center text-[#888]">
-            No featured vehicles available at the moment.
+            No vehicles available at the moment. <Link href="/post" className="text-[#10b981] hover:underline font-semibold">List your car</Link> to get started!
             </div>
         )}
       </section>
