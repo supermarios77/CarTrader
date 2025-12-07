@@ -246,7 +246,8 @@ export class VehiclesService {
     }
 
     // If user is authenticated, show their DRAFT vehicles
-    if (userId) {
+    // BUT: If filtering by featured, only show ACTIVE vehicles (featured vehicles are always ACTIVE)
+    if (userId && filterDto.featured !== true) {
       where.OR = [
         { ...where },
         { userId, status: VehicleStatus.DRAFT },
