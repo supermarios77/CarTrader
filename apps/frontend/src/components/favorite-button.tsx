@@ -99,9 +99,9 @@ export function FavoriteButton({
         onClick={handleToggle}
         disabled={loading}
         className={cn(
-          'absolute right-2 top-2 z-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background',
+          'absolute right-2 top-2 z-10 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white shadow-[0_2px_10px_rgba(0,0,0,0.1)]',
           isFavorite && 'text-red-500 hover:text-red-600',
-          !isFavorite && 'text-muted-foreground hover:text-red-500',
+          !isFavorite && 'text-[#666] hover:text-red-500',
           className,
         )}
         title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}

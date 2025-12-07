@@ -19,15 +19,15 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-4">
           <div className="max-w-md w-full space-y-4 text-center">
-            <h2 className="text-2xl font-bold">Something went wrong</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-2xl font-bold text-[#111]">Something went wrong</h2>
+            <p className="text-[#666]">
               An unexpected error occurred. Please try again.
             </p>
             <button
               onClick={() => reset()}
-              className="inline-flex items-center justify-center rounded-md px-4 py-2 bg-primary text-primary-foreground hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-[#111] text-white hover:bg-[#222] font-semibold transition-all"
             >
               Try again
             </button>

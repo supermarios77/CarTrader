@@ -219,8 +219,8 @@ export default function CreateVehiclePage() {
           <Link href="/vehicles">
             <Button variant="ghost" className="mb-4">← Back to Listings</Button>
           </Link>
-          <h1 className="text-4xl font-bold text-foreground">List Your Vehicle</h1>
-          <p className="mt-2 text-muted-foreground">
+          <h1 className="text-4xl font-bold text-[#111]">List Your Vehicle</h1>
+          <p className="mt-2 text-[#666]">
             Fill in the details below to create your vehicle listing
           </p>
         </div>
@@ -263,7 +263,7 @@ export default function CreateVehiclePage() {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Describe your vehicle..."
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-sm text-[#111] placeholder:text-[#888] focus-visible:outline-none focus-visible:border-[#10b981] focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.1)]"
                     rows={4}
                   />
                 </div>
@@ -476,7 +476,7 @@ export default function CreateVehiclePage() {
                     className="cursor-pointer"
                   />
                   {images.length > 0 && (
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 text-sm text-[#666]">
                       {images.length} image(s) selected
                     </p>
                   )}
@@ -501,7 +501,7 @@ export default function CreateVehiclePage() {
                       onChange={handleInputChange}
                       required
                       disabled={loadingCatalog.categories}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-sm text-[#111] file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[#888] focus-visible:outline-none focus-visible:border-[#10b981] focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.1)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">Select Category</option>
                       {categories.map((category) => (
@@ -511,7 +511,7 @@ export default function CreateVehiclePage() {
                       ))}
                     </select>
                     {loadingCatalog.categories && (
-                      <p className="mt-1 text-xs text-muted-foreground">Loading categories...</p>
+                      <p className="mt-1 text-xs text-[#666]">Loading categories...</p>
                     )}
                   </div>
 
@@ -525,7 +525,7 @@ export default function CreateVehiclePage() {
                       onChange={handleInputChange}
                       required
                       disabled={!formData.categoryId || loadingCatalog.makes}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-sm text-[#111] file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[#888] focus-visible:outline-none focus-visible:border-[#10b981] focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.1)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">{formData.categoryId ? 'Select Make' : 'Select Category First'}</option>
                       {makes.map((make) => (
@@ -535,7 +535,7 @@ export default function CreateVehiclePage() {
                       ))}
                     </select>
                     {loadingCatalog.makes && (
-                      <p className="mt-1 text-xs text-muted-foreground">Loading makes...</p>
+                      <p className="mt-1 text-xs text-[#666]">Loading makes...</p>
                     )}
                   </div>
 
@@ -549,7 +549,7 @@ export default function CreateVehiclePage() {
                       onChange={handleInputChange}
                       required
                       disabled={!formData.makeId || loadingCatalog.models}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 py-3 text-sm text-[#111] file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-[#888] focus-visible:outline-none focus-visible:border-[#10b981] focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.1)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">{formData.makeId ? 'Select Model' : 'Select Make First'}</option>
                       {models.map((model) => (
@@ -559,7 +559,7 @@ export default function CreateVehiclePage() {
                       ))}
                     </select>
                     {loadingCatalog.models && (
-                      <p className="mt-1 text-xs text-muted-foreground">Loading models...</p>
+                      <p className="mt-1 text-xs text-[#666]">Loading models...</p>
                     )}
                   </div>
                 </div>
