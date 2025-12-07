@@ -92,7 +92,7 @@ export function Navbar() {
       </nav>
 
       {/* Logo */}
-      <Link href="/" className="font-[var(--font-space-grotesk)] font-bold text-xl md:text-2xl tracking-[-0.03em] absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0">
+      <Link href="/" className="font-[var(--font-space-grotesk)] font-bold text-xl md:text-2xl tracking-[-0.03em] absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0 text-black">
         Car<span className="text-[#10b981]">Trader</span>
       </Link>
 
