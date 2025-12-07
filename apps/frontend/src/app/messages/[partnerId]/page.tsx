@@ -355,11 +355,15 @@ export default function ConversationPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <div className="container mx-auto max-w-5xl px-6 py-8">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8">
         {/* Header */}
         <div className="mb-6">
           <Link href="/messages">
-            <Button variant="ghost" className="mb-4">
+            <Button variant="outline" className="mb-4 border-[#e5e5e5] hover:bg-[#fafafa]">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Messages
             </Button>
@@ -376,22 +380,24 @@ export default function ConversationPage() {
                 }}
               />
             ) : (
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="h-6 w-6 text-primary" />
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-white font-semibold">
+                {currentPartner && messages.length > 0
+                  ? getPartnerName(messages[0])[0]?.toUpperCase() || 'U'
+                  : 'U'}
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="font-[var(--font-space-grotesk)] text-2xl font-semibold">
                 {currentPartner && messages.length > 0
                   ? getPartnerName(messages[0])
                   : 'Conversation'}
               </h1>
               {messages.length > 0 && messages[0]?.vehicle && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <Car className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-sm text-[#666] mt-1">
+                  <Car className="h-4 w-4 text-[#10b981]" />
                   <Link
                     href={`/vehicles/${messages[0].vehicle.id}`}
-                    className="hover:underline"
+                    className="hover:text-[#10b981] transition-colors"
                   >
                     {messages[0].vehicle.title}
                   </Link>
@@ -403,21 +409,19 @@ export default function ConversationPage() {
 
         {/* Error Message */}
         {error && (
-          <Card className="mb-6 border-destructive/50 bg-destructive/10">
-            <CardContent className="pt-6">
-              <p className="text-destructive">{error}</p>
-            </CardContent>
-          </Card>
+          <div className="mb-6 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
+          </div>
         )}
 
         {/* Messages */}
-        <Card className="mb-4 border-white/10 bg-white/5">
-          <CardContent className="p-0">
-            <div ref={messagesContainerRef} className="h[620px] overflow-y-auto p-6 space-y-5">
+        <div className="bg-white rounded-[20px] border border-[#e5e5e5] mb-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+          <div className="p-0">
+            <div ref={messagesContainerRef} className="h-[620px] overflow-y-auto p-6 space-y-5">
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="flex items-center justify-center h-full text-[#666]">
                   <div className="text-center">
-                    <p className="mb-2">No messages yet</p>
+                    <p className="mb-2 text-lg">No messages yet</p>
                     <p className="text-sm">Start the conversation below</p>
                   </div>
                 </div>
@@ -446,22 +450,22 @@ export default function ConversationPage() {
                     <div key={message.id}>
                       {showDateDivider && (
                         <div className="my-2 flex items-center justify-center">
-                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-0.5 text-xs text-gray-300">
+                          <span className="rounded-full border border-[#e5e5e5] bg-[#fafafa] px-3 py-0.5 text-xs text-[#666]">
                             {new Date(message.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                       )}
                       <div className={`mt-1 flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end gap-2 group`}>
                       {!isOwnMessage && (
-                        <div className="h-8 w-8 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-xs text-gray-300">
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-xs text-white font-semibold">
                           {getPartnerName(message).slice(0, 2).toUpperCase()}
                         </div>
                       )}
                       <div
-                        className={`max-w-[70%] rounded-2xl p-4 relative shadow-sm ring-1 ${
+                        className={`max-w-[70%] rounded-[20px] p-4 relative shadow-sm ${
                           isOwnMessage
-                            ? 'bg-emerald-600/20 text-emerald-100 ring-emerald-500/20'
-                            : 'bg-white/5 text-white ring-white/10'
+                            ? 'bg-[#10b981] text-white'
+                            : 'bg-white border border-[#e5e5e5] text-[#111]'
                         } ${isDeleted ? 'opacity-60' : ''}`}
                       >
                         {isEditing ? (
@@ -470,7 +474,7 @@ export default function ConversationPage() {
                               value={editContent}
                               onChange={(e) => setEditContent(e.target.value)}
                               maxLength={5000}
-                              className="bg-background text-foreground"
+                              className="rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                               autoFocus
                             />
                             <div className="flex gap-2 justify-end">
@@ -511,8 +515,8 @@ export default function ConversationPage() {
                                 <p
                                   className={`text-xs ${
                                     isOwnMessage
-                                      ? 'text-emerald-200/70'
-                                      : 'text-gray-400'
+                                      ? 'text-white/70'
+                                      : 'text-[#666]'
                                   }`}
                                 >
                                   {formatDate(message.createdAt)}
@@ -521,8 +525,8 @@ export default function ConversationPage() {
                                   <span
                                     className={`text-xs ${
                                       isOwnMessage
-                                        ? 'text-emerald-200/70'
-                                        : 'text-gray-400'
+                                        ? 'text-white/70'
+                                        : 'text-[#666]'
                                     }`}
                                     title={`Edited at ${new Date(message.editedAt).toLocaleString()}`}
                                   >
@@ -533,8 +537,8 @@ export default function ConversationPage() {
                                   <span
                                     className={`text-xs ${
                                       isOwnMessage
-                                        ? 'text-emerald-200/70'
-                                        : 'text-gray-400'
+                                        ? 'text-white/70'
+                                        : 'text-[#666]'
                                     }`}
                                     title={`Deleted at ${new Date(message.deletedAt!).toLocaleString()}`}
                                   >
@@ -572,7 +576,7 @@ export default function ConversationPage() {
                         )}
                       </div>
                       {isOwnMessage && (
-                        <div className="h-8 w-8 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs text-emerald-200">
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-xs text-white font-semibold">
                           You
                         </div>
                       )}
@@ -583,30 +587,30 @@ export default function ConversationPage() {
               )}
               <div ref={messagesEndRef} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage} aria-label="Send a message">
-          <div className="flex gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
+        <form onSubmit={handleSendMessage} aria-label="Send a message" className="bg-white rounded-[20px] border border-[#e5e5e5] p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+          <div className="flex gap-2">
             <Input
               value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
               placeholder="Type your message..."
               maxLength={5000}
               disabled={sending}
-              className="flex-1 bg-black/30 text-white placeholder:text-gray-400"
+              className="flex-1 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
             />
             <Button
               type="submit"
               disabled={!messageContent.trim() || sending}
-              className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
+              className="rounded-full bg-[#10b981] text-white hover:bg-[#059669] h-12 w-12 p-0"
               aria-label="Send"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-[#666] mt-2 text-right">
             {messageContent.length}/5000 characters
           </p>
         </form>
