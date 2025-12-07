@@ -57,6 +57,8 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '5mb',
     },
   },
+  // Transpile packages for compatibility
+  transpilePackages: ['date-fns'],
 };
 
 export default nextConfig;
