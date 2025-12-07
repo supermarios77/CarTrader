@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
       variants: {
         variant: {
-          default: "bg-primary text-primary-foreground hover:bg-primary/90",
+          default: "bg-primary text-white hover:bg-primary/90",
           destructive:
             "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
           outline:
@@ -47,11 +47,17 @@ function Button({
     asChild?: boolean
   }) {
   const Comp = asChild ? Slot : "button"
+  
+  // If className contains dark background colors, ensure text is white
+  const hasDarkBg = className?.includes('bg-[#111]') || className?.includes('bg-[#222]') || className?.includes('bg-black');
+  const finalClassName = hasDarkBg && !className?.includes('text-white') 
+    ? `${className} !text-white` 
+    : className;
 
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size }), finalClassName)}
       {...props}
     />
   )
