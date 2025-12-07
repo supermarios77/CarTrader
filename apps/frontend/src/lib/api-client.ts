@@ -91,11 +91,12 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 /**
- * Make API request with automatic token refresh
+ * Make API request with automatic token refresh and retry logic
  */
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
+  retries = 2,
 ): Promise<T> {
   // Ensure URL uses HTTP (not HTTPS) to avoid ALPN negotiation issues
   let url = `${API_URL}${endpoint}`;
@@ -118,71 +119,108 @@ async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
 
-  // Make request
-  // Explicitly avoid HTTP/2 and ALPN negotiation
-  let response = await fetch(url, {
-    ...options,
-    headers: headers as HeadersInit,
-    credentials: 'include',
-    cache: 'no-cache',
-    keepalive: true,
-  });
+  const makeRequest = async (): Promise<Response> => {
+    return fetch(url, {
+      ...options,
+      headers: headers as HeadersInit,
+      credentials: 'include',
+      cache: 'no-cache',
+      keepalive: true,
+    });
+  };
 
-  // If 401 and we have a refresh token, try to refresh
-  if (response.status === 401 && getRefreshToken()) {
-    const newAccessToken = await refreshAccessToken();
-    if (newAccessToken) {
-      // Retry original request with new token
-      headers['Authorization'] = `Bearer ${newAccessToken}`;
-      response = await fetch(url, {
-        ...options,
-        headers: headers as HeadersInit,
-        credentials: 'include',
-        cache: 'no-cache',
-        keepalive: true,
-      });
-    } else {
-      // Refresh failed, clear tokens
-      clearTokens();
-      throw new ApiClientError('Session expired. Please login again.', 401);
-    }
-  }
+  // Make request with retry logic
+  let response: Response;
+  let lastError: Error | null = null;
 
-  // Handle 204 No Content (successful DELETE, etc.)
-  if (response.status === 204) {
-    return null as unknown as T;
-  }
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      response = await makeRequest();
 
-  // Parse response
-  const contentType = response.headers.get('content-type');
-  const isJson = contentType?.includes('application/json');
-
-  if (!response.ok) {
-    let errorMessage = 'An error occurred';
-    let errors: string[] = [];
-
-    if (isJson) {
-      try {
-        const errorData: ApiError = await response.json();
-        if (typeof errorData.message === 'string') {
-          errorMessage = errorData.message;
-        } else if (Array.isArray(errorData.message)) {
-          errors = errorData.message;
-          errorMessage = errors[0] || errorMessage;
+      // If 401 and we have a refresh token, try to refresh
+      if (response.status === 401 && getRefreshToken()) {
+        const newAccessToken = await refreshAccessToken();
+        if (newAccessToken) {
+          // Retry original request with new token
+          headers['Authorization'] = `Bearer ${newAccessToken}`;
+          response = await makeRequest();
+        } else {
+          // Refresh failed, clear tokens
+          clearTokens();
+          throw new ApiClientError('Session expired. Please login again.', 401);
         }
-      } catch {
-        // Failed to parse error JSON
       }
+
+      // Handle 204 No Content (successful DELETE, etc.)
+      if (response.status === 204) {
+        return null as unknown as T;
+      }
+
+      // Parse response
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType?.includes('application/json');
+
+      if (!response.ok) {
+        let errorMessage = 'An error occurred';
+        let errors: string[] = [];
+
+        if (isJson) {
+          try {
+            const errorData: ApiError = await response.json();
+            if (typeof errorData.message === 'string') {
+              errorMessage = errorData.message;
+            } else if (Array.isArray(errorData.message)) {
+              errors = errorData.message;
+              errorMessage = errors[0] || errorMessage;
+            }
+          } catch {
+            // Failed to parse error JSON
+          }
+        }
+
+        // Retry on server errors (5xx) or rate limiting (429)
+        const shouldRetry = 
+          (response.status >= 500 && response.status < 600) || 
+          response.status === 429;
+
+        if (shouldRetry && attempt < retries) {
+          // Exponential backoff: wait 1s, 2s, 4s
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+
+        throw new ApiClientError(errorMessage, response.status, errors);
+      }
+
+      if (isJson) {
+        return response.json();
+      }
+
+      return response.text() as unknown as T;
+    } catch (error) {
+      lastError = error as Error;
+
+      // Don't retry on client errors (4xx) except 429
+      if (error instanceof ApiClientError) {
+        if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 429) {
+          throw error;
+        }
+      }
+
+      // Retry on network errors
+      if (attempt < retries && (error instanceof TypeError || error instanceof Error)) {
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      throw error;
     }
-
-    throw new ApiClientError(errorMessage, response.status, errors);
   }
 
-  if (isJson) {
-    return response.json();
-  }
-
-  return response.text() as unknown as T;
+  // Should never reach here, but TypeScript needs it
+  throw lastError || new Error('Request failed after retries');
 }
 
 /**

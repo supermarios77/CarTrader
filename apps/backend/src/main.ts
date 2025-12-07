@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -28,6 +29,9 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     exposedHeaders: ['Content-Type'],
   });
+
+  // Global exception filter for consistent error responses
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Global validation pipe for DTOs
   app.useGlobalPipes(
