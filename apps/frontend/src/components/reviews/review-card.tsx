@@ -2,7 +2,7 @@
 
 import { Review } from '@/types/review';
 import { ReviewStars } from './review-stars';
-import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+import { formatDistanceToNow } from '@/lib/date-utils';
 import { CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 
