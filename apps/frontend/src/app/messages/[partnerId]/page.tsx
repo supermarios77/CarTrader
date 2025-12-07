@@ -323,11 +323,11 @@ export default function ConversationPage() {
   // Wait for auth to load before showing anything or making redirect decisions
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-muted rounded-lg" />
-            <div className="h-96 bg-muted rounded-lg" />
+            <div className="h-12 bg-white rounded-[20px] border border-[#e5e5e5]" />
+            <div className="h-96 bg-white rounded-[20px] border border-[#e5e5e5]" />
           </div>
         </div>
       </div>
@@ -342,11 +342,11 @@ export default function ConversationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="container mx-auto max-w-4xl px-4 py-8">
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-12 bg-muted rounded-lg" />
-            <div className="h-96 bg-muted rounded-lg" />
+            <div className="h-12 bg-white rounded-[20px] border border-[#e5e5e5]" />
+            <div className="h-96 bg-white rounded-[20px] border border-[#e5e5e5]" />
           </div>
         </div>
       </div>
@@ -354,7 +354,7 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
       {/* Ambient Background Blobs */}
       <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
       <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
