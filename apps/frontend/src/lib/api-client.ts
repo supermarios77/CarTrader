@@ -97,6 +97,7 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
   retries = 2,
+  timeout = 30000, // 30 seconds default timeout
 ): Promise<T> {
   // Ensure URL uses HTTP (not HTTPS) to avoid ALPN negotiation issues
   let url = `${API_URL}${endpoint}`;
@@ -120,13 +121,28 @@ async function apiRequest<T>(
   }
 
   const makeRequest = async (): Promise<Response> => {
-    return fetch(url, {
-      ...options,
-      headers: headers as HeadersInit,
-      credentials: 'include',
-      cache: 'no-cache',
-      keepalive: true,
-    });
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: headers as HeadersInit,
+        credentials: 'include',
+        cache: 'no-cache',
+        keepalive: true,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ApiClientError('Request timeout. Please try again.', 408);
+      }
+      throw error;
+    }
   };
 
   // Make request with retry logic
@@ -135,7 +151,20 @@ async function apiRequest<T>(
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      response = await makeRequest();
+      try {
+        response = await makeRequest();
+      } catch (error) {
+        // Handle timeout and network errors
+        if (error instanceof ApiClientError && error.statusCode === 408) {
+          // Timeout - retry if attempts remaining
+          if (attempt < retries) {
+            const delay = Math.pow(2, attempt) * 1000;
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+        }
+        throw error;
+      }
 
       // If 401 and we have a refresh token, try to refresh
       if (response.status === 401 && getRefreshToken()) {
@@ -143,7 +172,16 @@ async function apiRequest<T>(
         if (newAccessToken) {
           // Retry original request with new token
           headers['Authorization'] = `Bearer ${newAccessToken}`;
-          response = await makeRequest();
+          try {
+            response = await makeRequest();
+          } catch (error) {
+            if (error instanceof ApiClientError && error.statusCode === 408 && attempt < retries) {
+              const delay = Math.pow(2, attempt) * 1000;
+              await new Promise((resolve) => setTimeout(resolve, delay));
+              continue;
+            }
+            throw error;
+          }
         } else {
           // Refresh failed, clear tokens
           clearTokens();

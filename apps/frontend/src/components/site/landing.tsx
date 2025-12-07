@@ -9,6 +9,8 @@ import { VehicleStatus } from '@/types/vehicle';
 import { getAllMakes, type Make } from '@/lib/catalog-api';
 import { useAuth } from '@/contexts/auth-context';
 import Image from 'next/image';
+import { useErrorHandler } from '@/hooks/use-error-handler';
+import { LoadingCard } from '@/components/ui/loading';
 
 const CITIES = [
   'All Cities',
@@ -45,6 +47,7 @@ export function Landing() {
   const [city, setCity] = useState(CITIES[0]);
   const [priceKey, setPriceKey] = useState(PRICE_RANGES[0].label);
   const { isAuthenticated, user } = useAuth();
+  const { handleAsyncError } = useErrorHandler();
 
   const selectedRange = PRICE_RANGES.find((r) => r.label === priceKey) || PRICE_RANGES[0];
 
@@ -58,49 +61,70 @@ export function Landing() {
 
   useEffect(() => {
     let active = true;
+    
     (async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        // First try to get featured vehicles
-        const featuredData = await getFeaturedVehicles(8);
-        if (!active) return;
-        
-        // If we have featured vehicles, use them
-        if (featuredData && featuredData.length > 0) {
-          setFeatured(featuredData);
-        } else {
-          // Fallback: get recent active vehicles if no featured vehicles
-          const recentData = await getVehicles({ 
+      setLoading(true);
+      setError(null);
+      
+      // First try to get featured vehicles
+      const featuredData = await handleAsyncError(
+        async () => await getFeaturedVehicles(8),
+        {
+          showToast: false, // Don't show toast on landing page
+          logError: true,
+          customErrorMessage: 'Failed to load featured vehicles',
+        }
+      );
+      
+      if (!active) return;
+      
+      // If we have featured vehicles, use them
+      if (featuredData && featuredData.length > 0) {
+        setFeatured(featuredData);
+      } else {
+        // Fallback: get recent active vehicles if no featured vehicles
+        const recentData = await handleAsyncError(
+          async () => await getVehicles({ 
             status: VehicleStatus.ACTIVE, 
             limit: 8,
             sortBy: 'createdAt',
             sortOrder: 'desc'
-          });
-          if (!active) return;
-          setFeatured(Array.isArray(recentData.vehicles) ? recentData.vehicles : []);
-        }
-      } catch (e) {
+          }),
+          {
+            showToast: false,
+            logError: true,
+            customErrorMessage: 'Failed to load vehicles',
+          }
+        );
+        
         if (!active) return;
-        setError(e instanceof Error ? e.message : 'Failed to load vehicles');
-        setFeatured(null);
-      } finally {
-        if (active) setLoading(false);
+        
+        if (recentData) {
+          setFeatured(Array.isArray(recentData.vehicles) ? recentData.vehicles : []);
+        } else {
+          setFeatured([]);
+          setError('No vehicles available');
+        }
       }
+      
+      if (active) setLoading(false);
     })();
+    
     (async () => {
       try {
         const list = await getAllMakes();
         if (!active) return;
         setBrands(list);
       } catch {
+        // Silently fail for brands - not critical
         if (!active) return;
       }
     })();
+    
     return () => {
       active = false;
     };
-  }, []);
+  }, [handleAsyncError]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -461,10 +485,10 @@ export function Landing() {
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-              {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-64 animate-pulse bg-white rounded-[20px]" />
-              ))}
-            </div>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <LoadingCard key={i} />
+            ))}
+          </div>
         ) : error ? (
           <div className="rounded-[20px] border border-red-200 bg-red-50 p-8 text-center text-red-600">
             {error}
