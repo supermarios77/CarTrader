@@ -395,7 +395,7 @@ export default function VehicleDetailPage() {
                 )}
                 {!isOwner && !isAuthenticated && (
                   <Link href={`/login?redirect=/vehicles/${vehicle.id}`} className="block">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-[#e5e5e5] text-[#111] hover:bg-[#fafafa]">
                       Sign in to Contact
                     </Button>
                   </Link>
@@ -422,13 +422,13 @@ export default function VehicleDetailPage() {
                       onClick={handleMarkAsSold}
                       disabled={actionLoading}
                       variant="outline"
-                      className="w-full"
+                      className="w-full border-[#e5e5e5] text-[#111] hover:bg-[#fafafa]"
                     >
                       Mark as Sold
                     </Button>
                   )}
                   <Link href={`/vehicles/${vehicle.id}/edit`} className="block">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full border-[#e5e5e5] text-[#111] hover:bg-[#fafafa]">
                       Edit Listing
                     </Button>
                   </Link>
