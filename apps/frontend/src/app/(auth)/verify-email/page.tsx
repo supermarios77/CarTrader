@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Email Verification Page
- * Handles email verification via token from URL or manual entry
- */
-
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -12,14 +7,6 @@ import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { AlertCircle, Loader2, CheckCircle2, Mail } from 'lucide-react';
 
 export default function VerifyEmailPage() {
@@ -36,7 +23,6 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState('');
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Cleanup redirect timeout on unmount
   useEffect(() => {
     return () => {
       if (redirectTimeoutRef.current) {
@@ -46,7 +32,6 @@ export default function VerifyEmailPage() {
     };
   }, []);
 
-  // Auto-verify if token is in URL
   useEffect(() => {
     if (tokenFromUrl) {
       handleVerify();
@@ -68,8 +53,7 @@ export default function VerifyEmailPage() {
       await api.post('/auth/verify-email', { token: token.trim() });
       setIsVerified(true);
       setSuccess('Email verified successfully!');
-      
-      // Redirect to home after 2 seconds
+
       redirectTimeoutRef.current = setTimeout(() => {
         router.push('/');
         router.refresh();
@@ -104,39 +88,41 @@ export default function VerifyEmailPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-16">
-      <div className="w-full max-w-md space-y-10">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] flex items-center justify-center px-4 py-16">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative w-full max-w-md space-y-8">
         {/* Logo/Header */}
         <div className="text-center space-y-3">
           <Link href="/" className="inline-block">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground">
-              🚗 CarTrader
+            <h1 className="font-[var(--font-space-grotesk)] text-5xl font-bold tracking-tight">
+              Car<span className="text-[#10b981]">Trader</span>
             </h1>
           </Link>
-          <p className="text-base text-muted-foreground">
-            Verify your email address
-          </p>
+          <p className="text-base text-[#666]">Verify your email address</p>
         </div>
 
         {/* Verification Card */}
-        <Card className="border-2 rounded-3xl shadow-xl dark:shadow-2xl border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="space-y-2 px-8 pt-10 pb-6">
-            <CardTitle className="text-3xl font-bold flex items-center gap-2">
-              <Mail className="h-6 w-6" />
-              Email Verification
-            </CardTitle>
-            <CardDescription className="text-base">
+        <div className="bg-white rounded-[40px] border border-[#e5e5e5] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.1)]">
+          <div className="space-y-2 mb-6">
+            <div className="flex items-center gap-2">
+              <Mail className="h-6 w-6 text-[#10b981]" />
+              <h2 className="font-[var(--font-space-grotesk)] text-3xl font-semibold">Email Verification</h2>
+            </div>
+            <p className="text-base text-[#666]">
               {isVerified
                 ? 'Your email has been verified successfully!'
                 : 'Enter the verification token from your email'}
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent className="space-y-6 px-8">
+          <div className="space-y-6">
             {/* Success Message */}
             {isVerified && (
               <div
-                className="flex items-center gap-3 rounded-2xl border-2 border-green-200/50 bg-green-50/50 dark:border-green-900/30 dark:bg-green-950/20 p-4 text-sm text-green-700 dark:text-green-400"
+                className="flex items-center gap-3 rounded-xl border border-[#10b981] bg-[#f0fdf4] p-4 text-sm text-[#059669]"
                 role="alert"
               >
                 <CheckCircle2 className="h-5 w-5 shrink-0" />
@@ -147,7 +133,7 @@ export default function VerifyEmailPage() {
             {/* Error Message */}
             {error && !isVerified && (
               <div
-                className="flex items-center gap-3 rounded-2xl border-2 border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20 p-4 text-sm text-red-700 dark:text-red-400"
+                className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
                 role="alert"
               >
                 <AlertCircle className="h-5 w-5 shrink-0" />
@@ -158,7 +144,7 @@ export default function VerifyEmailPage() {
             {/* Success Message (for resend) */}
             {success && !isVerified && (
               <div
-                className="flex items-center gap-3 rounded-2xl border-2 border-green-200/50 bg-green-50/50 dark:border-green-900/30 dark:bg-green-950/20 p-4 text-sm text-green-700 dark:text-green-400"
+                className="flex items-center gap-3 rounded-xl border border-[#10b981] bg-[#f0fdf4] p-4 text-sm text-[#059669]"
                 role="alert"
               >
                 <CheckCircle2 className="h-5 w-5 shrink-0" />
@@ -169,7 +155,7 @@ export default function VerifyEmailPage() {
             {!isVerified && (
               <>
                 {/* Token Input */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Label htmlFor="token" className="text-base font-medium">
                     Verification Token
                   </Label>
@@ -180,20 +166,18 @@ export default function VerifyEmailPage() {
                     onChange={(e) => setToken(e.target.value)}
                     disabled={isVerifying}
                     placeholder="Enter verification token from email"
-                    className="h-12 rounded-xl text-base border-2 focus-visible:ring-2 focus-visible:ring-blue-500"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleVerify();
                       }
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Check your email for the verification link or token
-                  </p>
+                  <p className="text-xs text-[#666]">Check your email for the verification link or token</p>
                 </div>
 
                 {/* Resend Section */}
-                <div className="border-t border-border/50 pt-6 space-y-3">
+                <div className="border-t border-[#e5e5e5] pt-6 space-y-2">
                   <Label htmlFor="email" className="text-base font-medium">
                     Didn&apos;t receive the email?
                   </Label>
@@ -205,7 +189,7 @@ export default function VerifyEmailPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={isResending}
                       placeholder="Enter your email"
-                      className="h-12 rounded-xl text-base border-2 focus-visible:ring-2 focus-visible:ring-blue-500"
+                      className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           handleResend();
@@ -215,7 +199,7 @@ export default function VerifyEmailPage() {
                     <Button
                       onClick={handleResend}
                       disabled={isResending || !email.trim()}
-                      className="h-12 rounded-xl px-6"
+                      className="h-12 rounded-full bg-[#10b981] text-white hover:bg-[#059669] px-6"
                     >
                       {isResending ? (
                         <>
@@ -230,14 +214,14 @@ export default function VerifyEmailPage() {
                 </div>
               </>
             )}
-          </CardContent>
+          </div>
 
           {!isVerified && (
-            <CardFooter className="flex flex-col space-y-5 px-8 pb-10">
+            <div className="mt-6 space-y-4">
               <Button
                 onClick={handleVerify}
                 disabled={isVerifying || !token.trim()}
-                className="w-full h-12 rounded-xl text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="w-full h-12 rounded-full bg-[#111] text-white hover:bg-[#222] text-base font-semibold"
               >
                 {isVerifying ? (
                   <>
@@ -248,19 +232,15 @@ export default function VerifyEmailPage() {
                   'Verify Email'
                 )}
               </Button>
-              <div className="text-center text-sm text-muted-foreground">
-                <Link
-                  href="/login"
-                  className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                >
+              <div className="text-center text-sm text-[#666]">
+                <Link href="/login" className="font-semibold text-[#10b981] hover:text-[#059669] transition-colors">
                   Back to login
                 </Link>
               </div>
-            </CardFooter>
+            </div>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );
 }
-

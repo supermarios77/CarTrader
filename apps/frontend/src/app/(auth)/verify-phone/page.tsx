@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * Phone Verification Page
- * Handles phone verification with 6-digit code
- */
-
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -13,14 +8,6 @@ import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { AlertCircle, Loader2, CheckCircle2, Phone, ArrowLeft } from 'lucide-react';
 
 export default function VerifyPhonePage() {
@@ -41,7 +28,6 @@ export default function VerifyPhonePage() {
   const codeInputRef = useRef<HTMLInputElement>(null);
   const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -49,7 +35,6 @@ export default function VerifyPhonePage() {
     }
   }, [countdown]);
 
-  // Cleanup redirect timeout on unmount
   useEffect(() => {
     return () => {
       if (redirectTimeoutRef.current) {
@@ -59,7 +44,6 @@ export default function VerifyPhonePage() {
     };
   }, []);
 
-  // Focus code input when token is received
   useEffect(() => {
     if (token && codeInputRef.current) {
       codeInputRef.current.focus();
@@ -79,13 +63,12 @@ export default function VerifyPhonePage() {
     setToken(null);
 
     try {
-      const response = await api.post<{ message: string; token: string }>(
-        '/auth/send-phone-verification',
-        { phone: phone.trim() },
-      );
+      const response = await api.post<{ message: string; token: string }>('/auth/send-phone-verification', {
+        phone: phone.trim(),
+      });
       setToken(response.token);
       setSuccess('Verification code sent! Check your SMS or console logs (development mode).');
-      setCountdown(60); // 60 second countdown
+      setCountdown(60);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send verification code.';
       setError(errorMessage);
@@ -116,11 +99,9 @@ export default function VerifyPhonePage() {
       });
       setIsVerified(true);
       setSuccess('Phone number verified successfully!');
-      
-      // Refresh user data
+
       await refreshUser();
-      
-      // Redirect to home after 2 seconds
+
       redirectTimeoutRef.current = setTimeout(() => {
         router.push('/');
         router.refresh();
@@ -140,10 +121,7 @@ export default function VerifyPhonePage() {
     setCode('');
 
     try {
-      const response = await api.post<{ message: string; token: string }>(
-        '/auth/resend-phone-verification',
-        {},
-      );
+      const response = await api.post<{ message: string; token: string }>('/auth/resend-phone-verification', {});
       setToken(response.token);
       setSuccess('Verification code resent! Check your SMS or console logs (development mode).');
       setCountdown(60);
@@ -156,45 +134,46 @@ export default function VerifyPhonePage() {
   };
 
   const handleCodeChange = (value: string) => {
-    // Only allow digits and limit to 6
     const digitsOnly = value.replace(/\D/g, '').slice(0, 6);
     setCode(digitsOnly);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-16">
-      <div className="w-full max-w-md space-y-10">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] flex items-center justify-center px-4 py-16">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative w-full max-w-md space-y-8">
         {/* Logo/Header */}
         <div className="text-center space-y-3">
           <Link href="/" className="inline-block">
-            <h1 className="text-5xl font-bold tracking-tight text-foreground">
-              🚗 CarTrader
+            <h1 className="font-[var(--font-space-grotesk)] text-5xl font-bold tracking-tight">
+              Car<span className="text-[#10b981]">Trader</span>
             </h1>
           </Link>
-          <p className="text-base text-muted-foreground">
-            Verify your phone number
-          </p>
+          <p className="text-base text-[#666]">Verify your phone number</p>
         </div>
 
         {/* Verification Card */}
-        <Card className="border-2 rounded-3xl shadow-xl dark:shadow-2xl border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="space-y-2 px-8 pt-10 pb-6">
-            <CardTitle className="text-3xl font-bold flex items-center gap-2">
-              <Phone className="h-6 w-6" />
-              Phone Verification
-            </CardTitle>
-            <CardDescription className="text-base">
+        <div className="bg-white rounded-[40px] border border-[#e5e5e5] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.1)]">
+          <div className="space-y-2 mb-6">
+            <div className="flex items-center gap-2">
+              <Phone className="h-6 w-6 text-[#10b981]" />
+              <h2 className="font-[var(--font-space-grotesk)] text-3xl font-semibold">Phone Verification</h2>
+            </div>
+            <p className="text-base text-[#666]">
               {isVerified
                 ? 'Your phone number has been verified successfully!'
                 : 'Enter your phone number and verification code'}
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent className="space-y-6 px-8">
+          <div className="space-y-6">
             {/* Success Message */}
             {isVerified && (
               <div
-                className="flex items-center gap-3 rounded-2xl border-2 border-green-200/50 bg-green-50/50 dark:border-green-900/30 dark:bg-green-950/20 p-4 text-sm text-green-700 dark:text-green-400"
+                className="flex items-center gap-3 rounded-xl border border-[#10b981] bg-[#f0fdf4] p-4 text-sm text-[#059669]"
                 role="alert"
               >
                 <CheckCircle2 className="h-5 w-5 shrink-0" />
@@ -205,7 +184,7 @@ export default function VerifyPhonePage() {
             {/* Error Message */}
             {error && !isVerified && (
               <div
-                className="flex items-center gap-3 rounded-2xl border-2 border-red-200/50 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20 p-4 text-sm text-red-700 dark:text-red-400"
+                className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
                 role="alert"
               >
                 <AlertCircle className="h-5 w-5 shrink-0" />
@@ -216,7 +195,7 @@ export default function VerifyPhonePage() {
             {/* Success Message (for code sent) */}
             {success && !isVerified && (
               <div
-                className="flex items-center gap-3 rounded-2xl border-2 border-green-200/50 bg-green-50/50 dark:border-green-900/30 dark:bg-green-950/20 p-4 text-sm text-green-700 dark:text-green-400"
+                className="flex items-center gap-3 rounded-xl border border-[#10b981] bg-[#f0fdf4] p-4 text-sm text-[#059669]"
                 role="alert"
               >
                 <CheckCircle2 className="h-5 w-5 shrink-0" />
@@ -228,7 +207,7 @@ export default function VerifyPhonePage() {
               <>
                 {/* Phone Input */}
                 {!token && (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Label htmlFor="phone" className="text-base font-medium">
                       Phone Number
                     </Label>
@@ -239,23 +218,21 @@ export default function VerifyPhonePage() {
                       onChange={(e) => setPhone(e.target.value)}
                       disabled={isSending}
                       placeholder="+1234567890"
-                      className="h-12 rounded-xl text-base border-2 focus-visible:ring-2 focus-visible:ring-blue-500"
+                      className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           handleSendCode();
                         }
                       }}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Include country code (e.g., +1 for US)
-                    </p>
+                    <p className="text-xs text-[#666]">Include country code (e.g., +1 for US)</p>
                   </div>
                 )}
 
                 {/* Code Input */}
                 {token && (
                   <>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <Label htmlFor="code" className="text-base font-medium">
                         Verification Code
                       </Label>
@@ -269,32 +246,26 @@ export default function VerifyPhonePage() {
                         disabled={isVerifying}
                         placeholder="000000"
                         maxLength={6}
-                        className="h-16 rounded-xl text-2xl text-center font-mono tracking-widest border-2 focus-visible:ring-2 focus-visible:ring-blue-500"
+                        className="h-16 rounded-full text-2xl text-center font-mono tracking-widest border-[#e5e5e5] bg-[#fafafa] focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && code.length === 6) {
                             handleVerify();
                           }
                         }}
                       />
-                      <p className="text-xs text-muted-foreground text-center">
-                        Enter the 6-digit code sent to {phone}
-                      </p>
+                      <p className="text-xs text-[#666] text-center">Enter the 6-digit code sent to {phone}</p>
                     </div>
 
                     {/* Resend Code */}
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Didn&apos;t receive the code?
-                      </span>
+                      <span className="text-[#666]">Didn&apos;t receive the code?</span>
                       {countdown > 0 ? (
-                        <span className="text-muted-foreground">
-                          Resend in {countdown}s
-                        </span>
+                        <span className="text-[#666]">Resend in {countdown}s</span>
                       ) : (
                         <button
                           onClick={handleResend}
                           disabled={isResending}
-                          className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors disabled:opacity-50"
+                          className="font-semibold text-[#10b981] hover:text-[#059669] transition-colors disabled:opacity-50"
                         >
                           {isResending ? 'Sending...' : 'Resend Code'}
                         </button>
@@ -304,15 +275,15 @@ export default function VerifyPhonePage() {
                 )}
               </>
             )}
-          </CardContent>
+          </div>
 
           {!isVerified && (
-            <CardFooter className="flex flex-col space-y-5 px-8 pb-10">
+            <div className="mt-6 space-y-4">
               {!token ? (
                 <Button
                   onClick={handleSendCode}
                   disabled={isSending || !phone.trim()}
-                  className="w-full h-12 rounded-xl text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                  className="w-full h-12 rounded-full bg-[#111] text-white hover:bg-[#222] text-base font-semibold"
                 >
                   {isSending ? (
                     <>
@@ -327,7 +298,7 @@ export default function VerifyPhonePage() {
                 <Button
                   onClick={handleVerify}
                   disabled={isVerifying || code.length !== 6}
-                  className="w-full h-12 rounded-xl text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                  className="w-full h-12 rounded-full bg-[#111] text-white hover:bg-[#222] text-base font-semibold"
                 >
                   {isVerifying ? (
                     <>
@@ -339,20 +310,19 @@ export default function VerifyPhonePage() {
                   )}
                 </Button>
               )}
-              <div className="text-center text-sm text-muted-foreground">
+              <div className="text-center text-sm text-[#666]">
                 <Link
                   href="/"
-                  className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex items-center justify-center gap-1"
+                  className="font-semibold text-[#10b981] hover:text-[#059669] transition-colors flex items-center justify-center gap-1"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to home
                 </Link>
               </div>
-            </CardFooter>
+            </div>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );
 }
-
