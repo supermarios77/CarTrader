@@ -220,10 +220,10 @@ export default function EditVehiclePage() {
   // Wait for auth to resolve first to avoid redirect/jitter on refresh
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="mx-auto max-w-5xl px-6 py-10">
-          <div className="h-8 w-40 animate-pulse rounded bg-white/10" />
-          <div className="mt-4 h-96 animate-pulse rounded-xl border border-white/10 bg-white/5" />
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
+          <div className="h-8 w-40 animate-pulse rounded-[20px] bg-white border border-[#e5e5e5]" />
+          <div className="mt-4 h-96 animate-pulse rounded-[20px] bg-white border border-[#e5e5e5]" />
         </div>
       </div>
     );
@@ -232,13 +232,13 @@ export default function EditVehiclePage() {
   // Not authenticated after loading → show CTA instead of redirect to prevent loops
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black text-white">
-        <div className="mx-auto max-w-5xl px-6 py-10">
-          <h1 className="mb-2 text-3xl font-black">Edit Listing</h1>
-          <p className="mb-6 text-gray-400">Please sign in to edit your listing.</p>
-          <a href={`/login?redirect=/vehicles/${vehicleId}/edit`}>
-            <Button className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">Sign In</Button>
-          </a>
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
+          <h1 className="font-[var(--font-space-grotesk)] mb-2 text-4xl font-semibold">Edit Listing</h1>
+          <p className="mb-6 text-[#666]">Please sign in to edit your listing.</p>
+          <Link href={`/login?redirect=/vehicles/${vehicleId}/edit`}>
+            <Button className="bg-[#111] text-white hover:bg-[#222]">Sign In</Button>
+          </Link>
         </div>
       </div>
     );
@@ -246,24 +246,22 @@ export default function EditVehiclePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black flex items-center justify-center">
-        <p className="text-muted-foreground">Loading vehicle...</p>
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20 flex items-center justify-center">
+        <p className="text-[#666]">Loading vehicle...</p>
       </div>
     );
   }
 
   if (error && !vehicle) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black">
-        <div className="container mx-auto max-w-4xl px-4 py-8">
-          <Card className="border-destructive/50 bg-destructive/10">
-            <CardContent className="pt-6">
-              <p className="text-destructive">{error}</p>
-              <Link href={`/vehicles/${vehicleId}`}>
-                <Button variant="outline" className="mt-4">Back to Vehicle</Button>
-              </Link>
-            </CardContent>
-          </Card>
+      <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+        <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8">
+          <div className="bg-white rounded-[20px] border border-red-200 bg-red-50 p-6">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Link href={`/vehicles/${vehicleId}`}>
+              <Button variant="outline" className="border-[#e5e5e5] hover:bg-[#fafafa]">Back to Vehicle</Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -337,39 +335,39 @@ export default function EditVehiclePage() {
   const existingImages = vehicle?.images?.filter(img => !imagesToDelete.includes(img.id)) || [];
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="container mx-auto max-w-5xl px-6 py-12">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8">
         {/* Header */}
         <div className="mb-8">
           <Link href={`/vehicles/${vehicleId}`}>
-            <Button variant="ghost" className="mb-4">← Back to Vehicle</Button>
+            <Button variant="outline" className="mb-4 border-[#e5e5e5] hover:bg-[#fafafa]">← Back to Vehicle</Button>
           </Link>
-          <h1 className="text-4xl font-bold text-foreground">Edit Vehicle Listing</h1>
-          <p className="mt-2 text-muted-foreground">
+          <h1 className="font-[var(--font-space-grotesk)] text-4xl font-semibold">Edit Vehicle Listing</h1>
+          <p className="mt-2 text-[#666]">
             Update your vehicle listing details
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <Card className="mb-8 border-destructive/50 bg-destructive/10" role="status" aria-live="polite">
-            <CardContent className="pt-6">
-              <p className="text-destructive">{error}</p>
-            </CardContent>
-          </Card>
+          <div className="mb-8 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-600" role="status" aria-live="polite">
+            {error}
+          </div>
         )}
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
           <div className="space-y-8">
             {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] font-semibold mb-6">Basic Information</h2>
+              <div className="space-y-6">
                 <div>
-                  <Label htmlFor="title">Title *</Label>
+                  <Label htmlFor="title" className="mb-2 block text-sm font-medium text-[#666]">Title *</Label>
                   <Input
                     id="title"
                     name="title"
@@ -378,6 +376,7 @@ export default function EditVehiclePage() {
                     placeholder="e.g., 2019 Toyota Corolla XLI"
                     required
                     minLength={10}
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
 
