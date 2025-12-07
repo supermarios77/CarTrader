@@ -48,10 +48,10 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button"
   
-  // If className contains dark background colors, ensure text is white
+  // If className contains dark background colors, ensure text is white with !important
   const hasDarkBg = className?.includes('bg-[#111]') || className?.includes('bg-[#222]') || className?.includes('bg-black');
-  const finalClassName = hasDarkBg && !className?.includes('text-white') 
-    ? `${className} !text-white` 
+  const finalClassName = hasDarkBg
+    ? `${className || ''} !text-white`
     : className;
 
   return (
