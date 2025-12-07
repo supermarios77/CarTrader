@@ -1,19 +1,15 @@
 'use client';
 
-/**
- * Favorites Page
- * Displays all vehicles favorited by the current user
- */
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getFavorites, removeFavorite } from '@/lib/favorites-api';
 import type { Vehicle } from '@/types/vehicle';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useAuth } from '@/contexts/auth-context';
+import Image from 'next/image';
+import { Heart } from 'lucide-react';
 
 export default function FavoritesPage() {
   const router = useRouter();
@@ -28,14 +24,12 @@ export default function FavoritesPage() {
     totalPages: 0,
   });
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
     }
   }, [isAuthenticated, router]);
 
-  // Fetch favorites
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -46,16 +40,14 @@ export default function FavoritesPage() {
       setError(null);
       try {
         const response = await getFavorites(pagination.page, pagination.limit);
-        
-        // Don't update state if request was aborted
+
         if (abortController.signal.aborted) return;
-        
+
         setVehicles(response.vehicles);
         setPagination(response.pagination);
       } catch (err) {
-        // Don't update state if request was aborted
         if (abortController.signal.aborted) return;
-        
+
         setError(err instanceof Error ? err.message : 'Failed to load favorites');
       } finally {
         if (!abortController.signal.aborted) {
@@ -66,7 +58,6 @@ export default function FavoritesPage() {
 
     fetchFavorites();
 
-    // Cleanup: abort request if dependencies change or component unmounts
     return () => {
       abortController.abort();
     };
@@ -75,7 +66,6 @@ export default function FavoritesPage() {
   const handleRemoveFavorite = async (vehicleId: string) => {
     try {
       await removeFavorite(vehicleId);
-      // Remove from local state
       setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
       setPagination((prev) => {
         const newTotal = Math.max(0, prev.total - 1);
@@ -84,7 +74,6 @@ export default function FavoritesPage() {
           ...prev,
           total: newTotal,
           totalPages: newTotalPages,
-          // If current page is beyond total pages, go to last page
           page: prev.page > newTotalPages && newTotalPages > 0 ? newTotalPages : prev.page,
         };
       });
@@ -111,52 +100,48 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      <div className="container mx-auto px-4 py-8">
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground">My Favorites</h1>
-          <p className="mt-2 text-muted-foreground">
+          <div className="flex items-center gap-3 mb-2">
+            <Heart className="w-8 h-8 text-[#10b981]" />
+            <h1 className="font-[var(--font-space-grotesk)] text-4xl font-semibold">My Favorites</h1>
+          </div>
+          <p className="text-[#666]">
             {pagination.total} saved {pagination.total === 1 ? 'vehicle' : 'vehicles'}
           </p>
         </div>
 
         {/* Error State */}
         {error && (
-          <Card className="mb-6 border-destructive/50 bg-destructive/10">
-            <CardContent className="pt-6">
-              <p className="text-destructive">{error}</p>
-            </CardContent>
-          </Card>
+          <div className="mb-6 rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
+          </div>
         )}
 
         {/* Loading State */}
         {loading && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <div className="h-48 bg-muted" />
-                <CardHeader>
-                  <div className="h-4 w-3/4 bg-muted" />
-                </CardHeader>
-                <CardContent>
-                  <div className="h-4 w-1/2 bg-muted" />
-                </CardContent>
-              </Card>
+              <div key={i} className="h-80 animate-pulse bg-white rounded-[20px] border border-[#e5e5e5]" />
             ))}
           </div>
         )}
 
         {/* Empty State */}
         {!loading && vehicles.length === 0 && (
-          <Card className="py-12 text-center">
-            <CardContent>
-              <p className="text-muted-foreground mb-4">No favorites yet</p>
-              <Link href="/vehicles">
-                <Button variant="outline">Browse Vehicles</Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-12 text-center shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+            <Heart className="w-16 h-16 text-[#10b981] mx-auto mb-4 opacity-50" />
+            <p className="text-[#666] mb-4 text-lg">No favorites yet</p>
+            <Link href="/vehicles">
+              <Button className="bg-[#111] text-white hover:bg-[#222]">Browse Vehicles</Button>
+            </Link>
+          </div>
         )}
 
         {/* Favorites Grid */}
@@ -164,81 +149,72 @@ export default function FavoritesPage() {
           <>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {vehicles.map((vehicle) => (
-                <Card key={vehicle.id} className="h-full transition-all hover:shadow-lg">
+                <div
+                  key={vehicle.id}
+                  className="group bg-white rounded-[20px] p-6 transition-all duration-300 cursor-pointer border border-transparent hover:translate-y-[-10px] hover:border-[#eee] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
+                >
                   <Link href={`/vehicles/${vehicle.id}`}>
-                    {/* Vehicle Image */}
-                    <div className="relative h-48 w-full overflow-hidden rounded-t-xl bg-muted">
+                    <div className="relative w-full h-60 rounded-xl overflow-hidden mb-5 bg-[#f5f5f5]">
                       {vehicle.images && vehicle.images.length > 0 ? (
-                        <img
+                        <Image
                           src={vehicle.images[0].url}
                           alt={vehicle.images[0].alt || vehicle.title}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent && !parent.querySelector('.image-error')) {
-                              const placeholder = document.createElement('div');
-                              placeholder.className = 'image-error flex h-full items-center justify-center text-muted-foreground';
-                              placeholder.textContent = 'Image not available';
-                              parent.appendChild(placeholder);
+                          width={400}
+                          height={240}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center">
+                          <span className="text-white text-4xl">🚗</span>
+                        </div>
+                      )}
+                      <div className="absolute top-3 right-3">
+                        <FavoriteButton
+                          vehicleId={vehicle.id}
+                          isFavorite={true}
+                          onToggle={(isFav) => {
+                            if (!isFav) {
+                              handleRemoveFavorite(vehicle.id);
                             }
                           }}
                         />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-muted-foreground">
-                          No Image
-                        </div>
-                      )}
-                      {/* Favorite Button */}
-                      <FavoriteButton
-                        vehicleId={vehicle.id}
-                        isFavorite={true}
-                        onToggle={(isFav) => {
-                          if (!isFav) {
-                            handleRemoveFavorite(vehicle.id);
-                          }
-                        }}
-                      />
+                      </div>
                       {vehicle.featured && (
-                        <div className="absolute left-2 top-2 rounded-full bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
-                          Featured
+                        <div className="absolute top-3 left-3 bg-[#10b981] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          FEATURED
                         </div>
                       )}
                       {vehicle.status === 'SOLD' && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                          <span className="rounded-lg bg-destructive px-4 py-2 text-lg font-bold text-white">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl">
+                          <span className="rounded-full bg-red-600 px-4 py-2 text-lg font-bold text-white">
                             SOLD
                           </span>
                         </div>
                       )}
+                      <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold text-[#10b981]">
+                        {formatPrice(Number(vehicle.price), vehicle.currency)}
+                      </div>
                     </div>
                   </Link>
 
-                  <CardHeader>
+                  <div>
                     <Link href={`/vehicles/${vehicle.id}`}>
-                      <CardTitle className="line-clamp-2 text-lg hover:text-primary">
+                      <h3 className="font-semibold text-base mb-1 line-clamp-2 hover:text-[#10b981] transition-colors">
                         {vehicle.title}
-                      </CardTitle>
+                      </h3>
                     </Link>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatPrice(vehicle.price, vehicle.currency)}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="space-y-2 text-sm text-[#666]">
                       <div className="flex items-center justify-between">
                         <span>{vehicle.year}</span>
                         <span>{formatMileage(vehicle.mileage, vehicle.mileageUnit)}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span>{vehicle.make.name} {vehicle.model.name}</span>
+                        <span>
+                          {vehicle.make.name} {vehicle.model.name}
+                        </span>
                         <span>{vehicle.city}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-xs">
                         <span className="capitalize">{vehicle.transmission.toLowerCase()}</span>
                         <span>•</span>
                         <span className="capitalize">{vehicle.fuelType.toLowerCase()}</span>
@@ -246,26 +222,28 @@ export default function FavoritesPage() {
                         <span className="capitalize">{vehicle.bodyType.toLowerCase()}</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
+              <div className="mt-8 flex items-center justify-center gap-4">
                 <Button
                   variant="outline"
+                  className="border-[#e5e5e5] bg-white hover:bg-[#fafafa]"
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
                   disabled={pagination.page === 1}
                 >
                   Previous
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-[#666]">
                   Page {pagination.page} of {pagination.totalPages}
                 </span>
                 <Button
                   variant="outline"
+                  className="border-[#e5e5e5] bg-white hover:bg-[#fafafa]"
                   onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
                   disabled={pagination.page >= pagination.totalPages}
                 >
@@ -279,4 +257,3 @@ export default function FavoritesPage() {
     </div>
   );
 }
-

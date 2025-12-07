@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -235,28 +236,34 @@ export default function SellVehiclePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-5xl px-6 py-10 lg:px-12">
-        <h1 className="mb-2 text-3xl font-black">Sell Your Car</h1>
-        <p className="mb-8 text-gray-400">Create a beautiful listing in a few simple steps.</p>
+    <div className="relative min-h-screen bg-[#fafafa] text-[#111] pt-20">
+      {/* Ambient Background Blobs */}
+      <div className="blob blob-1 fixed top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(224,231,255)_0%,rgba(255,255,255,0)_70%)]" />
+      <div className="blob blob-2 fixed bottom-0 right-[-10%] w-[600px] h-[600px] rounded-full opacity-60 blur-[80px] -z-10 bg-[radial-gradient(circle,rgb(255,228,230)_0%,rgba(255,255,255,0)_70%)]" />
+
+      <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8">
+        <h1 className="font-[var(--font-space-grotesk)] mb-2 text-4xl font-semibold">Sell Your Car</h1>
+        <p className="mb-8 text-[#666]">Create a beautiful listing in a few simple steps.</p>
 
         {!isAuthenticated ? (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-            <p className="mb-6 text-gray-300">Please sign in to list your vehicle.</p>
-            <a href="/login">
-              <Button className="bg-white text-black hover:bg-gray-100">Sign In</Button>
-            </a>
+          <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-8 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+            <p className="mb-6 text-[#666]">Please sign in to list your vehicle.</p>
+            <Link href="/login">
+              <Button className="bg-[#111] text-white hover:bg-[#222]">Sign In</Button>
+            </Link>
           </div>
         ) : (
           <>
 
         {/* Stepper */}
-        <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
+        <div className="mb-6 grid grid-cols-4 gap-3">
           {(['details', 'specs', 'media', 'review'] as Step[]).map((s, i) => (
             <div
               key={s}
-              className={`rounded-lg border px-3 py-2 text-center ${
-                step === s ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-white/10 text-gray-400'
+              className={`rounded-full border px-4 py-2.5 text-center text-sm font-medium transition-all ${
+                step === s
+                  ? 'border-[#10b981] bg-[#10b981] text-white shadow-[0_4px_12px_rgba(16,185,129,0.3)]'
+                  : 'border-[#e5e5e5] bg-white text-[#666]'
               }`}
             >
               {i + 1}. {s[0].toUpperCase() + s.slice(1)}
@@ -268,13 +275,11 @@ export default function SellVehiclePage() {
             <Button
               type="button"
               onClick={() => {
-                // Pick category likely to be Cars
                 const cat =
                   categories.find((c) => c.name.toLowerCase().includes('car'))?.id ||
                   categories[0]?.id ||
                   '';
                 setCategoryId(cat || categoryId);
-                // Fill details
                 setTitle('2021 Suzuki Alto VXR 660cc Manual');
                 setDescription(
                   'Brand new condition Suzuki Alto VXR. Low mileage, perfect for city driving. Excellent fuel economy. All features working. Single owner, garage kept. No accidents, original paint. Service book available.',
@@ -292,21 +297,19 @@ export default function SellVehiclePage() {
                 setBodyType(BodyType.HATCHBACK);
                 setEngineCapacity('660');
                 setColor('Silver');
-                // Choose make/model by name where possible
                 const suzuki = makes.find((m) => m.name.toLowerCase().includes('suzuki'));
                 if (suzuki) {
                   setMakeId(suzuki.id);
-                  // Ask for model "Alto" when models arrive
                   pendingModelByNameRef.current = 'Alto';
                 }
-                // Preload some features
                 setFeatures([
                   { name: 'Power Steering' },
                   { name: 'Air Conditioning' },
                   { name: 'ABS' },
                 ]);
               }}
-              className="bg-white text-black hover:bg-gray-100"
+              variant="outline"
+              className="border-[#e5e5e5] hover:bg-[#fafafa]"
             >
               Fill with mock data (dev only)
             </Button>
@@ -314,7 +317,7 @@ export default function SellVehiclePage() {
         )}
 
         {catalogError && (
-          <div className="mb-6 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-300">
+          <div className="mb-6 rounded-[20px] border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">
             {catalogError}
           </div>
         )}
@@ -322,15 +325,15 @@ export default function SellVehiclePage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Details */}
           {step === 'details' && (
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-4 text-xl font-bold">Basic Details</h2>
+            <section className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] mb-6 text-xl font-semibold">Basic Details</h2>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Category</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Category</label>
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3 disabled:opacity-60"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all disabled:opacity-60"
                     disabled={categoriesLoading}
                   >
                     <option value="">{categoriesLoading ? 'Loading…' : 'Select category'}</option>
@@ -342,21 +345,21 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm text-gray-300">Title</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Title</label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g., 2018 Toyota Corolla Altis Grande"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                     maxLength={120}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Make</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Make</label>
                   <select
                     value={makeId}
                     onChange={(e) => setMakeId(e.target.value)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
                   >
                     <option value="">{makesLoading ? 'Loading…' : 'Select make'}</option>
                     {makes.map((m) => (
@@ -367,11 +370,11 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Model</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Model</label>
                   <select
                     value={modelId}
                     onChange={(e) => setModelId(e.target.value)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all disabled:opacity-60"
                     disabled={!makeId || modelsLoading}
                   >
                     <option value="">{modelsLoading ? 'Loading…' : 'Select model'}</option>
@@ -383,11 +386,11 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Year</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Year</label>
                   <select
                     value={year}
                     onChange={(e) => setYear(e.target.value)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
                   >
                     <option value="">Select year</option>
                     {years.map((y) => (
@@ -398,7 +401,7 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Price</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Price</label>
                   <Input
                     type="number"
                     inputMode="numeric"
@@ -406,51 +409,51 @@ export default function SellVehiclePage() {
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     placeholder="e.g., 2750000"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">City</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">City</label>
                   <Input
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="e.g., Karachi"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Province</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Province</label>
                   <Input
                     value={province}
                     onChange={(e) => setProvince(e.target.value)}
                     placeholder="e.g., Sindh"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm text-gray-300">Address</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Address</label>
                   <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Street, area, optional"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Registration City</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Registration City</label>
                   <Input
                     value={registrationCity}
                     onChange={(e) => setRegistrationCity(e.target.value)}
                     placeholder="e.g., Lahore"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Registration Year</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Registration Year</label>
                   <select
                     value={registrationYear}
                     onChange={(e) => setRegistrationYear(e.target.value)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
                   >
                     <option value="">—</option>
                     {years.map((y) => (
@@ -461,22 +464,22 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="mb-1 block text-sm text-gray-300">Description</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Description</label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Condition, ownership, variants, notable features, and extras…"
-                    className="min-h-[120px] bg-black/30 text-white"
+                    className="min-h-[120px] rounded-[20px] border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                     maxLength={1200}
                   />
                 </div>
               </div>
-              <div className="mt-5 flex justify-end">
+              <div className="mt-6 flex justify-end">
                 <Button
                   type="button"
                   onClick={() => setStep('specs')}
                   disabled={!canContinueDetails}
-                  className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
+                  className="bg-[#111] text-white hover:bg-[#222] px-8"
                 >
                   Continue
                 </Button>
@@ -486,11 +489,11 @@ export default function SellVehiclePage() {
 
           {/* Specifications */}
           {step === 'specs' && (
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-4 text-xl font-bold">Specifications</h2>
+            <section className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] mb-6 text-xl font-semibold">Specifications</h2>
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Mileage</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Mileage</label>
                   <Input
                     type="number"
                     inputMode="numeric"
@@ -498,11 +501,11 @@ export default function SellVehiclePage() {
                     value={mileage}
                     onChange={(e) => setMileage(e.target.value)}
                     placeholder="e.g., 45000"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Engine Capacity (cc)</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Engine Capacity (cc)</label>
                   <Input
                     type="number"
                     inputMode="numeric"
@@ -510,15 +513,15 @@ export default function SellVehiclePage() {
                     value={engineCapacity}
                     onChange={(e) => setEngineCapacity(e.target.value)}
                     placeholder="e.g., 1800"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Transmission</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Transmission</label>
                   <select
                     value={transmission}
                     onChange={(e) => setTransmission(e.target.value as TransmissionType)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
                   >
                     {Object.values(TransmissionType).map((t) => (
                       <option key={t} value={t}>
@@ -528,11 +531,11 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Fuel Type</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Fuel Type</label>
                   <select
                     value={fuelType}
                     onChange={(e) => setFuelType(e.target.value as FuelType)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
                   >
                     {Object.values(FuelType).map((t) => (
                       <option key={t} value={t}>
@@ -542,11 +545,11 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Body Type</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Body Type</label>
                   <select
                     value={bodyType}
                     onChange={(e) => setBodyType(e.target.value as BodyType)}
-                    className="h-11 w-full rounded-md border border-white/10 bg-black/30 px-3"
+                    className="h-12 w-full rounded-full border border-[#e5e5e5] bg-[#fafafa] px-4 text-base focus:outline-none focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)] transition-all"
                   >
                     {Object.values(BodyType).map((t) => (
                       <option key={t} value={t}>
@@ -556,68 +559,75 @@ export default function SellVehiclePage() {
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Color</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Color</label>
                   <Input
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
                     placeholder="e.g., White"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Latitude (optional)</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Latitude (optional)</label>
                   <Input
                     type="number"
                     inputMode="decimal"
                     value={latitude}
                     onChange={(e) => setLatitude(e.target.value)}
                     placeholder="e.g., 24.8607"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm text-gray-300">Longitude (optional)</label>
+                  <label className="mb-2 block text-sm font-medium text-[#666]">Longitude (optional)</label>
                   <Input
                     type="number"
                     inputMode="decimal"
                     value={longitude}
                     onChange={(e) => setLongitude(e.target.value)}
                     placeholder="e.g., 67.0011"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                 </div>
               </div>
 
               {/* Features */}
               <div className="mt-6">
-                <h3 className="mb-2 text-sm font-semibold text-gray-300">Features</h3>
+                <h3 className="mb-3 text-sm font-semibold text-[#666]">Features</h3>
                 <div className="mb-3 flex flex-col gap-2 sm:flex-row">
                   <Input
                     value={featureName}
                     onChange={(e) => setFeatureName(e.target.value)}
                     placeholder="Feature name (e.g., sunroof)"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
                   <Input
                     value={featureValue}
                     onChange={(e) => setFeatureValue(e.target.value)}
                     placeholder="Optional value (e.g., panoramic)"
-                    className="bg-black/30 text-white"
+                    className="h-12 rounded-full border-[#e5e5e5] bg-[#fafafa] text-base focus:border-[#10b981] focus:ring-2 focus:ring-[rgba(16,185,129,0.1)]"
                   />
-                  <Button type="button" onClick={addFeature} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
+                  <Button
+                    type="button"
+                    onClick={addFeature}
+                    className="bg-[#10b981] text-white hover:bg-[#059669] h-12 px-6"
+                  >
                     Add
                   </Button>
                 </div>
                 {features.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {features.map((f, i) => (
-                      <span key={`${f.name}-${i}`} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-200">
+                      <span
+                        key={`${f.name}-${i}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1.5 text-xs font-medium text-[#10b981]"
+                      >
                         {f.name}
                         {f.value ? `: ${f.value}` : ''}
                         <button
                           type="button"
                           onClick={() => setFeatures((prev) => prev.filter((_, idx) => idx !== i))}
-                          className="ml-1 rounded bg-black/40 p-0.5 text-gray-400 hover:text-white"
+                          className="ml-1 rounded-full bg-[#10b981]/20 p-0.5 text-[#10b981] hover:bg-[#10b981]/30 transition-colors"
                           aria-label="Remove"
                         >
                           ×
@@ -627,11 +637,16 @@ export default function SellVehiclePage() {
                   </div>
                 )}
               </div>
-              <div className="mt-5 flex justify-between">
-                <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setStep('details')}>
+              <div className="mt-6 flex justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-[#e5e5e5] hover:bg-[#fafafa]"
+                  onClick={() => setStep('details')}
+                >
                   Back
                 </Button>
-                <Button type="button" onClick={() => setStep('media')} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
+                <Button type="button" onClick={() => setStep('media')} className="bg-[#111] text-white hover:bg-[#222] px-8">
                   Continue
                 </Button>
               </div>
@@ -640,30 +655,39 @@ export default function SellVehiclePage() {
 
           {/* Media */}
           {step === 'media' && (
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-4 text-xl font-bold">Photos</h2>
-              <div className="mb-4 rounded-lg border border-white/10 bg-black/30 p-4">
+            <section className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] mb-6 text-xl font-semibold">Photos</h2>
+              <div className="mb-4 rounded-xl border border-[#e5e5e5] bg-[#fafafa] p-4">
                 <input
                   id="images"
                   type="file"
                   accept="image/*"
                   multiple
                   onChange={(e) => handleFiles(e.target.files)}
+                  className="text-sm"
                 />
-                <p className="mt-2 text-xs text-gray-400">Up to 12 images, 10MB each. JPG/PNG preferred.</p>
+                <p className="mt-2 text-xs text-[#666]">Up to 12 images, 10MB each. JPG/PNG preferred.</p>
               </div>
               {images.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   {images.map((file, idx) => {
                     const url = URL.createObjectURL(file);
                     return (
-                      <div key={`${file.name}-${idx}`} className="group relative overflow-hidden rounded-xl border border-white/10">
+                      <div
+                        key={`${file.name}-${idx}`}
+                        className="group relative overflow-hidden rounded-xl border border-[#e5e5e5] bg-[#fafafa]"
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt={file.name} className="h-36 w-full object-cover" onLoad={() => URL.revokeObjectURL(url)} />
+                        <img
+                          src={url}
+                          alt={file.name}
+                          className="h-36 w-full object-cover"
+                          onLoad={() => URL.revokeObjectURL(url)}
+                        />
                         <button
                           type="button"
                           onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}
-                          className="absolute right-2 top-2 rounded-md bg-black/70 p-1 text-white opacity-90 ring-1 ring-white/20 hover:bg-black"
+                          className="absolute right-2 top-2 rounded-full bg-red-500 p-1.5 text-white opacity-90 hover:bg-red-600 transition-colors"
                           aria-label="Remove image"
                         >
                           ✕
@@ -673,11 +697,16 @@ export default function SellVehiclePage() {
                   })}
                 </div>
               )}
-              <div className="mt-5 flex justify-between">
-                <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setStep('specs')}>
+              <div className="mt-6 flex justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-[#e5e5e5] hover:bg-[#fafafa]"
+                  onClick={() => setStep('specs')}
+                >
                   Back
                 </Button>
-                <Button type="button" onClick={() => setStep('review')} className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white">
+                <Button type="button" onClick={() => setStep('review')} className="bg-[#111] text-white hover:bg-[#222] px-8">
                   Continue
                 </Button>
               </div>
@@ -686,52 +715,114 @@ export default function SellVehiclePage() {
 
           {/* Review & Publish */}
           {step === 'review' && (
-            <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h2 className="mb-4 text-xl font-bold">Review & Publish</h2>
-              <ul className="mb-4 grid gap-2 text-sm text-gray-300 md:grid-cols-2">
-                <li><strong>Title:</strong> {title || '—'}</li>
-                <li><strong>Make:</strong> {makeId || '—'}</li>
-                <li><strong>Model:</strong> {modelId || '—'}</li>
-                <li><strong>Year:</strong> {year || '—'}</li>
-                <li><strong>Price:</strong> {currency} {price || '—'}</li>
-                <li><strong>City:</strong> {city || '—'}</li>
-                <li><strong>Province:</strong> {province || '—'}</li>
-                <li><strong>Address:</strong> {address || '—'}</li>
-                <li><strong>Reg. City:</strong> {registrationCity || '—'}</li>
-                <li><strong>Reg. Year:</strong> {registrationYear || '—'}</li>
-                <li><strong>Mileage:</strong> {mileage ? `${mileage} ${mileageUnit}` : '—'}</li>
-                <li><strong>Transmission:</strong> {transmission.toLowerCase()}</li>
-                <li><strong>Fuel:</strong> {fuelType.toLowerCase()}</li>
-                <li><strong>Body:</strong> {bodyType.toLowerCase()}</li>
-                <li><strong>Engine:</strong> {engineCapacity ? `${engineCapacity} cc` : '—'}</li>
-                <li><strong>Color:</strong> {color || '—'}</li>
-                <li><strong>Lat/Lng:</strong> {latitude && longitude ? `${latitude}, ${longitude}` : '—'}</li>
+            <section className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] mb-6 text-xl font-semibold">Review & Publish</h2>
+              <ul className="mb-4 grid gap-3 text-sm md:grid-cols-2">
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Title:</strong>
+                  <span className="text-right">{title || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Make:</strong>
+                  <span>{makes.find((m) => m.id === makeId)?.name || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Model:</strong>
+                  <span>{models.find((m) => m.id === modelId)?.name || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Year:</strong>
+                  <span>{year || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Price:</strong>
+                  <span className="font-semibold text-[#10b981]">
+                    {currency} {price ? Number(price).toLocaleString() : '—'}
+                  </span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">City:</strong>
+                  <span>{city || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Province:</strong>
+                  <span>{province || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Address:</strong>
+                  <span className="text-right">{address || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Reg. City:</strong>
+                  <span>{registrationCity || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Reg. Year:</strong>
+                  <span>{registrationYear || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Mileage:</strong>
+                  <span>{mileage ? `${mileage} ${mileageUnit}` : '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Transmission:</strong>
+                  <span className="capitalize">{transmission.toLowerCase()}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Fuel:</strong>
+                  <span className="capitalize">{fuelType.toLowerCase()}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Body:</strong>
+                  <span className="capitalize">{bodyType.toLowerCase()}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Engine:</strong>
+                  <span>{engineCapacity ? `${engineCapacity} cc` : '—'}</span>
+                </li>
+                <li className="flex justify-between py-2 border-b border-[#e5e5e5]">
+                  <strong className="text-[#666]">Color:</strong>
+                  <span className="capitalize">{color || '—'}</span>
+                </li>
+                <li className="flex justify-between py-2">
+                  <strong className="text-[#666]">Lat/Lng:</strong>
+                  <span>{latitude && longitude ? `${latitude}, ${longitude}` : '—'}</span>
+                </li>
               </ul>
               {features.length > 0 && (
-                <div className="mb-4 text-sm text-gray-300">
-                  <strong>Features:</strong>
+                <div className="mb-4">
+                  <strong className="text-sm text-[#666]">Features:</strong>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {features.map((f, i) => (
-                      <span key={`${f.name}-${i}`} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs">
-                        {f.name}{f.value ? `: ${f.value}` : ''}
+                      <span
+                        key={`${f.name}-${i}`}
+                        className="rounded-full border border-[#10b981] bg-[#f0fdf4] px-3 py-1 text-xs font-medium text-[#10b981]"
+                      >
+                        {f.name}
+                        {f.value ? `: ${f.value}` : ''}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
               {submitError && (
-                <div className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
+                <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
                   {submitError}
                 </div>
               )}
-              <div className="mt-5 flex justify-between">
-                <Button type="button" variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setStep('media')}>
+              <div className="mt-6 flex justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-[#e5e5e5] hover:bg-[#fafafa]"
+                  onClick={() => setStep('media')}
+                >
                   Back
                 </Button>
                 <Button
                   type="submit"
                   disabled={!canSubmit || submitting}
-                  className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
+                  className="bg-[#10b981] text-white hover:bg-[#059669] px-8"
                 >
                   {submitting ? 'Publishing…' : 'Publish Listing'}
                 </Button>

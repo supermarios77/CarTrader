@@ -1,17 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-
-type Car = {
-  id: string;
-  name: string;
-  price: string;
-  year: string;
-  mileage: string;
-  image: string;
-  featured: boolean;
-};
+import Image from 'next/image';
 
 type CardItem = {
   id: string;
@@ -38,11 +28,9 @@ export function LandingListings({ cars }: { cars: CardItem[] }) {
     const displaySrc = !error && src ? src : '/placeholder.svg';
     return (
       <div className={`relative ${className || ''}`}>
-        {/* Skeleton */}
         {!loaded && (
-          <div className="absolute inset-0 animate-pulse bg-white/10" aria-hidden="true" />
+          <div className="absolute inset-0 animate-pulse bg-[#f5f5f5]" aria-hidden="true" />
         )}
-        {/* Image */}
         <img
           src={displaySrc}
           alt={alt}
@@ -62,49 +50,42 @@ export function LandingListings({ cars }: { cars: CardItem[] }) {
   return (
     <section className="mb-16">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-black sm:text-3xl">Featured Listings</h2>
-        <a
+        <h2 className="font-[var(--font-space-grotesk)] text-2xl font-semibold sm:text-3xl">Featured Listings</h2>
+        <Link
           href="/vehicles"
-          className="text-sm font-semibold text-cyan-400 transition-colors hover:text-cyan-300"
+          className="text-sm font-semibold text-[#10b981] transition-colors hover:text-[#059669]"
         >
           View All →
-        </a>
+        </Link>
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {cars.map((car) => (
           <Link
             key={car.id}
             href={`/vehicles/${car.id}`}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-white/5 to-white/2 backdrop-blur-sm transition-all duration-300 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]"
+            className="group bg-white rounded-[20px] p-6 transition-all duration-300 cursor-pointer border border-transparent hover:translate-y-[-10px] hover:border-[#eee] hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)]"
           >
             {car.featured && (
-              <div className="absolute left-4 top-4 z-20 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
+              <div className="absolute left-4 top-4 z-20 rounded-full bg-[#10b981] px-3 py-1 text-xs font-bold text-white">
                 FEATURED
               </div>
             )}
-            {/* Image takes more vertical space; subtle gradient overlay for text legibility */}
-            <div className="relative overflow-hidden aspect-16/10 md:aspect-video">
+            <div className="w-full h-60 rounded-xl overflow-hidden mb-5 bg-[#f5f5f5] relative">
               <ImageWithSkeleton
                 src={car.image || '/placeholder.svg'}
                 alt={car.name}
                 className="h-full w-full"
               />
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 via-black/0 to-black/0" />
-              {/* Price badge on image */}
-              <div className="absolute bottom-3 left-3 z-20 rounded-full bg-black/70 px-3 py-1 text-sm font-semibold text-emerald-300 ring-1 ring-white/10 backdrop-blur">
+              <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-bold text-[#10b981]">
                 {car.price}
               </div>
             </div>
-            <div className="p-5">
-              <h3 className="mb-1 line-clamp-1 text-base font-semibold transition-colors group-hover:text-cyan-400">
-                {car.name}
-              </h3>
-              <div className="mb-3 flex justify-between text-xs text-gray-400">
-                <span>{car.year}</span>
-                <span>{car.mileage}</span>
-              </div>
-              <div className="w-full rounded-lg border border-white/20 bg-transparent py-2.5 text-center text-sm font-semibold text-white transition-colors group-hover:bg-white/10">
-                View Details
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="font-semibold text-base block mb-1">{car.name}</span>
+                <span className="text-xs text-[#888]">
+                  {car.year} • {car.mileage}
+                </span>
               </div>
             </div>
           </Link>
@@ -113,5 +94,3 @@ export function LandingListings({ cars }: { cars: CardItem[] }) {
     </section>
   );
 }
-
-
