@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { FavoriteButton } from '@/components/favorite-button';
 import { useAuth } from '@/contexts/auth-context';
 import { ArrowLeft, Copy, MessageCircle } from 'lucide-react';
+import { ReviewsSection } from '@/components/reviews/reviews-section';
+import { SellerRating } from '@/components/reviews/seller-rating';
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -383,7 +385,8 @@ export default function VehicleDetailPage() {
                   <p className="font-semibold">
                     {vehicle.user.firstName} {vehicle.user.lastName}
                   </p>
-                  <p className="text-sm text-[#666]">{vehicle.user.city || 'Location not specified'}</p>
+                  <p className="text-sm text-[#666] mb-2">{vehicle.user.city || 'Location not specified'}</p>
+                  <SellerRating sellerId={vehicle.user.id} />
                 </div>
                 {!isOwner && isAuthenticated && (
                   <Link href={`/messages/${vehicle.user.id}?vehicleId=${vehicle.id}`} className="block">
@@ -444,6 +447,11 @@ export default function VehicleDetailPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-12">
+          <ReviewsSection vehicleId={vehicleId} sellerId={vehicle.user.id} />
         </div>
       </div>
     </div>

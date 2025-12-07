@@ -10,6 +10,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MessagesModule } from './messages/messages.module';
+import { ReviewsModule } from './reviews/reviews.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
@@ -21,6 +22,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     FavoritesModule,
     DashboardModule,
     MessagesModule,
+    ReviewsModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute
