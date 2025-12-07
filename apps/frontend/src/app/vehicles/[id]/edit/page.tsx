@@ -545,16 +545,16 @@ export default function EditVehiclePage() {
           </div>
         </form>
         {/* Sticky save bar for quick actions */}
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/80 px-6 py-3 backdrop-blur">
-          <div className="mx-auto flex max-w-5xl items-center justify-between">
-            <span className="text-xs text-gray-400">Review your updates, then save.</span>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e5e5e5] bg-white/95 backdrop-blur px-6 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between">
+            <span className="text-xs text-[#666]">Review your updates, then save.</span>
             <div className="flex items-center gap-2">
-              <Link href={`/vehicles/${vehicleId}`} className="text-sm text-gray-400 hover:text-white">
+              <Link href={`/vehicles/${vehicleId}`} className="text-sm text-[#666] hover:text-[#10b981] transition-colors">
                 Cancel
               </Link>
               <Button
                 type="button"
-                className="bg-linear-to-r from-emerald-500 to-emerald-700 text-white"
+                className="bg-[#10b981] text-white hover:bg-[#059669]"
                 onClick={() => {
                   const form = document.querySelector('form');
                   form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
