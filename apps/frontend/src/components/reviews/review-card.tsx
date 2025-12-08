@@ -49,7 +49,7 @@ export function ReviewCard({ review, onEdit, onDelete, canEdit = false }: Review
             <div className="flex items-center gap-2 mt-1">
               <ReviewStars rating={review.rating} size="sm" />
               <span className="text-xs text-[#888]">
-                {formatDistanceToNow(review.createdAt)}
+                {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
               </span>
             </div>
           </div>

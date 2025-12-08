@@ -450,15 +450,13 @@ export default function EditVehiclePage() {
                     </select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Vehicle Specifications */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Specifications</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] font-semibold mb-6">Specifications</h2>
+              <div className="space-y-6">
                 <div className="grid gap-5 sm:grid-cols-3">
                   <div>
                     <Label htmlFor="transmission">Transmission *</Label>
@@ -539,8 +537,8 @@ export default function EditVehiclePage() {
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
           </div>
         </form>

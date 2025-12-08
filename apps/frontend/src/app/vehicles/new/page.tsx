@@ -325,15 +325,13 @@ export default function CreateVehiclePage() {
                     </select>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Vehicle Specifications */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Specifications</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] font-semibold mb-6">Specifications</h2>
+              <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <Label htmlFor="transmission">Transmission *</Label>
@@ -414,15 +412,13 @@ export default function CreateVehiclePage() {
                     />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Location */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Location</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] font-semibold mb-6">Location</h2>
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="city">City *</Label>
                   <Input
@@ -456,15 +452,13 @@ export default function CreateVehiclePage() {
                     placeholder="Street address (optional)"
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Images */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Images</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] font-semibold mb-6">Images</h2>
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="images">Upload Images (Max 10, 5MB each)</Label>
                   <Input
@@ -481,15 +475,13 @@ export default function CreateVehiclePage() {
                     </p>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Category/Make/Model - Dropdown Selection */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Vehicle Classification</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="bg-white rounded-[20px] border border-[#e5e5e5] p-6 shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
+              <h2 className="font-[var(--font-space-grotesk)] font-semibold mb-6">Vehicle Classification</h2>
+              <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-3">
                   {/* Category Dropdown */}
                   <div>

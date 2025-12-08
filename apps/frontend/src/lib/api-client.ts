@@ -127,13 +127,13 @@ async function apiRequest<T>(
 
     try {
       const response = await fetch(url, {
-        ...options,
-        headers: headers as HeadersInit,
-        credentials: 'include',
-        cache: 'no-cache',
-        keepalive: true,
+    ...options,
+    headers: headers as HeadersInit,
+    credentials: 'include',
+    cache: 'no-cache',
+    keepalive: true,
         signal: controller.signal,
-      });
+  });
       clearTimeout(timeoutId);
       return response;
     } catch (error) {
@@ -166,12 +166,12 @@ async function apiRequest<T>(
         throw error;
       }
 
-      // If 401 and we have a refresh token, try to refresh
-      if (response.status === 401 && getRefreshToken()) {
-        const newAccessToken = await refreshAccessToken();
-        if (newAccessToken) {
-          // Retry original request with new token
-          headers['Authorization'] = `Bearer ${newAccessToken}`;
+  // If 401 and we have a refresh token, try to refresh
+  if (response.status === 401 && getRefreshToken()) {
+    const newAccessToken = await refreshAccessToken();
+    if (newAccessToken) {
+      // Retry original request with new token
+      headers['Authorization'] = `Bearer ${newAccessToken}`;
           try {
             response = await makeRequest();
           } catch (error) {
@@ -182,39 +182,39 @@ async function apiRequest<T>(
             }
             throw error;
           }
-        } else {
-          // Refresh failed, clear tokens
-          clearTokens();
-          throw new ApiClientError('Session expired. Please login again.', 401);
+    } else {
+      // Refresh failed, clear tokens
+      clearTokens();
+      throw new ApiClientError('Session expired. Please login again.', 401);
+    }
+  }
+
+  // Handle 204 No Content (successful DELETE, etc.)
+  if (response.status === 204) {
+    return null as unknown as T;
+  }
+
+  // Parse response
+  const contentType = response.headers.get('content-type');
+  const isJson = contentType?.includes('application/json');
+
+  if (!response.ok) {
+    let errorMessage = 'An error occurred';
+    let errors: string[] = [];
+
+    if (isJson) {
+      try {
+        const errorData: ApiError = await response.json();
+        if (typeof errorData.message === 'string') {
+          errorMessage = errorData.message;
+        } else if (Array.isArray(errorData.message)) {
+          errors = errorData.message;
+          errorMessage = errors[0] || errorMessage;
         }
+      } catch {
+        // Failed to parse error JSON
       }
-
-      // Handle 204 No Content (successful DELETE, etc.)
-      if (response.status === 204) {
-        return null as unknown as T;
-      }
-
-      // Parse response
-      const contentType = response.headers.get('content-type');
-      const isJson = contentType?.includes('application/json');
-
-      if (!response.ok) {
-        let errorMessage = 'An error occurred';
-        let errors: string[] = [];
-
-        if (isJson) {
-          try {
-            const errorData: ApiError = await response.json();
-            if (typeof errorData.message === 'string') {
-              errorMessage = errorData.message;
-            } else if (Array.isArray(errorData.message)) {
-              errors = errorData.message;
-              errorMessage = errors[0] || errorMessage;
-            }
-          } catch {
-            // Failed to parse error JSON
-          }
-        }
+    }
 
         // Retry on server errors (5xx) or rate limiting (429)
         const shouldRetry = 
@@ -228,14 +228,14 @@ async function apiRequest<T>(
           continue;
         }
 
-        throw new ApiClientError(errorMessage, response.status, errors);
-      }
+    throw new ApiClientError(errorMessage, response.status, errors);
+  }
 
-      if (isJson) {
-        return response.json();
-      }
+  if (isJson) {
+    return response.json();
+  }
 
-      return response.text() as unknown as T;
+  return response.text() as unknown as T;
     } catch (error) {
       lastError = error as Error;
 
