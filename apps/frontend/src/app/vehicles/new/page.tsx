@@ -555,8 +555,8 @@ export default function CreateVehiclePage() {
                     )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Submit Buttons */}
             <div className="flex gap-4">
